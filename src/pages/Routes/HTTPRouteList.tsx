@@ -4,12 +4,16 @@ import { PlusOutlined, ReloadOutlined, EyeOutlined, EditOutlined, DeleteOutlined
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { resourceApi } from '@/api/resources'
 import type { K8sResource } from '@/api/types'
+import HTTPRouteEditor from '@/components/ResourceEditor/HTTPRoute/HTTPRouteEditor'
 
 const { Search } = Input
 
 const HTTPRouteList = () => {
   const [searchText, setSearchText] = useState('')
   const [selectedRowKeys, setSelectedRowKeys] = useState<React.Key[]>([])
+  const [editorVisible, setEditorVisible] = useState(false)
+  const [editorMode, setEditorMode] = useState<'create' | 'edit' | 'view'>('create')
+  const [selectedResource, setSelectedResource] = useState<K8sResource | null>(null)
   const queryClient = useQueryClient()
 
   // Fetch HTTPRoutes
@@ -79,6 +83,29 @@ const HTTPRouteList = () => {
     })
   }
 
+  const handleCreate = () => {
+    setEditorMode('create')
+    setSelectedResource(null)
+    setEditorVisible(true)
+  }
+
+  const handleView = (record: K8sResource) => {
+    setEditorMode('view')
+    setSelectedResource(record)
+    setEditorVisible(true)
+  }
+
+  const handleEdit = (record: K8sResource) => {
+    setEditorMode('edit')
+    setSelectedResource(record)
+    setEditorVisible(true)
+  }
+
+  const handleEditorClose = () => {
+    setEditorVisible(false)
+    setSelectedResource(null)
+  }
+
   const columns = [
     {
       title: '名称',
@@ -101,10 +128,10 @@ const HTTPRouteList = () => {
       key: 'actions',
       render: (_: any, record: K8sResource) => (
         <Space>
-          <Button type="link" icon={<EyeOutlined />} size="small">
+          <Button type="link" icon={<EyeOutlined />} size="small" onClick={() => handleView(record)}>
             查看
           </Button>
-          <Button type="link" icon={<EditOutlined />} size="small">
+          <Button type="link" icon={<EditOutlined />} size="small" onClick={() => handleEdit(record)}>
             编辑
           </Button>
           <Button
@@ -136,7 +163,7 @@ const HTTPRouteList = () => {
             刷新
           </Button>
         </Space>
-        <Button type="primary" icon={<PlusOutlined />}>
+        <Button type="primary" icon={<PlusOutlined />} onClick={handleCreate}>
           创建
         </Button>
       </div>
@@ -167,6 +194,13 @@ const HTTPRouteList = () => {
           showQuickJumper: true,
           showTotal: (total) => `共 ${total} 条记录`,
         }}
+      />
+
+      <HTTPRouteEditor
+        visible={editorVisible}
+        mode={editorMode}
+        resource={selectedResource}
+        onClose={handleEditorClose}
       />
     </div>
   )
