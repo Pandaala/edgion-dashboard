@@ -15,13 +15,6 @@ import {
   httpHeaderSchema,
 } from './common';
 import {
-  PATH_MATCH_TYPES,
-  HEADER_MATCH_TYPES,
-  PATH_MODIFIER_TYPES,
-  HTTP_FILTER_TYPES,
-  HTTP_METHODS,
-  HTTP_SCHEMES,
-  REDIRECT_STATUS_CODES,
   VALIDATION_MESSAGES,
 } from '@/constants/gateway-api';
 
@@ -33,7 +26,7 @@ import {
  * HTTPPathMatch Schema
  */
 export const httpPathMatchSchema = z.object({
-  type: z.enum(PATH_MATCH_TYPES as [string, ...string[]]).optional(),
+  type: z.enum(['Exact', 'PathPrefix', 'RegularExpression']).optional(),
   value: z.string().optional(),
 });
 
@@ -41,7 +34,7 @@ export const httpPathMatchSchema = z.object({
  * HTTPHeaderMatch Schema
  */
 export const httpHeaderMatchSchema = z.object({
-  type: z.enum(HEADER_MATCH_TYPES as [string, ...string[]]).optional(),
+  type: z.enum(['Exact', 'RegularExpression']).optional(),
   name: z.string().min(1, VALIDATION_MESSAGES.required.zh),
   value: z.string(),
 });
@@ -50,7 +43,7 @@ export const httpHeaderMatchSchema = z.object({
  * HTTPQueryParamMatch Schema
  */
 export const httpQueryParamMatchSchema = z.object({
-  type: z.enum(HEADER_MATCH_TYPES as [string, ...string[]]).optional(),
+  type: z.enum(['Exact', 'RegularExpression']).optional(),
   name: z.string().min(1, VALIDATION_MESSAGES.required.zh),
   value: z.string(),
 });
@@ -62,7 +55,7 @@ export const httpRouteMatchSchema = z.object({
   path: httpPathMatchSchema.optional(),
   headers: z.array(httpHeaderMatchSchema).optional(),
   queryParams: z.array(httpQueryParamMatchSchema).optional(),
-  method: z.enum(HTTP_METHODS as [string, ...string[]]).optional(),
+  method: z.enum(['GET', 'HEAD', 'POST', 'PUT', 'DELETE', 'CONNECT', 'OPTIONS', 'TRACE', 'PATCH']).optional(),
 });
 
 // ============================================
@@ -82,7 +75,7 @@ export const httpRequestHeaderFilterSchema = z.object({
  * HTTPPathModifier Schema
  */
 export const httpPathModifierSchema = z.object({
-  type: z.enum(PATH_MODIFIER_TYPES as [string, ...string[]]),
+  type: z.enum(['ReplaceFullPath', 'ReplacePrefixMatch']),
   replaceFullPath: z.string().optional(),
   replacePrefixMatch: z.string().optional(),
 });
@@ -91,7 +84,7 @@ export const httpPathModifierSchema = z.object({
  * HTTPRequestRedirectFilter Schema
  */
 export const httpRequestRedirectFilterSchema = z.object({
-  scheme: z.enum(HTTP_SCHEMES as [string, ...string[]]).optional(),
+  scheme: z.enum(['http', 'https']).optional(),
   hostname: hostnameSchema.optional(),
   path: httpPathModifierSchema.optional(),
   port: portSchema.optional(),
@@ -117,7 +110,7 @@ export const httpRequestMirrorFilterSchema = z.object({
  * HTTPRouteFilter Schema
  */
 export const httpRouteFilterSchema = z.object({
-  type: z.enum(HTTP_FILTER_TYPES as [string, ...string[]]),
+  type: z.enum(['RequestHeaderModifier', 'ResponseHeaderModifier', 'RequestRedirect', 'URLRewrite', 'RequestMirror', 'ExtensionRef']),
   requestHeaderModifier: httpRequestHeaderFilterSchema.optional(),
   responseHeaderModifier: httpRequestHeaderFilterSchema.optional(),
   requestRedirect: httpRequestRedirectFilterSchema.optional(),
