@@ -33,36 +33,6 @@ const MetadataSection: React.FC<MetadataSectionProps> = ({
     onChange?.({ ...value, [field]: fieldValue });
   };
 
-  const handleLabelChange = (key: string, labelValue: string, oldKey?: string) => {
-    const newLabels = { ...(value.labels || {}) };
-    if (oldKey && oldKey !== key) {
-      delete newLabels[oldKey];
-    }
-    newLabels[key] = labelValue;
-    handleChange('labels', newLabels);
-  };
-
-  const handleLabelRemove = (key: string) => {
-    const newLabels = { ...(value.labels || {}) };
-    delete newLabels[key];
-    handleChange('labels', newLabels);
-  };
-
-  const handleAnnotationChange = (key: string, annotationValue: string, oldKey?: string) => {
-    const newAnnotations = { ...(value.annotations || {}) };
-    if (oldKey && oldKey !== key) {
-      delete newAnnotations[oldKey];
-    }
-    newAnnotations[key] = annotationValue;
-    handleChange('annotations', newAnnotations);
-  };
-
-  const handleAnnotationRemove = (key: string) => {
-    const newAnnotations = { ...(value.annotations || {}) };
-    delete newAnnotations[key];
-    handleChange('annotations', newAnnotations);
-  };
-
   return (
     <Card title="基础信息 / Basic Info" size="small">
       {/* 名称 */}
@@ -95,84 +65,145 @@ const MetadataSection: React.FC<MetadataSectionProps> = ({
 
       {/* Labels */}
       <Form.Item label="Labels（可选）">
-        {Object.entries(value.labels || {}).map(([key, labelValue]) => (
-          <Space key={key} style={{ display: 'flex', marginBottom: 8 }} align="baseline">
-            <Input
-              value={key}
-              onChange={(e) => handleLabelChange(e.target.value, labelValue as string, key)}
-              placeholder="key"
-              disabled={disabled}
-              style={{ width: 200 }}
-            />
-            <Text>:</Text>
-            <Input
-              value={labelValue as string}
-              onChange={(e) => handleLabelChange(key, e.target.value)}
-              placeholder="value"
-              disabled={disabled}
-              style={{ flex: 1 }}
-            />
-            {!disabled && (
-              <Button
-                type="text"
-                danger
-                icon={<MinusCircleOutlined />}
-                onClick={() => handleLabelRemove(key)}
-              />
-            )}
-          </Space>
-        ))}
-        {!disabled && (
-          <Button
-            type="dashed"
-            onClick={() => handleLabelChange('new-key', '')}
-            block
-            icon={<PlusOutlined />}
-          >
-            添加 Label
-          </Button>
-        )}
+        <Form.List name={['metadata', 'labels']}>
+          {(fields, { add, remove }) => {
+            // 将对象转换为数组
+            const labelPairs = Object.entries(value.labels || {}).map(([key, val], index) => ({
+              name: index,
+              key: index,
+              fieldKey: `label-${key}`,
+            }));
+
+            return (
+              <>
+                {Object.entries(value.labels || {}).map(([labelKey, labelValue], index) => (
+                  <Space key={`label-${index}-${labelKey}`} style={{ display: 'flex', marginBottom: 8 }} align="baseline">
+                    <Input
+                      value={labelKey}
+                      onChange={(e) => {
+                        const newKey = e.target.value;
+                        const newLabels = { ...(value.labels || {}) };
+                        delete newLabels[labelKey];
+                        if (newKey.trim()) {
+                          newLabels[newKey] = labelValue as string;
+                        }
+                        handleChange('labels', newLabels);
+                      }}
+                      placeholder="key"
+                      disabled={disabled}
+                      style={{ width: 200 }}
+                    />
+                    <Text>:</Text>
+                    <Input
+                      value={labelValue as string}
+                      onChange={(e) => {
+                        const newLabels = { ...(value.labels || {}) };
+                        newLabels[labelKey] = e.target.value;
+                        handleChange('labels', newLabels);
+                      }}
+                      placeholder="value"
+                      disabled={disabled}
+                      style={{ flex: 1, minWidth: 200 }}
+                    />
+                    {!disabled && (
+                      <Button
+                        type="text"
+                        danger
+                        icon={<MinusCircleOutlined />}
+                        onClick={() => {
+                          const newLabels = { ...(value.labels || {}) };
+                          delete newLabels[labelKey];
+                          handleChange('labels', newLabels);
+                        }}
+                      />
+                    )}
+                  </Space>
+                ))}
+                {!disabled && (
+                  <Button
+                    type="dashed"
+                    onClick={() => {
+                      const timestamp = Date.now();
+                      const newLabels = { ...(value.labels || {}), [`label-${timestamp}`]: '' };
+                      handleChange('labels', newLabels);
+                    }}
+                    block
+                    icon={<PlusOutlined />}
+                  >
+                    添加 Label
+                  </Button>
+                )}
+              </>
+            );
+          }}
+        </Form.List>
       </Form.Item>
 
       {/* Annotations */}
       <Form.Item label="Annotations（可选）">
-        {Object.entries(value.annotations || {}).map(([key, annotationValue]) => (
-          <Space key={key} style={{ display: 'flex', marginBottom: 8 }} align="baseline">
-            <Input
-              value={key}
-              onChange={(e) => handleAnnotationChange(e.target.value, annotationValue as string, key)}
-              placeholder="key"
-              disabled={disabled}
-              style={{ width: 200 }}
-            />
-            <Text>:</Text>
-            <Input
-              value={annotationValue as string}
-              onChange={(e) => handleAnnotationChange(key, e.target.value)}
-              placeholder="value"
-              disabled={disabled}
-              style={{ flex: 1 }}
-            />
-            {!disabled && (
-              <Button
-                type="text"
-                danger
-                icon={<MinusCircleOutlined />}
-                onClick={() => handleAnnotationRemove(key)}
-              />
-            )}
-          </Space>
-        ))}
-        {!disabled && (
-          <Button
-            type="dashed"
-            onClick={() => handleAnnotationChange('new-key', '')}
-            block
-            icon={<PlusOutlined />}
-          >
-            添加 Annotation
-          </Button>
-        )}
+        <Form.List name={['metadata', 'annotations']}>
+          {(fields, { add, remove }) => (
+            <>
+              {Object.entries(value.annotations || {}).map(([annotationKey, annotationValue], index) => (
+                <Space key={`annotation-${index}-${annotationKey}`} style={{ display: 'flex', marginBottom: 8 }} align="baseline">
+                  <Input
+                    value={annotationKey}
+                    onChange={(e) => {
+                      const newKey = e.target.value;
+                      const newAnnotations = { ...(value.annotations || {}) };
+                      delete newAnnotations[annotationKey];
+                      if (newKey.trim()) {
+                        newAnnotations[newKey] = annotationValue as string;
+                      }
+                      handleChange('annotations', newAnnotations);
+                    }}
+                    placeholder="key"
+                    disabled={disabled}
+                    style={{ width: 200 }}
+                  />
+                  <Text>:</Text>
+                  <Input
+                    value={annotationValue as string}
+                    onChange={(e) => {
+                      const newAnnotations = { ...(value.annotations || {}) };
+                      newAnnotations[annotationKey] = e.target.value;
+                      handleChange('annotations', newAnnotations);
+                    }}
+                    placeholder="value"
+                    disabled={disabled}
+                    style={{ flex: 1, minWidth: 200 }}
+                  />
+                  {!disabled && (
+                    <Button
+                      type="text"
+                      danger
+                      icon={<MinusCircleOutlined />}
+                      onClick={() => {
+                        const newAnnotations = { ...(value.annotations || {}) };
+                        delete newAnnotations[annotationKey];
+                        handleChange('annotations', newAnnotations);
+                      }}
+                    />
+                  )}
+                </Space>
+              ))}
+              {!disabled && (
+                <Button
+                  type="dashed"
+                  onClick={() => {
+                    const timestamp = Date.now();
+                    const newAnnotations = { ...(value.annotations || {}), [`annotation-${timestamp}`]: '' };
+                    handleChange('annotations', newAnnotations);
+                  }}
+                  block
+                  icon={<PlusOutlined />}
+                >
+                  添加 Annotation
+                </Button>
+              )}
+            </>
+          )}
+        </Form.List>
       </Form.Item>
     </Card>
   );

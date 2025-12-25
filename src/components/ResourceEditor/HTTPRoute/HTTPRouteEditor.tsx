@@ -37,8 +37,10 @@ const HTTPRouteEditor: React.FC<HTTPRouteEditorProps> = ({
   const [activeTab, setActiveTab] = useState<'form' | 'yaml'>('form');
   const [formData, setFormData] = useState<HTTPRoute | null>(null);
   const [yamlContent, setYamlContent] = useState<string>('');
-  const [isReadOnly, setIsReadOnly] = useState(initialMode === 'view');
   const queryClient = useQueryClient();
+
+  // 是否只读（查看模式）
+  const isReadOnly = initialMode === 'view';
 
   // 初始化数据
   useEffect(() => {
@@ -54,7 +56,6 @@ const HTTPRouteEditor: React.FC<HTTPRouteEditorProps> = ({
         setFormData(emptyRoute);
         setYamlContent(DEFAULT_HTTPROUTE_YAML);
       }
-      setIsReadOnly(initialMode === 'view');
       setActiveTab('form');
     }
   }, [visible, initialMode, resource]);
@@ -176,18 +177,10 @@ const HTTPRouteEditor: React.FC<HTTPRouteEditorProps> = ({
 
   const footer = (
     <Space>
-      {initialMode === 'view' && (
-        <Button
-          type="primary"
-          onClick={() => {
-            setIsReadOnly(false);
-          }}
-        >
-          编辑 / Edit
-        </Button>
-      )}
-      <Button onClick={onClose}>取消 / Cancel</Button>
-      {!isReadOnly && (
+      <Button onClick={onClose}>
+        {initialMode === 'view' ? '关闭 / Close' : '取消 / Cancel'}
+      </Button>
+      {initialMode !== 'view' && (
         <Button
           type="primary"
           onClick={handleSubmit}
