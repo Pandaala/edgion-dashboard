@@ -8,6 +8,7 @@ import { Card, Form, Input, Button, Space, Typography } from 'antd';
 import { PlusOutlined, MinusCircleOutlined } from '@ant-design/icons';
 import { DEFAULT_VALUES } from '@/constants/gateway-api';
 import type { K8sObjectMeta } from '@/types/gateway-api';
+import { useT } from '@/i18n';
 
 const { Text } = Typography;
 
@@ -29,17 +30,19 @@ const MetadataSection: React.FC<MetadataSectionProps> = ({
   disabled = false,
   isCreate = true,
 }) => {
+  const t = useT();
+
   const handleChange = (field: keyof K8sObjectMeta, fieldValue: any) => {
     onChange?.({ ...value, [field]: fieldValue });
   };
 
   return (
-    <Card title="基础信息 / Basic Info" size="small">
+    <Card title={t('section.basicInfo')} size="small">
       {/* 名称 */}
       <Form.Item
-        label="名称 / Name"
+        label={t('field.name')}
         required
-        rules={[{ required: true, message: '请输入资源名称' }]}
+        rules={[{ required: true, message: t('valid.nameRequired') }]}
       >
         <Input
           value={value.name}
@@ -51,9 +54,9 @@ const MetadataSection: React.FC<MetadataSectionProps> = ({
 
       {/* 命名空间 */}
       <Form.Item
-        label="命名空间 / Namespace"
+        label={t('field.namespace')}
         required
-        rules={[{ required: true, message: '请选择命名空间' }]}
+        rules={[{ required: true, message: t('valid.nsRequired') }]}
       >
         <Input
           value={value.namespace}
@@ -64,7 +67,7 @@ const MetadataSection: React.FC<MetadataSectionProps> = ({
       </Form.Item>
 
       {/* Labels */}
-      <Form.Item label="Labels（可选）">
+      <Form.Item label={t('field.labels')}>
         {Object.entries(value.labels || {}).map(([labelKey, labelValue]) => (
           <Space key={`label-${labelKey}`} style={{ display: 'flex', marginBottom: 8 }} align="baseline">
             <Input
@@ -121,13 +124,13 @@ const MetadataSection: React.FC<MetadataSectionProps> = ({
             block
             icon={<PlusOutlined />}
           >
-            添加 Label
+            {t('btn.addLabel')}
           </Button>
         )}
       </Form.Item>
 
       {/* Annotations */}
-      <Form.Item label="Annotations（可选）">
+      <Form.Item label={t('field.annotations')}>
         {Object.entries(value.annotations || {}).map(([annotationKey, annotationValue]) => (
           <Space key={`annotation-${annotationKey}`} style={{ display: 'flex', marginBottom: 8 }} align="baseline">
             <Input
@@ -184,7 +187,7 @@ const MetadataSection: React.FC<MetadataSectionProps> = ({
             block
             icon={<PlusOutlined />}
           >
-            添加 Annotation
+            {t('btn.addAnnotation')}
           </Button>
         )}
       </Form.Item>
@@ -193,4 +196,3 @@ const MetadataSection: React.FC<MetadataSectionProps> = ({
 };
 
 export default MetadataSection;
-

@@ -12,10 +12,12 @@ import { resourceApi } from '@/api/resources'
 import type { K8sResource } from '@/api/types'
 import EdgionPluginsEditor from '@/components/ResourceEditor/EdgionPlugins/EdgionPluginsEditor'
 import { countPluginsByStage } from '@/utils/edgionplugins'
+import { useT } from '@/i18n'
 
 const { Search } = Input
 
 const EdgionPluginsList = () => {
+  const t = useT()
   const [searchText, setSearchText] = useState('')
   const [selectedRowKeys, setSelectedRowKeys] = useState<React.Key[]>([])
   const [editorVisible, setEditorVisible] = useState(false)
@@ -32,7 +34,7 @@ const EdgionPluginsList = () => {
     mutationFn: ({ namespace, name }: { namespace: string; name: string }) =>
       resourceApi.delete('edgionplugins', namespace, name),
     onSuccess: () => {
-      message.success('删除成功')
+      message.success(t('msg.deleteOk'))
       queryClient.invalidateQueries({ queryKey: ['edgionplugins'] })
     },
   })
@@ -41,7 +43,7 @@ const EdgionPluginsList = () => {
     mutationFn: (resources: Array<{ namespace: string; name: string }>) =>
       resourceApi.batchDelete('edgionplugins', resources),
     onSuccess: () => {
-      message.success(`成功删除 ${selectedRowKeys.length} 个资源`)
+      message.success(t('msg.batchDeleteOk', { n: selectedRowKeys.length }))
       setSelectedRowKeys([])
       queryClient.invalidateQueries({ queryKey: ['edgionplugins'] })
     },
@@ -59,11 +61,11 @@ const EdgionPluginsList = () => {
 
   const handleDelete = (namespace: string, name: string) => {
     Modal.confirm({
-      title: '确认删除',
-      content: `确定要删除 ${name} 吗？此操作不可恢复。`,
-      okText: '确认删除',
+      title: t('confirm.deleteTitle'),
+      content: t('confirm.deleteMsg', { name }),
+      okText: t('confirm.okText'),
       okType: 'danger',
-      cancelText: '取消',
+      cancelText: t('btn.cancel'),
       onOk: () => deleteMutation.mutate({ namespace, name }),
     })
   }
@@ -74,11 +76,11 @@ const EdgionPluginsList = () => {
       .map((p) => ({ namespace: p.metadata.namespace!, name: p.metadata.name }))
 
     Modal.confirm({
-      title: '批量删除',
-      content: `确定要删除 ${selectedResources.length} 个资源吗？此操作不可恢复。`,
-      okText: '确认删除',
+      title: t('confirm.batchDeleteTitle'),
+      content: `${t('confirm.batchDeleteMsg', { n: selectedResources.length })} ${t('confirm.deleteIrreversible')}`,
+      okText: t('confirm.okText'),
       okType: 'danger',
-      cancelText: '取消',
+      cancelText: t('btn.cancel'),
       onOk: () => batchDeleteMutation.mutate(selectedResources),
     })
   }
@@ -108,27 +110,27 @@ const EdgionPluginsList = () => {
 
   const columns = [
     {
-      title: '名称',
+      title: t('col.name'),
       dataIndex: ['metadata', 'name'],
       key: 'name',
       sorter: (a: K8sResource, b: K8sResource) => a.metadata.name.localeCompare(b.metadata.name),
     },
     {
-      title: '命名空间',
+      title: t('col.namespace'),
       dataIndex: ['metadata', 'namespace'],
       key: 'namespace',
     },
     {
-      title: '插件总数',
+      title: t('col.totalPlugins'),
       key: 'pluginCount',
       render: (_: any, record: K8sResource) => {
         const stages = countPluginsByStage((record as any).spec)
         const total = stages.request + stages.responseFilter + stages.responseBodyFilter + stages.response
         const tooltipText = [
-          `请求阶段: ${stages.request}`,
-          `响应过滤: ${stages.responseFilter}`,
-          `响应体: ${stages.responseBodyFilter}`,
-          `上游响应: ${stages.response}`,
+          `${t('plugins.requestStage')}: ${stages.request}`,
+          `${t('plugins.responseFilter')}: ${stages.responseFilter}`,
+          `${t('plugins.responseBody')}: ${stages.responseBodyFilter}`,
+          `${t('plugins.upstreamResponse')}: ${stages.response}`,
         ].join(' | ')
         return (
           <Tooltip title={tooltipText}>
@@ -142,7 +144,7 @@ const EdgionPluginsList = () => {
       },
     },
     {
-      title: '阶段分布',
+      title: t('col.stageDistrib'),
       key: 'stageSummary',
       render: (_: any, record: K8sResource) => {
         const stages = countPluginsByStage((record as any).spec)
@@ -150,45 +152,45 @@ const EdgionPluginsList = () => {
         return (
           <Space size={4}>
             {stages.request > 0 && (
-              <Tooltip title={`请求阶段: ${stages.request} 个插件`}>
+              <Tooltip title={`${t('plugins.requestStage')}: ${t('plugins.stagePlugins', { n: stages.request })}`}>
                 <Tag color="blue">Req×{stages.request}</Tag>
               </Tooltip>
             )}
             {stages.responseFilter > 0 && (
-              <Tooltip title={`响应过滤阶段: ${stages.responseFilter} 个插件`}>
+              <Tooltip title={`${t('plugins.responseFilter')}: ${t('plugins.stagePlugins', { n: stages.responseFilter })}`}>
                 <Tag color="green">RespFilter×{stages.responseFilter}</Tag>
               </Tooltip>
             )}
             {stages.responseBodyFilter > 0 && (
-              <Tooltip title={`响应体阶段: ${stages.responseBodyFilter} 个插件`}>
+              <Tooltip title={`${t('plugins.responseBody')}: ${t('plugins.stagePlugins', { n: stages.responseBodyFilter })}`}>
                 <Tag color="orange">BodyFilter×{stages.responseBodyFilter}</Tag>
               </Tooltip>
             )}
             {stages.response > 0 && (
-              <Tooltip title={`上游响应阶段: ${stages.response} 个插件`}>
+              <Tooltip title={`${t('plugins.upstreamResponse')}: ${t('plugins.stagePlugins', { n: stages.response })}`}>
                 <Tag color="purple">Resp×{stages.response}</Tag>
               </Tooltip>
             )}
-            {total === 0 && <Tag color="default">暂无插件</Tag>}
+            {total === 0 && <Tag color="default">{t('plugins.noPlugins')}</Tag>}
           </Space>
         )
       },
     },
     {
-      title: '状态',
+      title: t('col.status'),
       key: 'status',
       render: () => <Tag color="success">Active</Tag>,
     },
     {
-      title: '操作',
+      title: t('col.actions'),
       key: 'actions',
       render: (_: any, record: K8sResource) => (
         <Space>
           <Button type="link" icon={<EyeOutlined />} size="small" onClick={() => handleView(record)}>
-            查看
+            {t('btn.view')}
           </Button>
           <Button type="link" icon={<EditOutlined />} size="small" onClick={() => handleEdit(record)}>
-            编辑
+            {t('btn.edit')}
           </Button>
           <Button
             type="link"
@@ -197,7 +199,7 @@ const EdgionPluginsList = () => {
             size="small"
             onClick={() => handleDelete(record.metadata.namespace!, record.metadata.name)}
           >
-            删除
+            {t('btn.delete')}
           </Button>
         </Space>
       ),
@@ -209,27 +211,27 @@ const EdgionPluginsList = () => {
       <div style={{ marginBottom: 16, display: 'flex', justifyContent: 'space-between' }}>
         <Space>
           <Search
-            placeholder="搜索名称或命名空间"
+            placeholder={t('ph.searchNameNs')}
             allowClear
             style={{ width: 300 }}
             value={searchText}
             onChange={(e) => setSearchText(e.target.value)}
           />
           <Button icon={<ReloadOutlined />} onClick={() => refetch()}>
-            刷新
+            {t('btn.refresh')}
           </Button>
         </Space>
         <Button type="primary" icon={<PlusOutlined />} onClick={handleCreate}>
-          创建
+          {t('btn.create')}
         </Button>
       </div>
 
       {selectedRowKeys.length > 0 && (
         <div style={{ marginBottom: 16 }}>
           <Space>
-            <span>已选 {selectedRowKeys.length} 项</span>
+            <span>{t('status.selected', { n: selectedRowKeys.length })}</span>
             <Button danger onClick={handleBatchDelete}>
-              批量删除
+              {t('btn.batchDelete')}
             </Button>
           </Space>
         </div>
@@ -248,7 +250,7 @@ const EdgionPluginsList = () => {
           defaultPageSize: 20,
           showSizeChanger: true,
           showQuickJumper: true,
-          showTotal: (total) => `共 ${total} 条记录`,
+          showTotal: (total) => t('table.totalItems', { n: total }),
         }}
       />
 

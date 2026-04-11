@@ -1,6 +1,6 @@
 ---
 name: dashboard-testing
-description: Edgion Dashboard 测试指南——启动后端、加载数据、开发验证流程
+description: Edgion Controller 测试指南——启动后端、加载数据、开发验证流程
 ---
 
 # 测试指南

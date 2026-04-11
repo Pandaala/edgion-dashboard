@@ -5,6 +5,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { clusterResourceApi } from '@/api/resources'
 import type { K8sResource } from '@/api/types'
 import SimpleResourceEditor from '@/components/ResourceEditor/common/SimpleResourceEditor'
+import { useT } from '@/i18n'
 
 const { Search } = Input
 
@@ -18,6 +19,7 @@ spec:
 `
 
 const GatewayClassList = () => {
+  const t = useT()
   const [searchText, setSearchText] = useState('')
   const [editorVisible, setEditorVisible] = useState(false)
   const [editorMode, setEditorMode] = useState<'create' | 'edit' | 'view'>('create')
@@ -32,7 +34,7 @@ const GatewayClassList = () => {
 
   const deleteMutation = useMutation({
     mutationFn: (name: string) => clusterResourceApi.delete('gatewayclass', name),
-    onSuccess: () => { message.success('删除成功'); queryClient.invalidateQueries({ queryKey: ['gatewayclass'] }) },
+    onSuccess: () => { message.success(t('msg.deleteOk')); queryClient.invalidateQueries({ queryKey: ['gatewayclass'] }) },
   })
 
   const items = data?.data || []
@@ -44,8 +46,8 @@ const GatewayClassList = () => {
 
   const handleDelete = (name: string) => {
     Modal.confirm({
-      title: '确认删除', content: `确定要删除 ${name} 吗？`,
-      okText: '确认删除', okType: 'danger', cancelText: '取消',
+      title: t('confirm.deleteTitle'), content: t('confirm.deleteMsg', { name }),
+      okText: t('confirm.okText'), okType: 'danger', cancelText: t('btn.cancel'),
       onOk: () => deleteMutation.mutate(name),
     })
   }
@@ -55,30 +57,30 @@ const GatewayClassList = () => {
     try {
       if (editorMode === 'create') {
         await clusterResourceApi.create('gatewayclass', yamlContent)
-        message.success('创建成功')
+        message.success(t('msg.createOk'))
       } else {
         await clusterResourceApi.update('gatewayclass', selectedResource!.metadata.name, yamlContent)
-        message.success('更新成功')
+        message.success(t('msg.updateOk'))
       }
       queryClient.invalidateQueries({ queryKey: ['gatewayclass'] })
       setEditorVisible(false)
-    } catch (e: any) { message.error(`操作失败: ${e.message}`) }
+    } catch (e: any) { message.error(t('msg.opFailed', { err: e.message })) }
     finally { setSubmitLoading(false) }
   }
 
   const columns = [
-    { title: '名称', dataIndex: ['metadata', 'name'], key: 'name' },
-    { title: 'Controller', key: 'controller',
+    { title: t('col.name'), dataIndex: ['metadata', 'name'], key: 'name' },
+    { title: t('col.controller'), key: 'controller',
       render: (_: any, r: K8sResource) => <Tag color="blue">{r.spec?.controllerName || '-'}</Tag> },
-    { title: '描述', key: 'desc',
+    { title: t('col.description'), key: 'desc',
       render: (_: any, r: K8sResource) => r.spec?.description || '-' },
     {
-      title: '操作', key: 'actions', width: 160,
+      title: t('col.actions'), key: 'actions', width: 160,
       render: (_: any, r: K8sResource) => (
         <Space>
-          <Button size="small" icon={<EyeOutlined />} onClick={() => openEditor('view', r)}>查看</Button>
-          <Button size="small" icon={<EditOutlined />} onClick={() => openEditor('edit', r)}>编辑</Button>
-          <Button size="small" danger icon={<DeleteOutlined />} onClick={() => handleDelete(r.metadata.name)}>删除</Button>
+          <Button size="small" icon={<EyeOutlined />} onClick={() => openEditor('view', r)}>{t('btn.view')}</Button>
+          <Button size="small" icon={<EditOutlined />} onClick={() => openEditor('edit', r)}>{t('btn.edit')}</Button>
+          <Button size="small" danger icon={<DeleteOutlined />} onClick={() => handleDelete(r.metadata.name)}>{t('btn.delete')}</Button>
         </Space>
       ),
     },
@@ -87,11 +89,11 @@ const GatewayClassList = () => {
   return (
     <div>
       <div style={{ marginBottom: 16, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-        <Button type="primary" icon={<PlusOutlined />} onClick={() => openEditor('create')}>创建 GatewayClass</Button>
+        <Button type="primary" icon={<PlusOutlined />} onClick={() => openEditor('create')}>{`${t('btn.create')} GatewayClass`}</Button>
         <Space>
-          <Search placeholder="搜索名称" value={searchText} onChange={(e) => setSearchText(e.target.value)}
+          <Search placeholder={t('ph.searchName')} value={searchText} onChange={(e) => setSearchText(e.target.value)}
             style={{ width: 240 }} allowClear />
-          <Button icon={<ReloadOutlined />} onClick={() => refetch()}>刷新</Button>
+          <Button icon={<ReloadOutlined />} onClick={() => refetch()}>{t('btn.refresh')}</Button>
         </Space>
       </div>
       <Table rowKey={(r) => r.metadata.name} columns={columns} dataSource={filtered}

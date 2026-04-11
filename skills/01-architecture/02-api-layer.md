@@ -1,6 +1,6 @@
 ---
 name: api-layer
-description: Edgion Dashboard API 层设计——Axios 客户端、resourceApi/clusterResourceApi、错误处理
+description: Edgion Controller API 层设计——Axios 客户端、resourceApi/clusterResourceApi、错误处理
 ---
 
 # API 层设计

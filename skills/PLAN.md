@@ -1,9 +1,9 @@
 ---
 name: development-plan
-description: Edgion Dashboard 前端开发总体规划——基于 feature-04-06 分支用户文档，6 Phase 详细任务分解
+description: Edgion Controller 前端开发总体规划——基于 feature-04-06 分支用户文档，6 Phase 详细任务分解
 ---
 
-# Edgion Dashboard 前端开发计划
+# Edgion Controller 前端开发计划
 
 > 基于 Edgion `feature-04-06` 分支的用户文档和 API 定义
 

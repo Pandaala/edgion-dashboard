@@ -6,6 +6,7 @@ import YamlEditor from '@/components/YamlEditor'
 import LinkSysForm from './LinkSysForm'
 import type { LinkSys } from '@/types/link-sys'
 import { createEmpty, normalize, toYaml, fromYaml } from '@/utils/linksys'
+import { useT } from '@/i18n'
 
 interface Props {
   visible: boolean
@@ -15,6 +16,7 @@ interface Props {
 }
 
 const LinkSysEditor: React.FC<Props> = ({ visible, mode, resource, onClose }) => {
+  const t = useT()
   const [activeTab, setActiveTab] = useState<'form' | 'yaml'>('form')
   const [formData, setFormData] = useState<LinkSys>(() => createEmpty())
   const [yamlContent, setYamlContent] = useState('')
@@ -32,18 +34,18 @@ const LinkSysEditor: React.FC<Props> = ({ visible, mode, resource, onClose }) =>
       if (key === 'yaml') setYamlContent(toYaml(formData))
       else setFormData(fromYaml(yamlContent))
       setActiveTab(key as 'form' | 'yaml')
-    } catch (e: any) { message.error(`切换失败: ${e.message}`) }
+    } catch (e: any) { message.error(t('msg.tabSwitchFailed', { err: e.message })) }
   }
 
   const createMutation = useMutation({
     mutationFn: (y: string) => resourceApi.create('linksys', formData.metadata.namespace || 'default', y),
-    onSuccess: () => { message.success('创建成功'); queryClient.invalidateQueries({ queryKey: ['linksys'] }); onClose() },
-    onError: (e: any) => message.error(`创建失败: ${e.message}`),
+    onSuccess: () => { message.success(t('msg.createOk')); queryClient.invalidateQueries({ queryKey: ['linksys'] }); onClose() },
+    onError: (e: any) => message.error(t('msg.createFailed', { err: e.message })),
   })
   const updateMutation = useMutation({
     mutationFn: (y: string) => resourceApi.update('linksys', formData.metadata.namespace || 'default', formData.metadata.name, y),
-    onSuccess: () => { message.success('更新成功'); queryClient.invalidateQueries({ queryKey: ['linksys'] }); onClose() },
-    onError: (e: any) => message.error(`更新失败: ${e.message}`),
+    onSuccess: () => { message.success(t('msg.updateOk')); queryClient.invalidateQueries({ queryKey: ['linksys'] }); onClose() },
+    onError: (e: any) => message.error(t('msg.updateFailed', { err: e.message })),
   })
 
   const handleSubmit = () => {
@@ -55,20 +57,27 @@ const LinkSysEditor: React.FC<Props> = ({ visible, mode, resource, onClose }) =>
   const isPending = createMutation.isPending || updateMutation.isPending
   const isRO = mode === 'view'
 
+  const title =
+    mode === 'create'
+      ? t('modal.create', { resource: 'LinkSys' })
+      : mode === 'edit'
+      ? t('modal.edit', { resource: 'LinkSys' })
+      : t('modal.view', { resource: 'LinkSys' })
+
   return (
-    <Modal title={`${mode === 'create' ? '创建' : mode === 'edit' ? '编辑' : '查看'} LinkSys`}
+    <Modal title={title}
       open={visible} onCancel={onClose} width={820}
-      footer={isRO ? [<Button key="close" onClick={onClose}>关闭</Button>] : [
-        <Button key="cancel" onClick={onClose}>取消</Button>,
+      footer={isRO ? [<Button key="close" onClick={onClose}>{t('btn.close')}</Button>] : [
+        <Button key="cancel" onClick={onClose}>{t('btn.cancel')}</Button>,
         <Button key="submit" type="primary" onClick={handleSubmit} loading={isPending}>
-          {mode === 'create' ? '创建' : '保存'}
+          {mode === 'create' ? t('btn.create') : t('btn.save')}
         </Button>,
       ]}
     >
       <Tabs activeKey={activeTab} onChange={handleTabChange} items={[
-        { key: 'form', label: '表单',
+        { key: 'form', label: t('tab.form'),
           children: <LinkSysForm data={formData} onChange={setFormData} readOnly={isRO} isCreate={mode === 'create'} /> },
-        { key: 'yaml', label: 'YAML',
+        { key: 'yaml', label: t('tab.yaml'),
           children: <YamlEditor value={yamlContent} onChange={setYamlContent} readOnly={isRO} height="480px" /> },
       ]} />
     </Modal>

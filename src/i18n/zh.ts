@@ -1,12 +1,14 @@
 const zh = {
   // Navigation
+  'nav.ops': 'OPS',
+  'nav.user': 'USER',
   'nav.dashboard': 'Dashboard',
   'nav.routes': '路由管理',
   'nav.infrastructure': '基础设施',
   'nav.security': '安全配置',
   'nav.plugins': '插件管理',
   'nav.services': '服务管理',
-  'nav.system': '系统配置',
+  'nav.system': 'Gateway',
 
   // Route types
   'route.http': 'HTTPRoute',
@@ -64,6 +66,272 @@ const zh = {
   'msg.operationFailed': '操作失败',
   'msg.loading': '加载中...',
   'msg.noData': '暂无数据',
+
+  // Table columns
+  'col.name': '名称',
+  'col.namespace': '命名空间',
+  'col.actions': '操作',
+  'col.type': '类型',
+  'col.status': '状态',
+  'col.description': '描述',
+  'col.address': '地址',
+  'col.ports': '端口',
+  'col.backends': '后端服务',
+  'col.sniHostnames': 'SNI 主机名',
+  'col.listeners': 'Listeners',
+  'col.plugins': '插件',
+  'col.domains': '域名',
+  'col.challenge': 'Challenge',
+  'col.scope': 'Scope',
+  'col.count': '数量',
+  'col.category': '分类',
+  'col.resourceType': '资源类型',
+  'col.controller': 'Controller',
+  'col.grpcMethods': 'gRPC 方法',
+  'col.mTlsMode': 'mTLS 模式',
+  'col.targetService': '目标 Service',
+  'col.hostname': 'Hostname',
+  'col.gatewayClass': 'GatewayClass',
+  'col.from': 'From（来源）',
+  'col.to': 'To（目标）',
+  'col.realIpHeader': 'Real IP Header',
+  'col.preflightMode': 'Preflight Mode',
+  'col.maxRetries': 'Max Retries',
+  'col.assocService': '关联 Service',
+  'col.endpoints': 'Endpoints',
+  'col.keys': 'Keys',
+  'col.stageDistrib': '阶段分布',
+  'col.totalPlugins': '插件总数',
+  'col.createdAt': '创建时间',
+
+  // Buttons
+  'btn.view': '查看',
+  'btn.edit': '编辑',
+  'btn.delete': '删除',
+  'btn.create': '创建',
+  'btn.save': '保存',
+  'btn.cancel': '取消',
+  'btn.close': '关闭',
+  'btn.refresh': '刷新',
+  'btn.trigger': '触发',
+  'btn.batchDelete': '批量删除',
+  'btn.addLabel': '添加 Label',
+  'btn.addAnnotation': '添加 Annotation',
+  'btn.addGatewayRef': '添加 Gateway 引用',
+  'btn.addBackend': '添加后端服务',
+  'btn.addListener': '添加 Listener',
+  'btn.addPlugin': '添加插件',
+  'btn.addRule': '添加路由规则',
+  'btn.addMatch': '添加匹配规则',
+  'btn.addHeaderMatch': '添加 Header 匹配',
+  'btn.delete2': '删除',
+
+  // Modal titles
+  'modal.create': '创建 {resource}',
+  'modal.edit': '编辑 {resource}',
+  'modal.view': '查看 {resource}',
+
+  // Tabs
+  'tab.form': '表单',
+  'tab.yaml': 'YAML',
+
+  // Messages
+  'msg.createOk': '创建成功',
+  'msg.updateOk': '更新成功',
+  'msg.deleteOk': '删除成功',
+  'msg.batchDeleteOk': '成功删除 {n} 个资源',
+  'msg.tabSwitchFailed': '切换失败: {err}',
+  'msg.yamlEmpty': 'YAML 内容不能为空',
+  'msg.yamlInvalid': 'YAML 格式错误: {err}',
+  'msg.opFailed': '操作失败: {err}',
+  'msg.createFailed': '创建失败: {err}',
+  'msg.updateFailed': '更新失败: {err}',
+  'msg.deleteFailed': '删除失败: {err}',
+  'msg.triggerOk': '手动触发签发成功',
+  'msg.triggerFailed': '触发失败: {err}',
+  'msg.formEmpty': '表单数据为空',
+  'msg.metaRequired': 'YAML 中必须包含 metadata.name 和 metadata.namespace',
+  'msg.noRename': '不允许修改资源的名称或命名空间',
+  'msg.validationFailed': '验证失败: {err}',
+  'msg.submitFailed': '提交失败: {err}',
+
+  // Confirm dialogs
+  'confirm.deleteTitle': '确认删除',
+  'confirm.deleteMsg': '确定要删除 {name} 吗？',
+  'confirm.deleteIrreversible': '此操作不可恢复。',
+  'confirm.batchDeleteTitle': '批量删除',
+  'confirm.batchDeleteMsg': '确定要删除 {n} 个资源吗？',
+  'confirm.okText': '确认删除',
+
+  // Search placeholders
+  'ph.searchNameNs': '搜索名称/命名空间',
+  'ph.searchName': '搜索名称',
+  'ph.searchNameNsService': '搜索名称/命名空间/Service',
+
+  // Pagination
+  'table.totalItems': '共 {n} 条',
+
+  // Status labels
+  'status.healthy': '健康',
+  'status.unhealthy': '异常',
+  'status.ready': '就绪',
+  'status.notReady': '未就绪',
+  'status.running': '运行中',
+  'status.selected': '已选 {n} 项',
+
+  // Notices
+  'notice.serviceReadonly': 'Service 为只读资源，不支持在此创建',
+  'notice.endpointSliceReadonly': 'EndpointSlice 为只读资源',
+
+  // Section titles
+  'section.basicInfo': '基础信息',
+  'section.hostnames': '主机名（Hosts）',
+  'section.parentRefs': 'Gateway 引用（ParentRefs）',
+  'section.backends': '后端服务',
+  'section.serverCert': '服务端证书',
+  'section.tlsConfig': 'TLS 版本 & 密码套件（可选）',
+  'section.edgionExt': 'Edgion 扩展配置（可选）',
+  'section.gatewayClass': 'GatewayClass',
+  'section.listeners': 'Listeners',
+  'section.mtls': 'mTLS 客户端认证（可选）',
+  'section.connType': '连接类型',
+
+  // Form field labels
+  'field.name': '名称',
+  'field.namespace': '命名空间',
+  'field.labels': 'Labels（可选）',
+  'field.annotations': 'Annotations（可选）',
+  'field.gatewayName': 'Gateway 名称',
+  'field.namespaceOpt': '命名空间（可选）',
+  'field.listenerName': 'Listener 名称',
+  'field.portOpt': '端口号（可选）',
+  'field.groupAdv': 'Group（高级，默认 gateway.networking.k8s.io）',
+  'field.kindAdv': 'Kind（高级，默认 Gateway）',
+  'field.port': '端口号',
+  'field.weight': '权重',
+  'field.nsOptDefault': '命名空间（可选，默认同路由）',
+  'field.groupAdvEmpty': 'Group（高级，默认为空）',
+  'field.kindAdvService': 'Kind（高级，默认 Service）',
+  'field.protocol': '协议',
+  'field.tlsMode': 'TLS 模式',
+  'field.certSecretName': '证书 Secret 名称',
+  'field.certNs': '证书 Namespace（跨命名空间）',
+  'field.hosts': '域名（支持通配符）',
+  'field.secretName': '证书 Secret 名称',
+  'field.secretNs': 'Secret Namespace（可选）',
+  'field.authMode': '认证模式',
+  'field.caSecretName': 'CA Secret 名称',
+  'field.caSecretNs': 'CA Secret Namespace',
+  'field.verifyDepth': '证书链验证深度（1-9）',
+  'field.minTlsVersion': '最低 TLS 版本',
+  'field.cipherSuites': '自定义密码套件（可选）',
+  'field.gwClassName': 'GatewayClass 名称',
+  'field.http2': '启用 HTTP/2',
+  'field.httpsRedirect': 'HTTP→HTTPS 跳转',
+  'field.httpsRedirectPort': 'HTTPS 跳转端口',
+  'field.streamPluginsRef': 'StreamPlugins 引用',
+  'field.proxyProtocol': 'Proxy Protocol 版本',
+  'field.maxConnRetries': '最大连接重试次数',
+  'field.matchType': '匹配类型',
+  'field.grpcService': 'gRPC Service',
+  'field.grpcMethod': 'gRPC Method',
+  'field.ruleName': '规则名称（可选）',
+  'field.connType': '类型',
+  'field.addresses': '地址列表（回车添加）',
+  'field.username': '用户名',
+  'field.password': '密码（可选）',
+  'field.dbNumber': 'Database 编号',
+  'field.clusterMode': '集群模式',
+  'field.httpMethod': 'HTTP 方法',
+  'field.timeoutMs': '超时（毫秒）',
+  'field.ipSource': 'IP 来源',
+  'field.allowList': 'IP 白名单（CIDR，回车添加）',
+  'field.denyList': 'IP 黑名单（优先于白名单）',
+  'field.defaultAction': '默认动作',
+  'field.rejectMsg': '拒绝消息（可选）',
+  'field.pluginType': '插件类型',
+  'field.etcdEndpoints': 'Endpoints（回车添加）',
+
+  // Validation messages
+  'valid.nameRequired': '请输入资源名称',
+  'valid.nsRequired': '请选择命名空间',
+  'valid.required': '此字段为必填项',
+
+  // Section titles for Dashboard
+  'section.resourceOverview': '资源总览',
+  'section.sysInfo': '系统信息',
+  'section.quickLinks': '快速入口',
+
+  // Dashboard specific
+  'dash.refreshAll': '刷新全部',
+  'dash.controllerStatus': 'Controller 状态',
+  'dash.readyStatus': '就绪状态',
+  'dash.serverId': 'Server ID',
+  'dash.adminApi': 'Admin API',
+  'dash.grpc': 'gRPC',
+  'dash.createHttpRoute': '创建 HTTPRoute',
+  'dash.manageGateway': '管理 Gateway',
+  'dash.configureTls': '配置 EdgionTls',
+  'dash.managePlugins': '管理插件',
+  'dash.sysConfig': '系统配置',
+
+  // Gateway listener
+  'gw.listenerTitle': 'Listener {n}: {name}',
+  'gw.unnamed': '(未命名)',
+  'gw.terminate': 'Terminate（终止）',
+  'gw.passthrough': 'Passthrough（透传）',
+  'gw.tlsConfig': 'TLS 配置',
+
+  // mTLS modes
+  'tls.modeTerminate': 'Terminate（不验证客户端）',
+  'tls.modeMutual': 'Mutual（强制客户端证书）',
+  'tls.modeOptional': 'OptionalMutual（可选客户端证书）',
+
+  // EdgionPlugins stage
+  'plugins.noPlugins': '暂无插件',
+  'plugins.stagePlugins': '{n} 个插件',
+  'plugins.requestStage': '请求阶段',
+  'plugins.responseFilter': '响应过滤',
+  'plugins.responseBody': '响应体',
+  'plugins.upstreamResponse': '上游响应',
+
+  // GRPCRoute
+  'grpc.ruleCount': '{n} 条规则',
+  'grpc.matchConditions': 'gRPC 匹配条件',
+  'grpc.backendService': '后端服务',
+  'grpc.backend': '后端 {n}',
+  'grpc.rule': '规则 {n}',
+  'grpc.namedRule': '规则: {name}',
+  'grpc.addBackend': '添加后端',
+
+  // StreamRoute annotations
+  'stream.noEnable': '不启用',
+
+  // IP restriction
+  'sp.allow': 'allow（默认放行）',
+  'sp.deny': 'deny（默认拒绝）',
+  'sp.remoteAddr': 'remoteAddr（连接 IP）',
+
+  // LinkSys type labels
+  'linksys.redis': 'Redis 配置',
+  'linksys.elasticsearch': 'Elasticsearch 配置',
+  'linksys.etcd': 'etcd 配置',
+  'linksys.webhook': 'Webhook 配置',
+
+  // StreamAnnotations
+  'field.streamPluginsHelp': '格式: plugin-name 或 namespace/plugin-name',
+  'stream.version1': '版本 1',
+  'stream.version2': '版本 2',
+
+  // ListenerEditor
+  'field.hostnameOpt': 'Hostname（可选）',
+
+  // EdgionTlsForm
+  'field.default': '默认',
+  'ph.cipherSuites': '输入密码套件后回车',
+
+  // EdgionStreamPlugins
+  'sp.ipRestriction': 'IpRestriction（IP 访问控制）',
 }
 
 export default zh

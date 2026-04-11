@@ -43,9 +43,15 @@ export const useLanguage = () => useContext(LanguageContext)
 export const useT = () => {
   const { lang } = useLanguage()
   const t = useCallback(
-    (key: string): string => {
+    (key: string, params?: Record<string, string | number>): string => {
       const dict = translations[lang] as Record<string, string>
-      return dict[key] ?? key
+      let str = dict[key] ?? key
+      if (params) {
+        Object.entries(params).forEach(([k, v]) => {
+          str = str.replace(new RegExp(`\\{${k}\\}`, 'g'), String(v))
+        })
+      }
+      return str
     },
     [lang],
   )

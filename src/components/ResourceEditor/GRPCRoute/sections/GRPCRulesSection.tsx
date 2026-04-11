@@ -9,6 +9,7 @@ import GRPCMethodMatchEditor from './GRPCMethodMatchEditor'
 import type { GRPCRouteRule } from '@/types/gateway-api/grpcroute'
 import type { BackendRef } from '@/types/gateway-api/backend'
 import { PORT_MIN, PORT_MAX, WEIGHT_MIN, WEIGHT_MAX } from '@/constants/gateway-api'
+import { useT } from '@/i18n'
 
 interface GRPCRulesSectionProps {
   value?: GRPCRouteRule[]
@@ -28,6 +29,8 @@ const GRPCRulesSection: React.FC<GRPCRulesSectionProps> = ({
   disabled = false,
   namespace = 'default',
 }) => {
+  const t = useT()
+
   const updateRule = (index: number, rule: GRPCRouteRule) => {
     const next = [...value]
     next[index] = rule
@@ -66,14 +69,14 @@ const GRPCRulesSection: React.FC<GRPCRulesSectionProps> = ({
 
   const items = value.map((rule, ruleIndex) => ({
     key: String(ruleIndex),
-    label: rule.name ? `规则: ${rule.name}` : `规则 ${ruleIndex + 1}`,
+    label: rule.name ? t('grpc.namedRule', { name: rule.name }) : t('grpc.rule', { n: ruleIndex + 1 }),
     extra: !disabled && value.length > 1 && (
       <Button danger size="small" icon={<MinusCircleOutlined />}
-        onClick={(e) => { e.stopPropagation(); removeRule(ruleIndex) }}>删除</Button>
+        onClick={(e) => { e.stopPropagation(); removeRule(ruleIndex) }}>{t('btn.delete')}</Button>
     ),
     children: (
       <Space direction="vertical" style={{ width: '100%' }} size="middle">
-        <Form.Item label="规则名称（可选）" style={{ marginBottom: 0 }}>
+        <Form.Item label={t('field.ruleName')} style={{ marginBottom: 0 }}>
           <Input
             value={rule.name || ''}
             onChange={(e) => updateRule(ruleIndex, { ...rule, name: e.target.value })}
@@ -83,7 +86,7 @@ const GRPCRulesSection: React.FC<GRPCRulesSectionProps> = ({
           />
         </Form.Item>
 
-        <Card title="gRPC 匹配条件" size="small">
+        <Card title={t('grpc.matchConditions')} size="small">
           <GRPCMethodMatchEditor
             value={rule.matches || []}
             onChange={(matches) => updateRule(ruleIndex, { ...rule, matches })}
@@ -91,18 +94,18 @@ const GRPCRulesSection: React.FC<GRPCRulesSectionProps> = ({
           />
         </Card>
 
-        <Card title="后端服务" size="small">
+        <Card title={t('grpc.backendService')} size="small">
           {(rule.backendRefs || []).map((backend, bIdx) => (
             <Card key={bIdx} type="inner" size="small"
-              title={`后端 ${bIdx + 1}`}
+              title={t('grpc.backend', { n: bIdx + 1 })}
               extra={!disabled && (rule.backendRefs || []).length > 1 && (
                 <Button danger size="small" icon={<MinusCircleOutlined />}
-                  onClick={() => removeBackend(ruleIndex, bIdx)}>删除</Button>
+                  onClick={() => removeBackend(ruleIndex, bIdx)}>{t('btn.delete')}</Button>
               )}
               style={{ marginBottom: 8 }}
             >
               <Space direction="vertical" style={{ width: '100%' }}>
-                <Form.Item label="Service 名称" required style={{ marginBottom: 0 }}>
+                <Form.Item label={t('field.name')} required style={{ marginBottom: 0 }}>
                   <Input
                     value={backend.name}
                     onChange={(e) => updateBackend(ruleIndex, bIdx, { ...backend, name: e.target.value })}
@@ -110,7 +113,7 @@ const GRPCRulesSection: React.FC<GRPCRulesSectionProps> = ({
                     disabled={disabled}
                   />
                 </Form.Item>
-                <Form.Item label="端口" style={{ marginBottom: 0 }}>
+                <Form.Item label={t('field.port')} style={{ marginBottom: 0 }}>
                   <InputNumber
                     value={backend.port}
                     onChange={(v) => updateBackend(ruleIndex, bIdx, { ...backend, port: v || undefined })}
@@ -120,7 +123,7 @@ const GRPCRulesSection: React.FC<GRPCRulesSectionProps> = ({
                     placeholder="50051"
                   />
                 </Form.Item>
-                <Form.Item label="权重" style={{ marginBottom: 0 }}>
+                <Form.Item label={t('field.weight')} style={{ marginBottom: 0 }}>
                   <InputNumber
                     value={backend.weight ?? 1}
                     onChange={(v) => updateBackend(ruleIndex, bIdx, { ...backend, weight: v ?? 1 })}
@@ -134,7 +137,7 @@ const GRPCRulesSection: React.FC<GRPCRulesSectionProps> = ({
           ))}
           {!disabled && (
             <Button type="dashed" block icon={<PlusOutlined />} onClick={() => addBackend(ruleIndex)}>
-              添加后端
+              {t('grpc.addBackend')}
             </Button>
           )}
         </Card>
@@ -147,7 +150,7 @@ const GRPCRulesSection: React.FC<GRPCRulesSectionProps> = ({
       <Collapse items={items} defaultActiveKey={['0']} />
       {!disabled && (
         <Button type="dashed" onClick={addRule} block icon={<PlusOutlined />} style={{ marginTop: 12 }}>
-          添加路由规则
+          {t('btn.addRule')}
         </Button>
       )}
     </div>

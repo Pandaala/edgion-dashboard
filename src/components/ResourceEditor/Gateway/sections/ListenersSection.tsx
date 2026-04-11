@@ -7,6 +7,7 @@ import { Button } from 'antd'
 import { PlusOutlined } from '@ant-design/icons'
 import ListenerEditor from './ListenerEditor'
 import type { GatewayListener } from '@/types/gateway-api/gateway'
+import { useT } from '@/i18n'
 
 interface ListenersSectionProps {
   value: GatewayListener[]
@@ -23,6 +24,8 @@ const defaultListener = (): GatewayListener => ({
 const ListenersSection: React.FC<ListenersSectionProps> = ({
   value = [], onChange, disabled = false,
 }) => {
+  const t = useT()
+
   const updateListener = (index: number, listener: GatewayListener) => {
     const next = [...value]
     next[index] = listener
@@ -47,7 +50,7 @@ const ListenersSection: React.FC<ListenersSectionProps> = ({
       ))}
       {!disabled && (
         <Button type="dashed" block icon={<PlusOutlined />} onClick={addListener}>
-          添加 Listener
+          {t('btn.addListener')}
         </Button>
       )}
     </div>

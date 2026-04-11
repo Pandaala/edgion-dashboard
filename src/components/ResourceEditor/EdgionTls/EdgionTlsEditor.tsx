@@ -10,6 +10,7 @@ import YamlEditor from '@/components/YamlEditor'
 import EdgionTlsForm from './EdgionTlsForm'
 import type { EdgionTls } from '@/types/edgion-tls'
 import { createEmptyEdgionTls, normalizeEdgionTls, edgionTlsToYaml, yamlToEdgionTls } from '@/utils/edgiontls'
+import { useT } from '@/i18n'
 
 interface EdgionTlsEditorProps {
   visible: boolean
@@ -19,6 +20,7 @@ interface EdgionTlsEditorProps {
 }
 
 const EdgionTlsEditor: React.FC<EdgionTlsEditorProps> = ({ visible, mode, resource, onClose }) => {
+  const t = useT()
   const [activeTab, setActiveTab] = useState<'form' | 'yaml'>('form')
   const [formData, setFormData] = useState<EdgionTls>(() => createEmptyEdgionTls())
   const [yamlContent, setYamlContent] = useState('')
@@ -43,21 +45,21 @@ const EdgionTlsEditor: React.FC<EdgionTlsEditorProps> = ({ visible, mode, resour
       if (key === 'yaml') setYamlContent(edgionTlsToYaml(formData))
       else setFormData(yamlToEdgionTls(yamlContent))
       setActiveTab(key as 'form' | 'yaml')
-    } catch (e: any) { message.error(`切换失败: ${e.message}`) }
+    } catch (e: any) { message.error(t('msg.tabSwitchFailed', { err: e.message })) }
   }
 
   const createMutation = useMutation({
     mutationFn: (yamlStr: string) =>
       resourceApi.create('edgiontls', formData.metadata.namespace || 'default', yamlStr),
-    onSuccess: () => { message.success('创建成功'); queryClient.invalidateQueries({ queryKey: ['edgiontls'] }); onClose() },
-    onError: (e: any) => message.error(`创建失败: ${e.message}`),
+    onSuccess: () => { message.success(t('msg.createOk')); queryClient.invalidateQueries({ queryKey: ['edgiontls'] }); onClose() },
+    onError: (e: any) => message.error(t('msg.createFailed', { err: e.message })),
   })
 
   const updateMutation = useMutation({
     mutationFn: (yamlStr: string) =>
       resourceApi.update('edgiontls', formData.metadata.namespace || 'default', formData.metadata.name, yamlStr),
-    onSuccess: () => { message.success('更新成功'); queryClient.invalidateQueries({ queryKey: ['edgiontls'] }); onClose() },
-    onError: (e: any) => message.error(`更新失败: ${e.message}`),
+    onSuccess: () => { message.success(t('msg.updateOk')); queryClient.invalidateQueries({ queryKey: ['edgiontls'] }); onClose() },
+    onError: (e: any) => message.error(t('msg.updateFailed', { err: e.message })),
   })
 
   const handleSubmit = () => {
@@ -69,25 +71,32 @@ const EdgionTlsEditor: React.FC<EdgionTlsEditorProps> = ({ visible, mode, resour
   const isPending = createMutation.isPending || updateMutation.isPending
   const isReadOnly = mode === 'view'
 
+  const title =
+    mode === 'create'
+      ? t('modal.create', { resource: 'EdgionTls' })
+      : mode === 'edit'
+      ? t('modal.edit', { resource: 'EdgionTls' })
+      : t('modal.view', { resource: 'EdgionTls' })
+
   return (
     <Modal
-      title={`${mode === 'create' ? '创建' : mode === 'edit' ? '编辑' : '查看'} EdgionTls`}
+      title={title}
       open={visible} onCancel={onClose} width={860}
       footer={
         isReadOnly
-          ? [<Button key="close" onClick={onClose}>关闭</Button>]
+          ? [<Button key="close" onClick={onClose}>{t('btn.close')}</Button>]
           : [
-              <Button key="cancel" onClick={onClose}>取消</Button>,
+              <Button key="cancel" onClick={onClose}>{t('btn.cancel')}</Button>,
               <Button key="submit" type="primary" onClick={handleSubmit} loading={isPending}>
-                {mode === 'create' ? '创建' : '保存'}
+                {mode === 'create' ? t('btn.create') : t('btn.save')}
               </Button>,
             ]
       }
     >
       <Tabs activeKey={activeTab} onChange={handleTabChange} items={[
-        { key: 'form', label: '表单',
+        { key: 'form', label: t('tab.form'),
           children: <EdgionTlsForm data={formData} onChange={setFormData} readOnly={isReadOnly} isCreate={mode === 'create'} /> },
-        { key: 'yaml', label: 'YAML',
+        { key: 'yaml', label: t('tab.yaml'),
           children: <YamlEditor value={yamlContent} onChange={setYamlContent} readOnly={isReadOnly} height="500px" /> },
       ]} />
     </Modal>

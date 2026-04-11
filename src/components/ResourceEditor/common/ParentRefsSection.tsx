@@ -8,6 +8,7 @@ import { Card, Form, Input, InputNumber, Button, Space } from 'antd';
 import { PlusOutlined, MinusCircleOutlined } from '@ant-design/icons';
 import { DEFAULT_VALUES, PORT_MIN, PORT_MAX } from '@/constants/gateway-api';
 import type { ParentReference } from '@/types/gateway-api';
+import { useT } from '@/i18n';
 
 interface ParentRefsSectionProps {
   value?: ParentReference[];
@@ -22,6 +23,8 @@ const ParentRefsSection: React.FC<ParentRefsSectionProps> = ({
   disabled = false,
   namespace = DEFAULT_VALUES.defaultNamespace,
 }) => {
+  const t = useT();
+
   const handleParentChange = (index: number, updatedParent: ParentReference) => {
     const newParents = [...value];
     newParents[index] = updatedParent;
@@ -48,7 +51,7 @@ const ParentRefsSection: React.FC<ParentRefsSectionProps> = ({
   };
 
   return (
-    <Card title="Gateway 引用 / ParentRefs" size="small">
+    <Card title={t('section.parentRefs')} size="small">
       {value.map((parent, index) => (
         <Card
           key={index}
@@ -63,7 +66,7 @@ const ParentRefsSection: React.FC<ParentRefsSectionProps> = ({
                 icon={<MinusCircleOutlined />}
                 onClick={() => handleRemoveParent(index)}
               >
-                删除
+                {t('btn.delete')}
               </Button>
             )
           }
@@ -72,7 +75,7 @@ const ParentRefsSection: React.FC<ParentRefsSectionProps> = ({
           <Space direction="vertical" style={{ width: '100%' }} size="middle">
             {/* Gateway 名称 */}
             <Form.Item
-              label="Gateway 名称 / Name"
+              label={t('field.gatewayName')}
               required
               style={{ marginBottom: 0 }}
             >
@@ -88,7 +91,7 @@ const ParentRefsSection: React.FC<ParentRefsSectionProps> = ({
 
             {/* Namespace */}
             <Form.Item
-              label="命名空间 / Namespace（可选，默认同 HTTPRoute）"
+              label={t('field.nsOptDefault')}
               style={{ marginBottom: 0 }}
             >
               <Input
@@ -103,7 +106,7 @@ const ParentRefsSection: React.FC<ParentRefsSectionProps> = ({
 
             {/* SectionName（Listener 名称） */}
             <Form.Item
-              label="Listener 名称 / SectionName（可选）"
+              label={t('field.listenerName')}
               style={{ marginBottom: 0 }}
             >
               <Input
@@ -118,7 +121,7 @@ const ParentRefsSection: React.FC<ParentRefsSectionProps> = ({
 
             {/* Port */}
             <Form.Item
-              label="端口号 / Port（可选）"
+              label={t('field.portOpt')}
               style={{ marginBottom: 0 }}
             >
               <InputNumber
@@ -136,7 +139,7 @@ const ParentRefsSection: React.FC<ParentRefsSectionProps> = ({
 
             {/* Group（高级） */}
             <Form.Item
-              label="Group（高级，默认 gateway.networking.k8s.io）"
+              label={t('field.groupAdv')}
               style={{ marginBottom: 0 }}
             >
               <Input
@@ -151,7 +154,7 @@ const ParentRefsSection: React.FC<ParentRefsSectionProps> = ({
 
             {/* Kind（高级） */}
             <Form.Item
-              label="Kind（高级，默认 Gateway）"
+              label={t('field.kindAdv')}
               style={{ marginBottom: 0 }}
             >
               <Input
@@ -174,7 +177,7 @@ const ParentRefsSection: React.FC<ParentRefsSectionProps> = ({
           block
           icon={<PlusOutlined />}
         >
-          添加 Gateway 引用
+          {t('btn.addGatewayRef')}
         </Button>
       )}
     </Card>
@@ -182,4 +185,3 @@ const ParentRefsSection: React.FC<ParentRefsSectionProps> = ({
 };
 
 export default ParentRefsSection;
-

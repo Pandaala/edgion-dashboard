@@ -6,6 +6,7 @@ import YamlEditor from '@/components/YamlEditor'
 import EdgionStreamPluginsForm from './EdgionStreamPluginsForm'
 import type { EdgionStreamPlugins } from '@/types/edgion-stream-plugins'
 import { createEmpty, normalize, toYaml, fromYaml } from '@/utils/edgionstreamplugins'
+import { useT } from '@/i18n'
 
 interface Props {
   visible: boolean
@@ -15,6 +16,7 @@ interface Props {
 }
 
 const EdgionStreamPluginsEditor: React.FC<Props> = ({ visible, mode, resource, onClose }) => {
+  const t = useT()
   const [activeTab, setActiveTab] = useState<'form' | 'yaml'>('form')
   const [formData, setFormData] = useState<EdgionStreamPlugins>(() => createEmpty())
   const [yamlContent, setYamlContent] = useState('')
@@ -32,18 +34,18 @@ const EdgionStreamPluginsEditor: React.FC<Props> = ({ visible, mode, resource, o
       if (key === 'yaml') setYamlContent(toYaml(formData))
       else setFormData(fromYaml(yamlContent))
       setActiveTab(key as 'form' | 'yaml')
-    } catch (e: any) { message.error(`切换失败: ${e.message}`) }
+    } catch (e: any) { message.error(t('msg.tabSwitchFailed', { err: e.message })) }
   }
 
   const createMutation = useMutation({
     mutationFn: (y: string) => resourceApi.create('edgionstreamplugins', formData.metadata.namespace || 'default', y),
-    onSuccess: () => { message.success('创建成功'); queryClient.invalidateQueries({ queryKey: ['edgionstreamplugins'] }); onClose() },
-    onError: (e: any) => message.error(`创建失败: ${e.message}`),
+    onSuccess: () => { message.success(t('msg.createOk')); queryClient.invalidateQueries({ queryKey: ['edgionstreamplugins'] }); onClose() },
+    onError: (e: any) => message.error(t('msg.createFailed', { err: e.message })),
   })
   const updateMutation = useMutation({
     mutationFn: (y: string) => resourceApi.update('edgionstreamplugins', formData.metadata.namespace || 'default', formData.metadata.name, y),
-    onSuccess: () => { message.success('更新成功'); queryClient.invalidateQueries({ queryKey: ['edgionstreamplugins'] }); onClose() },
-    onError: (e: any) => message.error(`更新失败: ${e.message}`),
+    onSuccess: () => { message.success(t('msg.updateOk')); queryClient.invalidateQueries({ queryKey: ['edgionstreamplugins'] }); onClose() },
+    onError: (e: any) => message.error(t('msg.updateFailed', { err: e.message })),
   })
 
   const handleSubmit = () => {
@@ -55,20 +57,27 @@ const EdgionStreamPluginsEditor: React.FC<Props> = ({ visible, mode, resource, o
   const isPending = createMutation.isPending || updateMutation.isPending
   const isRO = mode === 'view'
 
+  const title =
+    mode === 'create'
+      ? t('modal.create', { resource: 'EdgionStreamPlugins' })
+      : mode === 'edit'
+      ? t('modal.edit', { resource: 'EdgionStreamPlugins' })
+      : t('modal.view', { resource: 'EdgionStreamPlugins' })
+
   return (
-    <Modal title={`${mode === 'create' ? '创建' : mode === 'edit' ? '编辑' : '查看'} EdgionStreamPlugins`}
+    <Modal title={title}
       open={visible} onCancel={onClose} width={820}
-      footer={isRO ? [<Button key="close" onClick={onClose}>关闭</Button>] : [
-        <Button key="cancel" onClick={onClose}>取消</Button>,
+      footer={isRO ? [<Button key="close" onClick={onClose}>{t('btn.close')}</Button>] : [
+        <Button key="cancel" onClick={onClose}>{t('btn.cancel')}</Button>,
         <Button key="submit" type="primary" onClick={handleSubmit} loading={isPending}>
-          {mode === 'create' ? '创建' : '保存'}
+          {mode === 'create' ? t('btn.create') : t('btn.save')}
         </Button>,
       ]}
     >
       <Tabs activeKey={activeTab} onChange={handleTabChange} items={[
-        { key: 'form', label: '表单',
+        { key: 'form', label: t('tab.form'),
           children: <EdgionStreamPluginsForm data={formData} onChange={setFormData} readOnly={isRO} isCreate={mode === 'create'} /> },
-        { key: 'yaml', label: 'YAML',
+        { key: 'yaml', label: t('tab.yaml'),
           children: <YamlEditor value={yamlContent} onChange={setYamlContent} readOnly={isRO} height="480px" /> },
       ]} />
     </Modal>

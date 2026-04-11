@@ -7,6 +7,7 @@ import type { K8sResource } from '@/api/types'
 import SimpleResourceEditor from '@/components/ResourceEditor/common/SimpleResourceEditor'
 import { DEFAULT_YAML } from '@/utils/edgionacme'
 import { apiClient } from '@/api/client'
+import { useT } from '@/i18n'
 
 const { Search } = Input
 
@@ -16,6 +17,7 @@ const phaseColorMap: Record<string, string> = {
 }
 
 const EdgionAcmeList = () => {
+  const t = useT()
   const [searchText, setSearchText] = useState('')
   const [editorVisible, setEditorVisible] = useState(false)
   const [editorMode, setEditorMode] = useState<'create' | 'edit' | 'view'>('create')
@@ -31,7 +33,7 @@ const EdgionAcmeList = () => {
   const deleteMutation = useMutation({
     mutationFn: ({ namespace, name }: { namespace: string; name: string }) =>
       resourceApi.delete('edgionacme', namespace, name),
-    onSuccess: () => { message.success('删除成功'); queryClient.invalidateQueries({ queryKey: ['edgionacme'] }) },
+    onSuccess: () => { message.success(t('msg.deleteOk')); queryClient.invalidateQueries({ queryKey: ['edgionacme'] }) },
   })
 
   const items = data?.data || []
@@ -47,9 +49,9 @@ const EdgionAcmeList = () => {
   const handleTrigger = async (r: K8sResource) => {
     try {
       await apiClient.post(`/services/acme/${r.metadata.namespace}/${r.metadata.name}/trigger`)
-      message.success('手动触发签发成功')
+      message.success(t('msg.triggerOk'))
       refetch()
-    } catch (e: any) { message.error(`触发失败: ${e.message}`) }
+    } catch (e: any) { message.error(t('msg.triggerFailed', { err: e.message })) }
   }
 
   const handleSubmit = async (yamlContent: string) => {
@@ -58,21 +60,21 @@ const EdgionAcmeList = () => {
       const ns = selectedResource?.metadata.namespace || 'default'
       if (editorMode === 'create') {
         await resourceApi.create('edgionacme', ns, yamlContent)
-        message.success('创建成功')
+        message.success(t('msg.createOk'))
       } else {
         await resourceApi.update('edgionacme', ns, selectedResource!.metadata.name, yamlContent)
-        message.success('更新成功')
+        message.success(t('msg.updateOk'))
       }
       queryClient.invalidateQueries({ queryKey: ['edgionacme'] })
       setEditorVisible(false)
-    } catch (e: any) { message.error(`操作失败: ${e.message}`) }
+    } catch (e: any) { message.error(t('msg.opFailed', { err: e.message })) }
     finally { setSubmitLoading(false) }
   }
 
   const columns = [
-    { title: '名称', dataIndex: ['metadata', 'name'], key: 'name' },
-    { title: '命名空间', dataIndex: ['metadata', 'namespace'], key: 'namespace' },
-    { title: '域名', key: 'domains',
+    { title: t('col.name'), dataIndex: ['metadata', 'name'], key: 'name' },
+    { title: t('col.namespace'), dataIndex: ['metadata', 'namespace'], key: 'namespace' },
+    { title: t('col.domains'), key: 'domains',
       render: (_: any, r: K8sResource) => (
         <Space wrap>
           {(r.spec?.domains || []).slice(0, 2).map((d: string) => <Tag key={d}>{d}</Tag>)}
@@ -80,12 +82,12 @@ const EdgionAcmeList = () => {
         </Space>
       ),
     },
-    { title: 'Challenge', key: 'challenge',
+    { title: t('col.challenge'), key: 'challenge',
       render: (_: any, r: K8sResource) => (
         <Tag color="purple">{r.spec?.challenge?.type || '-'}</Tag>
       ),
     },
-    { title: '状态', key: 'phase',
+    { title: t('col.status'), key: 'phase',
       render: (_: any, r: K8sResource) => {
         const phase = r.status?.phase
         if (!phase) return '-'
@@ -93,19 +95,20 @@ const EdgionAcmeList = () => {
       },
     },
     {
-      title: '操作', key: 'actions', width: 200,
+      title: t('col.actions'), key: 'actions', width: 200,
       render: (_: any, record: K8sResource) => (
         <Space>
-          <Button size="small" icon={<EyeOutlined />} onClick={() => openEditor('view', record)}>查看</Button>
-          <Button size="small" icon={<EditOutlined />} onClick={() => openEditor('edit', record)}>编辑</Button>
-          <Button size="small" icon={<ThunderboltOutlined />} onClick={() => handleTrigger(record)}>触发</Button>
+          <Button size="small" icon={<EyeOutlined />} onClick={() => openEditor('view', record)}>{t('btn.view')}</Button>
+          <Button size="small" icon={<EditOutlined />} onClick={() => openEditor('edit', record)}>{t('btn.edit')}</Button>
+          <Button size="small" icon={<ThunderboltOutlined />} onClick={() => handleTrigger(record)}>{t('btn.trigger')}</Button>
           <Button size="small" danger icon={<DeleteOutlined />}
             onClick={() => Modal.confirm({
-              title: '确认删除', content: `确定要删除 ${record.metadata.name} 吗？`,
-              okType: 'danger', onOk: () => deleteMutation.mutate({
+              title: t('confirm.deleteTitle'), content: t('confirm.deleteMsg', { name: record.metadata.name }),
+              okText: t('confirm.okText'), okType: 'danger', cancelText: t('btn.cancel'),
+              onOk: () => deleteMutation.mutate({
                 namespace: record.metadata.namespace!, name: record.metadata.name,
               }),
-            })}>删除</Button>
+            })}>{t('btn.delete')}</Button>
         </Space>
       ),
     },
@@ -114,16 +117,16 @@ const EdgionAcmeList = () => {
   return (
     <div>
       <div style={{ marginBottom: 16, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-        <Button type="primary" icon={<PlusOutlined />} onClick={() => openEditor('create')}>创建 EdgionAcme</Button>
+        <Button type="primary" icon={<PlusOutlined />} onClick={() => openEditor('create')}>{`${t('btn.create')} EdgionAcme`}</Button>
         <Space>
-          <Search placeholder="搜索名称/命名空间" value={searchText} onChange={(e) => setSearchText(e.target.value)}
+          <Search placeholder={t('ph.searchNameNs')} value={searchText} onChange={(e) => setSearchText(e.target.value)}
             style={{ width: 240 }} allowClear />
-          <Button icon={<ReloadOutlined />} onClick={() => refetch()}>刷新</Button>
+          <Button icon={<ReloadOutlined />} onClick={() => refetch()}>{t('btn.refresh')}</Button>
         </Space>
       </div>
       <Table rowKey={(r) => `${r.metadata.namespace}/${r.metadata.name}`}
         columns={columns} dataSource={filtered} loading={isLoading}
-        pagination={{ pageSize: 20, showTotal: (t) => `共 ${t} 条` }} size="middle"
+        pagination={{ pageSize: 20, showTotal: (total) => t('table.totalItems', { n: total }) }} size="middle"
       />
       <SimpleResourceEditor visible={editorVisible} mode={editorMode} resource={selectedResource}
         title="EdgionAcme" defaultYaml={DEFAULT_YAML} onClose={() => setEditorVisible(false)}

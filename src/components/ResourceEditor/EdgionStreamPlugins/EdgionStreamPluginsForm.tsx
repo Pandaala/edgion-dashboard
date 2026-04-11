@@ -7,6 +7,7 @@ import { Form, Input, Select, Button, Card, Space } from 'antd'
 import { PlusOutlined, MinusCircleOutlined } from '@ant-design/icons'
 import MetadataSection from '../common/MetadataSection'
 import type { EdgionStreamPlugins, StreamPlugin } from '@/types/edgion-stream-plugins'
+import { useT } from '@/i18n'
 
 interface EdgionStreamPluginsFormProps {
   data: EdgionStreamPlugins
@@ -23,6 +24,7 @@ const defaultPlugin = (): StreamPlugin => ({
 const EdgionStreamPluginsForm: React.FC<EdgionStreamPluginsFormProps> = ({
   data, onChange, readOnly = false, isCreate = true,
 }) => {
+  const t = useT()
   const plugins = data.spec?.plugins || []
 
   const updatePlugin = (index: number, plugin: StreamPlugin) => {
@@ -55,36 +57,36 @@ const EdgionStreamPluginsForm: React.FC<EdgionStreamPluginsFormProps> = ({
         {plugins.map((plugin, index) => (
           <Card
             key={index}
-            title={`插件 ${index + 1}: ${plugin.type}`}
+            title={`${t('col.plugins')} ${index + 1}: ${plugin.type}`}
             size="small"
             extra={!readOnly && plugins.length > 1 && (
-              <Button danger size="small" icon={<MinusCircleOutlined />} onClick={() => removePlugin(index)}>删除</Button>
+              <Button danger size="small" icon={<MinusCircleOutlined />} onClick={() => removePlugin(index)}>{t('btn.delete')}</Button>
             )}
           >
-            <Form.Item label="插件类型" style={{ marginBottom: 8 }}>
+            <Form.Item label={t('field.pluginType')} style={{ marginBottom: 8 }}>
               <Select
                 value={plugin.type}
                 onChange={(v) => updatePlugin(index, { ...plugin, type: v })}
                 disabled={readOnly}
                 style={{ width: 200 }}
               >
-                <Select.Option value="IpRestriction">IpRestriction（IP 访问控制）</Select.Option>
+                <Select.Option value="IpRestriction">{t('sp.ipRestriction')}</Select.Option>
               </Select>
             </Form.Item>
 
             {plugin.type === 'IpRestriction' && (
               <>
-                <Form.Item label="IP 来源" style={{ marginBottom: 8 }}>
+                <Form.Item label={t('field.ipSource')} style={{ marginBottom: 8 }}>
                   <Select
                     value={(plugin.config as any)?.ipSource || 'remoteAddr'}
                     onChange={(v) => updateConfig(index, 'ipSource', v)}
                     disabled={readOnly}
                     style={{ width: 200 }}
                   >
-                    <Select.Option value="remoteAddr">remoteAddr（连接 IP）</Select.Option>
+                    <Select.Option value="remoteAddr">{t('sp.remoteAddr')}</Select.Option>
                   </Select>
                 </Form.Item>
-                <Form.Item label="IP 白名单（CIDR，回车添加）" style={{ marginBottom: 8 }}>
+                <Form.Item label={t('field.allowList')} style={{ marginBottom: 8 }}>
                   <Select
                     mode="tags"
                     value={(plugin.config as any)?.allow || []}
@@ -94,7 +96,7 @@ const EdgionStreamPluginsForm: React.FC<EdgionStreamPluginsFormProps> = ({
                     style={{ width: '100%' }}
                   />
                 </Form.Item>
-                <Form.Item label="IP 黑名单（优先于白名单）" style={{ marginBottom: 8 }}>
+                <Form.Item label={t('field.denyList')} style={{ marginBottom: 8 }}>
                   <Select
                     mode="tags"
                     value={(plugin.config as any)?.deny || []}
@@ -104,18 +106,18 @@ const EdgionStreamPluginsForm: React.FC<EdgionStreamPluginsFormProps> = ({
                     style={{ width: '100%' }}
                   />
                 </Form.Item>
-                <Form.Item label="默认动作" style={{ marginBottom: 8 }}>
+                <Form.Item label={t('field.defaultAction')} style={{ marginBottom: 8 }}>
                   <Select
                     value={(plugin.config as any)?.defaultAction || 'allow'}
                     onChange={(v) => updateConfig(index, 'defaultAction', v)}
                     disabled={readOnly}
                     style={{ width: 160 }}
                   >
-                    <Select.Option value="allow">allow（默认放行）</Select.Option>
-                    <Select.Option value="deny">deny（默认拒绝）</Select.Option>
+                    <Select.Option value="allow">{t('sp.allow')}</Select.Option>
+                    <Select.Option value="deny">{t('sp.deny')}</Select.Option>
                   </Select>
                 </Form.Item>
-                <Form.Item label="拒绝消息（可选）" style={{ marginBottom: 0 }}>
+                <Form.Item label={t('field.rejectMsg')} style={{ marginBottom: 0 }}>
                   <Input
                     value={(plugin.config as any)?.message || ''}
                     onChange={(e) => updateConfig(index, 'message', e.target.value)}
@@ -130,7 +132,7 @@ const EdgionStreamPluginsForm: React.FC<EdgionStreamPluginsFormProps> = ({
 
         {!readOnly && (
           <Button type="dashed" block icon={<PlusOutlined />} onClick={addPlugin}>
-            添加插件
+            {t('btn.addPlugin')}
           </Button>
         )}
       </Space>

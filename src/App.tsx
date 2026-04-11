@@ -1,6 +1,7 @@
 import { Routes, Route } from 'react-router-dom'
 import MainLayout from './components/Layout/MainLayout'
 import Dashboard from './pages/Dashboard'
+import UserDashboard from './pages/Dashboard/UserDashboard'
 // Routes
 import HTTPRouteList from './pages/Routes/HTTPRouteList'
 import GRPCRouteList from './pages/Routes/GRPCRouteList'
@@ -31,6 +32,7 @@ function App() {
     <Routes>
       <Route path="/" element={<MainLayout />}>
         <Route index element={<Dashboard />} />
+        <Route path="user" element={<UserDashboard />} />
         <Route path="routes">
           <Route path="http" element={<HTTPRouteList />} />
           <Route path="grpc" element={<GRPCRouteList />} />

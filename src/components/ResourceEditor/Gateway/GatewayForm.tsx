@@ -7,6 +7,7 @@ import { Form, Input, Card, Space } from 'antd'
 import MetadataSection from '../common/MetadataSection'
 import ListenersSection from './sections/ListenersSection'
 import type { Gateway } from '@/types/gateway-api/gateway'
+import { useT } from '@/i18n'
 
 interface GatewayFormProps {
   data: Gateway
@@ -23,6 +24,8 @@ const GATEWAY_ANNOTATIONS = [
 ]
 
 const GatewayForm: React.FC<GatewayFormProps> = ({ data, onChange, readOnly = false, isCreate = true }) => {
+  const t = useT()
+
   const updateSpec = (partial: Partial<typeof data.spec>) =>
     onChange({ ...data, spec: { ...data.spec, ...partial } })
 
@@ -44,8 +47,8 @@ const GatewayForm: React.FC<GatewayFormProps> = ({ data, onChange, readOnly = fa
           isCreate={isCreate}
         />
 
-        <Card title="GatewayClass" size="small">
-          <Form.Item label="GatewayClass 名称" required style={{ marginBottom: 0 }}>
+        <Card title={t('section.gatewayClass')} size="small">
+          <Form.Item label={t('field.gwClassName')} required style={{ marginBottom: 0 }}>
             <Input
               value={data.spec?.gatewayClassName || ''}
               onChange={(e) => updateSpec({ gatewayClassName: e.target.value })}
@@ -56,7 +59,7 @@ const GatewayForm: React.FC<GatewayFormProps> = ({ data, onChange, readOnly = fa
           </Form.Item>
         </Card>
 
-        <Card title="Listeners" size="small">
+        <Card title={t('section.listeners')} size="small">
           <ListenersSection
             value={data.spec?.listeners || []}
             onChange={(listeners) => updateSpec({ listeners })}
@@ -64,8 +67,8 @@ const GatewayForm: React.FC<GatewayFormProps> = ({ data, onChange, readOnly = fa
           />
         </Card>
 
-        <Card title="Edgion 扩展配置（可选）" size="small">
-          <Form.Item label="HTTP→HTTPS 跳转" style={{ marginBottom: 8 }}>
+        <Card title={t('section.edgionExt')} size="small">
+          <Form.Item label={t('field.httpsRedirect')} style={{ marginBottom: 8 }}>
             <Input
               value={annotations['edgion.io/http-to-https-redirect'] || ''}
               onChange={(e) => updateAnnotation('edgion.io/http-to-https-redirect', e.target.value)}
@@ -74,7 +77,7 @@ const GatewayForm: React.FC<GatewayFormProps> = ({ data, onChange, readOnly = fa
               style={{ width: 160 }}
             />
           </Form.Item>
-          <Form.Item label="HTTPS 跳转端口" style={{ marginBottom: 8 }}>
+          <Form.Item label={t('field.httpsRedirectPort')} style={{ marginBottom: 8 }}>
             <Input
               value={annotations['edgion.io/https-redirect-port'] || ''}
               onChange={(e) => updateAnnotation('edgion.io/https-redirect-port', e.target.value)}
@@ -83,7 +86,7 @@ const GatewayForm: React.FC<GatewayFormProps> = ({ data, onChange, readOnly = fa
               style={{ width: 160 }}
             />
           </Form.Item>
-          <Form.Item label="启用 HTTP/2" style={{ marginBottom: 8 }}>
+          <Form.Item label={t('field.http2')} style={{ marginBottom: 8 }}>
             <Input
               value={annotations['edgion.io/enable-http2'] || ''}
               onChange={(e) => updateAnnotation('edgion.io/enable-http2', e.target.value)}
@@ -92,7 +95,7 @@ const GatewayForm: React.FC<GatewayFormProps> = ({ data, onChange, readOnly = fa
               style={{ width: 160 }}
             />
           </Form.Item>
-          <Form.Item label="Gateway 级 StreamPlugins" style={{ marginBottom: 0 }}>
+          <Form.Item label={t('field.streamPluginsRef')} style={{ marginBottom: 0 }}>
             <Input
               value={annotations['edgion.io/edgion-stream-plugins'] || ''}
               onChange={(e) => updateAnnotation('edgion.io/edgion-stream-plugins', e.target.value)}

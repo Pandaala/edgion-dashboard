@@ -1,6 +1,6 @@
 ---
 name: dashboard-architecture
-description: Edgion Dashboard 项目架构概览——目录结构、数据流、技术栈、路由、状态管理
+description: Edgion Controller 项目架构概览——目录结构、数据流、技术栈、路由、状态管理
 ---
 
 # 项目架构

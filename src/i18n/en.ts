@@ -1,12 +1,14 @@
 const en = {
   // Navigation
+  'nav.ops': 'OPS',
+  'nav.user': 'USER',
   'nav.dashboard': 'Dashboard',
-  'nav.routes': 'Route Management',
+  'nav.routes': 'Route',
   'nav.infrastructure': 'Infrastructure',
-  'nav.security': 'Certificate Management',
-  'nav.plugins': 'Plugin Management',
-  'nav.services': 'Service Management',
-  'nav.system': 'System Config',
+  'nav.security': 'Certificate',
+  'nav.plugins': 'Plugin',
+  'nav.services': 'Service',
+  'nav.system': 'Gateway',
 
   // Route types
   'route.http': 'HTTPRoute',
@@ -64,6 +66,272 @@ const en = {
   'msg.operationFailed': 'Operation failed',
   'msg.loading': 'Loading...',
   'msg.noData': 'No data',
+
+  // Table columns
+  'col.name': 'Name',
+  'col.namespace': 'Namespace',
+  'col.actions': 'Actions',
+  'col.type': 'Type',
+  'col.status': 'Status',
+  'col.description': 'Description',
+  'col.address': 'Address',
+  'col.ports': 'Ports',
+  'col.backends': 'Backends',
+  'col.sniHostnames': 'SNI Hostnames',
+  'col.listeners': 'Listeners',
+  'col.plugins': 'Plugins',
+  'col.domains': 'Domains',
+  'col.challenge': 'Challenge',
+  'col.scope': 'Scope',
+  'col.count': 'Count',
+  'col.category': 'Category',
+  'col.resourceType': 'Resource Type',
+  'col.controller': 'Controller',
+  'col.grpcMethods': 'gRPC Methods',
+  'col.mTlsMode': 'mTLS Mode',
+  'col.targetService': 'Target Service',
+  'col.hostname': 'Hostname',
+  'col.gatewayClass': 'GatewayClass',
+  'col.from': 'From',
+  'col.to': 'To',
+  'col.realIpHeader': 'Real IP Header',
+  'col.preflightMode': 'Preflight Mode',
+  'col.maxRetries': 'Max Retries',
+  'col.assocService': 'Associated Service',
+  'col.endpoints': 'Endpoints',
+  'col.keys': 'Keys',
+  'col.stageDistrib': 'Stage Distribution',
+  'col.totalPlugins': 'Total Plugins',
+  'col.createdAt': 'Created At',
+
+  // Buttons
+  'btn.view': 'View',
+  'btn.edit': 'Edit',
+  'btn.delete': 'Delete',
+  'btn.create': 'Create',
+  'btn.save': 'Save',
+  'btn.cancel': 'Cancel',
+  'btn.close': 'Close',
+  'btn.refresh': 'Refresh',
+  'btn.trigger': 'Trigger',
+  'btn.batchDelete': 'Batch Delete',
+  'btn.addLabel': 'Add Label',
+  'btn.addAnnotation': 'Add Annotation',
+  'btn.addGatewayRef': 'Add Gateway Ref',
+  'btn.addBackend': 'Add Backend',
+  'btn.addListener': 'Add Listener',
+  'btn.addPlugin': 'Add Plugin',
+  'btn.addRule': 'Add Rule',
+  'btn.addMatch': 'Add Match',
+  'btn.addHeaderMatch': 'Add Header Match',
+  'btn.delete2': 'Delete',
+
+  // Modal titles (parameterized: use t('modal.create', {resource: 'Gateway'}))
+  'modal.create': 'Create {resource}',
+  'modal.edit': 'Edit {resource}',
+  'modal.view': 'View {resource}',
+
+  // Tabs
+  'tab.form': 'Form',
+  'tab.yaml': 'YAML',
+
+  // Messages
+  'msg.createOk': 'Created successfully',
+  'msg.updateOk': 'Updated successfully',
+  'msg.deleteOk': 'Deleted successfully',
+  'msg.batchDeleteOk': '{n} resources deleted',
+  'msg.tabSwitchFailed': 'Tab switch failed: {err}',
+  'msg.yamlEmpty': 'YAML content cannot be empty',
+  'msg.yamlInvalid': 'YAML format error: {err}',
+  'msg.opFailed': 'Operation failed: {err}',
+  'msg.createFailed': 'Create failed: {err}',
+  'msg.updateFailed': 'Update failed: {err}',
+  'msg.deleteFailed': 'Delete failed: {err}',
+  'msg.triggerOk': 'Manual issuance triggered successfully',
+  'msg.triggerFailed': 'Trigger failed: {err}',
+  'msg.formEmpty': 'Form data is empty',
+  'msg.metaRequired': 'metadata.name and metadata.namespace are required',
+  'msg.noRename': 'Cannot modify resource name or namespace',
+  'msg.validationFailed': 'Validation failed: {err}',
+  'msg.submitFailed': 'Submit failed: {err}',
+
+  // Confirm dialogs
+  'confirm.deleteTitle': 'Confirm Delete',
+  'confirm.deleteMsg': 'Are you sure you want to delete {name}?',
+  'confirm.deleteIrreversible': 'This action cannot be undone.',
+  'confirm.batchDeleteTitle': 'Batch Delete',
+  'confirm.batchDeleteMsg': 'Are you sure you want to delete {n} resources?',
+  'confirm.okText': 'Confirm Delete',
+
+  // Search placeholders
+  'ph.searchNameNs': 'Search by name/namespace',
+  'ph.searchName': 'Search by name',
+  'ph.searchNameNsService': 'Search name/namespace/service',
+
+  // Pagination
+  'table.totalItems': 'Total: {n}',
+
+  // Status labels
+  'status.healthy': 'Healthy',
+  'status.unhealthy': 'Unhealthy',
+  'status.ready': 'Ready',
+  'status.notReady': 'Not Ready',
+  'status.running': 'Running',
+  'status.selected': '{n} selected',
+
+  // Notices
+  'notice.serviceReadonly': 'Service is read-only, cannot be created here',
+  'notice.endpointSliceReadonly': 'EndpointSlice is read-only',
+
+  // Section titles
+  'section.basicInfo': 'Basic Info',
+  'section.hostnames': 'Hostnames',
+  'section.parentRefs': 'Gateway Refs',
+  'section.backends': 'Backend Services',
+  'section.serverCert': 'Server Certificate',
+  'section.tlsConfig': 'TLS Version & Ciphers (Optional)',
+  'section.edgionExt': 'Edgion Extension Config (Optional)',
+  'section.gatewayClass': 'GatewayClass',
+  'section.listeners': 'Listeners',
+  'section.mtls': 'mTLS Client Auth (Optional)',
+  'section.connType': 'Connection Type',
+
+  // Form field labels
+  'field.name': 'Name',
+  'field.namespace': 'Namespace',
+  'field.labels': 'Labels (optional)',
+  'field.annotations': 'Annotations (optional)',
+  'field.gatewayName': 'Gateway Name',
+  'field.namespaceOpt': 'Namespace (optional)',
+  'field.listenerName': 'Listener Name',
+  'field.portOpt': 'Port (optional)',
+  'field.groupAdv': 'Group (advanced, default: gateway.networking.k8s.io)',
+  'field.kindAdv': 'Kind (advanced, default: Gateway)',
+  'field.port': 'Port',
+  'field.weight': 'Weight',
+  'field.nsOptDefault': 'Namespace (optional, defaults to same as route)',
+  'field.groupAdvEmpty': 'Group (advanced, default: empty)',
+  'field.kindAdvService': 'Kind (advanced, default: Service)',
+  'field.protocol': 'Protocol',
+  'field.tlsMode': 'TLS Mode',
+  'field.certSecretName': 'Certificate Secret Name',
+  'field.certNs': 'Certificate Namespace (cross-namespace)',
+  'field.hosts': 'Hosts (supports wildcards)',
+  'field.secretName': 'Secret Name',
+  'field.secretNs': 'Secret Namespace (optional)',
+  'field.authMode': 'Auth Mode',
+  'field.caSecretName': 'CA Secret Name',
+  'field.caSecretNs': 'CA Secret Namespace',
+  'field.verifyDepth': 'Certificate Chain Depth (1-9)',
+  'field.minTlsVersion': 'Minimum TLS Version',
+  'field.cipherSuites': 'Custom Cipher Suites (optional)',
+  'field.gwClassName': 'GatewayClass Name',
+  'field.http2': 'Enable HTTP/2',
+  'field.httpsRedirect': 'HTTP→HTTPS Redirect',
+  'field.httpsRedirectPort': 'HTTPS Redirect Port',
+  'field.streamPluginsRef': 'StreamPlugins Ref',
+  'field.proxyProtocol': 'Proxy Protocol Version',
+  'field.maxConnRetries': 'Max Connection Retries',
+  'field.matchType': 'Match Type',
+  'field.grpcService': 'gRPC Service',
+  'field.grpcMethod': 'gRPC Method',
+  'field.ruleName': 'Rule Name (optional)',
+  'field.connType': 'Type',
+  'field.addresses': 'Address List (press Enter to add)',
+  'field.username': 'Username',
+  'field.password': 'Password (optional)',
+  'field.dbNumber': 'Database Number',
+  'field.clusterMode': 'Cluster Mode',
+  'field.httpMethod': 'HTTP Method',
+  'field.timeoutMs': 'Timeout (ms)',
+  'field.ipSource': 'IP Source',
+  'field.allowList': 'IP Allowlist (CIDR, press Enter to add)',
+  'field.denyList': 'IP Denylist (higher priority than allowlist)',
+  'field.defaultAction': 'Default Action',
+  'field.rejectMsg': 'Reject Message (optional)',
+  'field.pluginType': 'Plugin Type',
+  'field.etcdEndpoints': 'Endpoints (press Enter to add)',
+
+  // Validation messages
+  'valid.nameRequired': 'Please enter resource name',
+  'valid.nsRequired': 'Please select namespace',
+  'valid.required': 'This field is required',
+
+  // Section titles for Dashboard
+  'section.resourceOverview': 'Resource Overview',
+  'section.sysInfo': 'System Info',
+  'section.quickLinks': 'Quick Links',
+
+  // Dashboard specific
+  'dash.refreshAll': 'Refresh All',
+  'dash.controllerStatus': 'Controller Status',
+  'dash.readyStatus': 'Ready Status',
+  'dash.serverId': 'Server ID',
+  'dash.adminApi': 'Admin API',
+  'dash.grpc': 'gRPC',
+  'dash.createHttpRoute': 'Create HTTPRoute',
+  'dash.manageGateway': 'Manage Gateway',
+  'dash.configureTls': 'Configure EdgionTls',
+  'dash.managePlugins': 'Manage Plugins',
+  'dash.sysConfig': 'System Config',
+
+  // Gateway listener
+  'gw.listenerTitle': 'Listener {n}: {name}',
+  'gw.unnamed': '(unnamed)',
+  'gw.terminate': 'Terminate',
+  'gw.passthrough': 'Passthrough',
+  'gw.tlsConfig': 'TLS Config',
+
+  // mTLS modes
+  'tls.modeTerminate': 'Terminate (no client cert verification)',
+  'tls.modeMutual': 'Mutual (require client cert)',
+  'tls.modeOptional': 'OptionalMutual (optional client cert)',
+
+  // EdgionPlugins stage
+  'plugins.noPlugins': 'No plugins',
+  'plugins.stagePlugins': '{n} plugins',
+  'plugins.requestStage': 'Request Stage',
+  'plugins.responseFilter': 'Response Filter',
+  'plugins.responseBody': 'Response Body',
+  'plugins.upstreamResponse': 'Upstream Response',
+
+  // GRPCRoute
+  'grpc.ruleCount': '{n} rules',
+  'grpc.matchConditions': 'gRPC Match Conditions',
+  'grpc.backendService': 'Backend Service',
+  'grpc.backend': 'Backend {n}',
+  'grpc.rule': 'Rule {n}',
+  'grpc.namedRule': 'Rule: {name}',
+  'grpc.addBackend': 'Add Backend',
+
+  // StreamRoute annotations
+  'stream.noEnable': 'Disabled',
+
+  // IP restriction
+  'sp.allow': 'allow (default allow)',
+  'sp.deny': 'deny (default deny)',
+  'sp.remoteAddr': 'remoteAddr (connection IP)',
+
+  // LinkSys type labels
+  'linksys.redis': 'Redis Config',
+  'linksys.elasticsearch': 'Elasticsearch Config',
+  'linksys.etcd': 'etcd Config',
+  'linksys.webhook': 'Webhook Config',
+
+  // StreamAnnotations
+  'field.streamPluginsHelp': 'Format: plugin-name or namespace/plugin-name',
+  'stream.version1': 'Version 1',
+  'stream.version2': 'Version 2',
+
+  // ListenerEditor
+  'field.hostnameOpt': 'Hostname (optional)',
+
+  // EdgionTlsForm
+  'field.default': 'Default',
+  'ph.cipherSuites': 'Press Enter to add',
+
+  // EdgionStreamPlugins
+  'sp.ipRestriction': 'IpRestriction (IP Access Control)',
 }
 
 export default en

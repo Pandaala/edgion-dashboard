@@ -1,4 +1,4 @@
-# Edgion Dashboard
+# Edgion Controller
 
 Edgion Controller 的 Web 管理界面，基于 React + TypeScript + Ant Design 构建。
 

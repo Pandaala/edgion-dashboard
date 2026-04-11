@@ -9,8 +9,9 @@ import {
   ReloadOutlined,
   GlobalOutlined,
   ClusterOutlined,
-  SettingOutlined,
   DatabaseOutlined,
+  LinkOutlined,
+  LockOutlined,
 } from '@ant-design/icons'
 import type { MenuProps } from 'antd'
 import { useT, useLanguage } from '../../i18n/index.tsx'
@@ -28,68 +29,86 @@ const MainLayout = () => {
 
   const menuItems: MenuItem[] = [
     {
-      key: '/',
-      icon: <DashboardOutlined />,
-      label: t('nav.dashboard'),
-    },
-    {
-      key: 'routes',
-      icon: <ApiOutlined />,
-      label: t('nav.routes'),
+      type: 'group',
+      label: t('nav.user'),
       children: [
-        { key: '/routes/http', label: t('route.http') },
-        { key: '/routes/grpc', label: t('route.grpc') },
-        { key: '/routes/tcp', label: t('route.tcp') },
-        { key: '/routes/udp', label: t('route.udp') },
-        { key: '/routes/tls', label: t('route.tls') },
+        {
+          key: '/user',
+          icon: <DashboardOutlined />,
+          label: t('nav.dashboard'),
+        },
+        {
+          key: 'routes',
+          icon: <ApiOutlined />,
+          label: t('nav.routes'),
+          children: [
+            { key: '/routes/http', label: t('route.http') },
+            { key: '/routes/grpc', label: t('route.grpc') },
+            { key: '/routes/tcp', label: t('route.tcp') },
+            { key: '/routes/udp', label: t('route.udp') },
+            { key: '/routes/tls', label: t('route.tls') },
+          ],
+        },
+        {
+          key: 'services',
+          icon: <DatabaseOutlined />,
+          label: t('nav.services'),
+          children: [
+            { key: '/services/list', label: t('infra.service') },
+            { key: '/services/endpointslices', label: t('infra.endpointslice') },
+          ],
+        },
+        {
+          key: 'security',
+          icon: <SafetyOutlined />,
+          label: t('nav.security'),
+          children: [
+            { key: '/security/tls', label: t('security.tls') },
+            { key: '/security/backendtls', label: t('security.backendtls') },
+          ],
+        },
       ],
     },
     {
-      key: 'infrastructure',
-      icon: <ClusterOutlined />,
-      label: t('nav.infrastructure'),
+      type: 'group',
+      label: t('nav.ops'),
       children: [
-        { key: '/infrastructure/gateways', label: t('infra.gateway') },
-        { key: '/infrastructure/gatewayclasses', label: t('infra.gatewayclass') },
-        { key: '/infrastructure/referencegrants', label: t('infra.referencegrant') },
-      ],
-    },
-    {
-      key: 'services',
-      icon: <DatabaseOutlined />,
-      label: t('nav.services'),
-      children: [
-        { key: '/services/list', label: t('infra.service') },
-        { key: '/services/endpointslices', label: t('infra.endpointslice') },
-      ],
-    },
-    {
-      key: 'security',
-      icon: <SafetyOutlined />,
-      label: t('nav.security'),
-      children: [
-        { key: '/security/tls', label: t('security.tls') },
-        { key: '/security/backendtls', label: t('security.backendtls') },
-      ],
-    },
-    {
-      key: 'plugins',
-      icon: <AppstoreOutlined />,
-      label: t('nav.plugins'),
-      children: [
-        { key: '/plugins', label: t('plugins.edgion') },
-        { key: '/plugins/stream', label: t('plugins.stream') },
-        { key: '/plugins/metadata', label: t('plugins.metadata') },
-      ],
-    },
-    {
-      key: 'system',
-      icon: <SettingOutlined />,
-      label: t('nav.system'),
-      children: [
-        { key: '/system/config', label: t('system.config') },
-        { key: '/system/linksys', label: t('system.linksys') },
-        { key: '/system/acme', label: t('system.acme') },
+        {
+          key: '/',
+          icon: <DashboardOutlined />,
+          label: t('nav.dashboard'),
+        },
+        {
+          key: 'infrastructure',
+          icon: <ClusterOutlined />,
+          label: t('nav.infrastructure'),
+          children: [
+            { key: '/infrastructure/gateways', label: t('infra.gateway') },
+            { key: '/infrastructure/gatewayclasses', label: t('infra.gatewayclass') },
+            { key: '/infrastructure/referencegrants', label: t('infra.referencegrant') },
+            { key: '/system/config', label: t('system.config') },
+          ],
+        },
+        {
+          key: 'plugins',
+          icon: <AppstoreOutlined />,
+          label: t('nav.plugins'),
+          children: [
+            { key: '/plugins', label: t('plugins.edgion') },
+            { key: '/plugins/stream', label: t('plugins.stream') },
+            { key: '/plugins/metadata', label: t('plugins.metadata') },
+          ],
+        },
+        {
+          key: '/system/linksys',
+          icon: <LinkOutlined />,
+          label: t('system.linksys'),
+        },
+        {
+          key: '/system/acme',
+          icon: <LockOutlined />,
+          label: t('system.acme'),
+        },
       ],
     },
   ]
@@ -143,7 +162,7 @@ const MainLayout = () => {
             letterSpacing: collapsed ? 0 : 1,
           }}
         >
-          {collapsed ? 'ED' : 'Edgion Dashboard'}
+          {collapsed ? 'EC' : 'Edgion Controller'}
         </div>
         <Menu
           theme="dark"

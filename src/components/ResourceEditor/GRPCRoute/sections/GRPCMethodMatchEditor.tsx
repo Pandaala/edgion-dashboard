@@ -7,6 +7,7 @@ import React from 'react'
 import { Card, Form, Input, Select, Button, Space } from 'antd'
 import { PlusOutlined, MinusCircleOutlined } from '@ant-design/icons'
 import type { GRPCRouteMatch, GRPCHeaderMatch } from '@/types/gateway-api/grpcroute'
+import { useT } from '@/i18n'
 
 interface GRPCMethodMatchEditorProps {
   value?: GRPCRouteMatch[]
@@ -24,6 +25,8 @@ const GRPCMethodMatchEditor: React.FC<GRPCMethodMatchEditorProps> = ({
   onChange,
   disabled = false,
 }) => {
+  const t = useT()
+
   const updateMatch = (index: number, updated: GRPCRouteMatch) => {
     const next = [...value]
     next[index] = updated
@@ -61,29 +64,29 @@ const GRPCMethodMatchEditor: React.FC<GRPCMethodMatchEditorProps> = ({
         <Card
           key={matchIndex}
           size="small"
-          title={`匹配规则 ${matchIndex + 1}`}
+          title={t('grpc.rule', { n: matchIndex + 1 })}
           extra={
             !disabled && value.length > 1 && (
               <Button danger size="small" icon={<MinusCircleOutlined />}
-                onClick={() => removeMatch(matchIndex)}>删除</Button>
+                onClick={() => removeMatch(matchIndex)}>{t('btn.delete')}</Button>
             )
           }
           style={{ marginBottom: 12 }}
         >
-          <Form.Item label="匹配类型" style={{ marginBottom: 8 }}>
+          <Form.Item label={t('field.matchType')} style={{ marginBottom: 8 }}>
             <Select
               value={match.method?.type || 'Exact'}
               onChange={(v) => updateMatch(matchIndex, { ...match, method: { ...match.method, type: v } })}
               disabled={disabled}
               style={{ width: 200 }}
             >
-              <Select.Option value="Exact">Exact（精确）</Select.Option>
-              <Select.Option value="RegularExpression">RegularExpression（正则）</Select.Option>
+              <Select.Option value="Exact">Exact</Select.Option>
+              <Select.Option value="RegularExpression">RegularExpression</Select.Option>
             </Select>
           </Form.Item>
 
-          <Form.Item label="gRPC Service" style={{ marginBottom: 8 }}
-            help="如: mypackage.MyService">
+          <Form.Item label={t('field.grpcService')} style={{ marginBottom: 8 }}
+            help="e.g. mypackage.MyService">
             <Input
               value={match.method?.service || ''}
               onChange={(e) => updateMatch(matchIndex, {
@@ -94,7 +97,7 @@ const GRPCMethodMatchEditor: React.FC<GRPCMethodMatchEditorProps> = ({
             />
           </Form.Item>
 
-          <Form.Item label="gRPC Method" style={{ marginBottom: 12 }}>
+          <Form.Item label={t('field.grpcMethod')} style={{ marginBottom: 12 }}>
             <Input
               value={match.method?.method || ''}
               onChange={(e) => updateMatch(matchIndex, {
@@ -120,14 +123,14 @@ const GRPCMethodMatchEditor: React.FC<GRPCMethodMatchEditorProps> = ({
               <Input
                 value={header.name}
                 onChange={(e) => updateHeader(matchIndex, hIdx, { ...header, name: e.target.value })}
-                placeholder="Header 名称"
+                placeholder="Header name"
                 disabled={disabled}
                 style={{ width: 180 }}
               />
               <Input
                 value={header.value}
                 onChange={(e) => updateHeader(matchIndex, hIdx, { ...header, value: e.target.value })}
-                placeholder="Header 值"
+                placeholder="Header value"
                 disabled={disabled}
                 style={{ width: 180 }}
               />
@@ -140,14 +143,14 @@ const GRPCMethodMatchEditor: React.FC<GRPCMethodMatchEditorProps> = ({
 
           {!disabled && (
             <Button type="dashed" size="small" icon={<PlusOutlined />}
-              onClick={() => addHeader(matchIndex)}>添加 Header 匹配</Button>
+              onClick={() => addHeader(matchIndex)}>{t('btn.addHeaderMatch')}</Button>
           )}
         </Card>
       ))}
 
       {!disabled && (
         <Button type="dashed" onClick={addMatch} block icon={<PlusOutlined />}>
-          添加匹配规则
+          {t('btn.addMatch')}
         </Button>
       )}
     </div>

@@ -6,6 +6,7 @@
 import React from 'react'
 import { Card, Collapse, Tag, Space, Badge, Typography, Empty } from 'antd'
 import type { EdgionPluginsSpec, PluginEntry } from '@/types/edgion-plugins'
+import { useT } from '@/i18n'
 
 const { Text } = Typography
 
@@ -13,41 +14,43 @@ interface PluginStagesSectionProps {
   value?: EdgionPluginsSpec
 }
 
-interface StageConfig {
-  key: keyof EdgionPluginsSpec
-  label: string
-  description: string
-}
-
-const STAGES: StageConfig[] = [
-  {
-    key: 'requestPlugins',
-    label: '请求阶段 / Request Stage',
-    description: '异步执行，处理入站请求（认证、限流、重写等）',
-  },
-  {
-    key: 'upstreamResponseFilterPlugins',
-    label: '上游响应过滤阶段 / Response Filter Stage',
-    description: '同步执行，处理上游响应头部',
-  },
-  {
-    key: 'upstreamResponseBodyFilterPlugins',
-    label: '上游响应体阶段 / Response Body Stage',
-    description: '同步执行，处理响应体（带宽限制等）',
-  },
-  {
-    key: 'upstreamResponsePlugins',
-    label: '上游响应阶段 / Upstream Response Stage',
-    description: '异步执行，上游响应完成后处理',
-  },
-]
-
 const PluginStagesSection: React.FC<PluginStagesSectionProps> = ({ value = {} }) => {
+  const t = useT()
+
+  interface StageConfig {
+    key: keyof EdgionPluginsSpec
+    labelKey: string
+    description: string
+  }
+
+  const STAGES: StageConfig[] = [
+    {
+      key: 'requestPlugins',
+      labelKey: 'plugins.requestStage',
+      description: 'Async execution — handles inbound requests (auth, rate-limit, rewrite, etc.)',
+    },
+    {
+      key: 'upstreamResponseFilterPlugins',
+      labelKey: 'plugins.responseFilter',
+      description: 'Sync execution — processes upstream response headers',
+    },
+    {
+      key: 'upstreamResponseBodyFilterPlugins',
+      labelKey: 'plugins.responseBody',
+      description: 'Sync execution — processes response body (bandwidth limit, etc.)',
+    },
+    {
+      key: 'upstreamResponsePlugins',
+      labelKey: 'plugins.upstreamResponse',
+      description: 'Async execution — runs after upstream response completes',
+    },
+  ]
+
   const renderPluginList = (plugins: PluginEntry[] | undefined) => {
     if (!plugins?.length) {
       return (
         <Empty
-          description="暂无插件"
+          description={t('plugins.noPlugins')}
           image={Empty.PRESENTED_IMAGE_SIMPLE}
           style={{ margin: '8px 0' }}
         />
@@ -70,8 +73,8 @@ const PluginStagesSection: React.FC<PluginStagesSectionProps> = ({ value = {} })
           >
             <Space>
               <Tag color="blue">{plugin.type}</Tag>
-              {plugin.enable === false && <Tag color="orange">已禁用 / Disabled</Tag>}
-              {plugin.conditions && <Tag color="purple">有条件 / Conditional</Tag>}
+              {plugin.enable === false && <Tag color="orange">Disabled</Tag>}
+              {plugin.conditions && <Tag color="purple">Conditional</Tag>}
             </Space>
           </div>
         ))}
@@ -79,14 +82,14 @@ const PluginStagesSection: React.FC<PluginStagesSectionProps> = ({ value = {} })
     )
   }
 
-  const collapseItems = STAGES.map(({ key, label, description }) => {
+  const collapseItems = STAGES.map(({ key, labelKey, description }) => {
     const plugins = value[key] as PluginEntry[] | undefined
     const count = plugins?.length ?? 0
     return {
       key,
       label: (
         <Space>
-          <Text>{label}</Text>
+          <Text>{t(labelKey)}</Text>
           <Badge
             count={count}
             showZero
@@ -106,9 +109,9 @@ const PluginStagesSection: React.FC<PluginStagesSectionProps> = ({ value = {} })
   })
 
   return (
-    <Card title="插件配置 / Plugin Configuration" size="small">
+    <Card title="Plugin Configuration" size="small">
       <Text type="secondary" style={{ display: 'block', marginBottom: 12 }}>
-        此处为只读概览，插件详细配置请切换到 YAML 模式进行编辑。
+        This is a read-only overview. To edit plugin details, switch to YAML mode.
       </Text>
       <Collapse items={collapseItems} />
     </Card>

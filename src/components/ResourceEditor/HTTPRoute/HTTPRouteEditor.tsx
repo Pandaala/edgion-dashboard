@@ -18,6 +18,7 @@ import {
   DEFAULT_HTTPROUTE_YAML,
 } from '@/utils/httproute';
 import type { HTTPRoute } from '@/types/gateway-api';
+import { useT } from '@/i18n';
 
 const { TabPane } = Tabs;
 
@@ -34,6 +35,7 @@ const HTTPRouteEditor: React.FC<HTTPRouteEditorProps> = ({
   resource,
   onClose,
 }) => {
+  const t = useT();
   const [activeTab, setActiveTab] = useState<'form' | 'yaml'>('form');
   const [formData, setFormData] = useState<HTTPRoute | null>(null);
   const [yamlContent, setYamlContent] = useState<string>('');
@@ -93,12 +95,12 @@ const HTTPRouteEditor: React.FC<HTTPRouteEditorProps> = ({
     mutationFn: ({ namespace, name, content }: { namespace: string; name: string; content: string }) =>
       resourceApi.create('httproute', namespace, content),
     onSuccess: () => {
-      message.success('创建成功 / Created successfully');
+      message.success(t('msg.createOk'));
       queryClient.invalidateQueries({ queryKey: ['httproutes'] });
       onClose();
     },
     onError: (error: any) => {
-      message.error(`创建失败 / Create failed: ${error.message}`);
+      message.error(t('msg.createFailed', { err: error.message }));
     },
   });
 
@@ -107,12 +109,12 @@ const HTTPRouteEditor: React.FC<HTTPRouteEditorProps> = ({
     mutationFn: ({ namespace, name, content }: { namespace: string; name: string; content: string }) =>
       resourceApi.update('httproute', namespace, name, content),
     onSuccess: () => {
-      message.success('更新成功 / Updated successfully');
+      message.success(t('msg.updateOk'));
       queryClient.invalidateQueries({ queryKey: ['httproutes'] });
       onClose();
     },
     onError: (error: any) => {
-      message.error(`更新失败 / Update failed: ${error.message}`);
+      message.error(t('msg.updateFailed', { err: error.message }));
     },
   });
 
@@ -125,10 +127,10 @@ const HTTPRouteEditor: React.FC<HTTPRouteEditorProps> = ({
       if (activeTab === 'form') {
         // 表单模式：验证表单数据
         if (!formData) {
-          message.error('表单数据为空 / Form data is empty');
+          message.error(t('msg.formEmpty'));
           return;
         }
-        
+
         // Zod 验证
         const validated = httpRouteSchema.parse(formData) as any;
         parsedResource = validated;
@@ -144,7 +146,7 @@ const HTTPRouteEditor: React.FC<HTTPRouteEditorProps> = ({
       const namespace = parsedResource.metadata?.namespace;
 
       if (!name || !namespace) {
-        message.error('YAML 中必须包含 metadata.name 和 metadata.namespace');
+        message.error(t('msg.metaRequired'));
         return;
       }
 
@@ -152,7 +154,7 @@ const HTTPRouteEditor: React.FC<HTTPRouteEditorProps> = ({
         createMutation.mutate({ namespace, name, content: contentToSubmit });
       } else if (resource) {
         if (name !== resource.metadata.name || namespace !== resource.metadata.namespace) {
-          message.error('不允许修改资源的名称或命名空间 / Cannot modify resource name or namespace');
+          message.error(t('msg.noRename'));
           return;
         }
         updateMutation.mutate({ namespace, name, content: contentToSubmit });
@@ -161,24 +163,24 @@ const HTTPRouteEditor: React.FC<HTTPRouteEditorProps> = ({
       if (e.issues && Array.isArray(e.issues)) {
         // Zod 验证错误
         const errors = e.issues.map((issue: any) => issue.message).join('; ');
-        message.error(`验证失败 / Validation failed: ${errors}`);
+        message.error(t('msg.validationFailed', { err: errors }));
       } else {
-        message.error(`提交失败 / Submit failed: ${e.message || '未知错误'}`);
+        message.error(t('msg.submitFailed', { err: e.message || 'unknown error' }));
       }
     }
   };
 
   const title =
     initialMode === 'create'
-      ? '创建 HTTPRoute / Create HTTPRoute'
+      ? t('modal.create', { resource: 'HTTPRoute' })
       : initialMode === 'edit'
-      ? `编辑 ${resource?.metadata.name} / Edit ${resource?.metadata.name}`
-      : `查看 ${resource?.metadata.name} / View ${resource?.metadata.name}`;
+      ? t('modal.edit', { resource: resource?.metadata.name || 'HTTPRoute' })
+      : t('modal.view', { resource: resource?.metadata.name || 'HTTPRoute' });
 
   const footer = (
     <Space>
       <Button onClick={onClose}>
-        {initialMode === 'view' ? '关闭 / Close' : '取消 / Cancel'}
+        {initialMode === 'view' ? t('btn.close') : t('btn.cancel')}
       </Button>
       {initialMode !== 'view' && (
         <Button
@@ -186,7 +188,7 @@ const HTTPRouteEditor: React.FC<HTTPRouteEditorProps> = ({
           onClick={handleSubmit}
           loading={createMutation.isPending || updateMutation.isPending}
         >
-          {initialMode === 'create' ? '创建 / Create' : '保存 / Save'}
+          {initialMode === 'create' ? t('btn.create') : t('btn.save')}
         </Button>
       )}
     </Space>
@@ -203,7 +205,7 @@ const HTTPRouteEditor: React.FC<HTTPRouteEditorProps> = ({
       style={{ top: 20 }}
     >
       <Tabs activeKey={activeTab} onChange={(key) => setActiveTab(key as 'form' | 'yaml')}>
-        <TabPane tab="表单模式 / Form" key="form">
+        <TabPane tab={t('tab.form')} key="form">
           {formData && (
             <HTTPRouteForm
               value={formData}
@@ -213,7 +215,7 @@ const HTTPRouteEditor: React.FC<HTTPRouteEditorProps> = ({
             />
           )}
         </TabPane>
-        <TabPane tab="YAML 模式 / YAML" key="yaml">
+        <TabPane tab={t('tab.yaml')} key="yaml">
           <YamlEditor
             value={yamlContent}
             onChange={handleYamlChange}
@@ -227,4 +229,3 @@ const HTTPRouteEditor: React.FC<HTTPRouteEditorProps> = ({
 };
 
 export default HTTPRouteEditor;
-

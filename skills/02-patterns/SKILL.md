@@ -1,11 +1,11 @@
 ---
 name: dashboard-patterns
-description: Edgion Dashboard 开发模式——列表页、编辑器、类型定义、工具函数的标准模板
+description: Edgion Controller 开发模式——列表页、编辑器、类型定义、工具函数的标准模板
 ---
 
 # 开发模式
 
-本目录记录了 Edgion Dashboard 中已验证的开发模式。新增资源页面时严格遵循这些模式，保持一致性。
+本目录记录了 Edgion Controller 中已验证的开发模式。新增资源页面时严格遵循这些模式，保持一致性。
 
 ## 文件清单
 

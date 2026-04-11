@@ -5,6 +5,7 @@
 
 import React from 'react'
 import { Card, Form, Input, Select } from 'antd'
+import { useT } from '@/i18n'
 
 interface StreamAnnotationsSectionProps {
   annotations: Record<string, string>
@@ -21,6 +22,8 @@ const StreamAnnotationsSection: React.FC<StreamAnnotationsSectionProps> = ({
   onChange,
   disabled = false,
 }) => {
+  const t = useT()
+
   const update = (key: string, value: string) => {
     const next = { ...annotations }
     if (value === '' || value === undefined) {
@@ -32,10 +35,10 @@ const StreamAnnotationsSection: React.FC<StreamAnnotationsSectionProps> = ({
   }
 
   return (
-    <Card title="Edgion 扩展配置" size="small">
+    <Card title={t('section.edgionExt')} size="small">
       <Form.Item
-        label="StreamPlugins 引用"
-        help="格式: plugin-name 或 namespace/plugin-name"
+        label={t('field.streamPluginsRef')}
+        help={t('field.streamPluginsHelp')}
         style={{ marginBottom: 12 }}
       >
         <Input
@@ -48,24 +51,24 @@ const StreamAnnotationsSection: React.FC<StreamAnnotationsSectionProps> = ({
       </Form.Item>
 
       <Form.Item
-        label="Proxy Protocol 版本"
+        label={t('field.proxyProtocol')}
         style={{ marginBottom: 12 }}
       >
         <Select
           value={annotations[PROXY_PROTOCOL_KEY] || undefined}
           onChange={(v) => update(PROXY_PROTOCOL_KEY, v || '')}
-          placeholder="不启用"
+          placeholder={t('stream.noEnable')}
           disabled={disabled}
           allowClear
           style={{ width: 160 }}
         >
-          <Select.Option value="1">版本 1</Select.Option>
-          <Select.Option value="2">版本 2</Select.Option>
+          <Select.Option value="1">{t('stream.version1')}</Select.Option>
+          <Select.Option value="2">{t('stream.version2')}</Select.Option>
         </Select>
       </Form.Item>
 
       <Form.Item
-        label="最大连接重试次数"
+        label={t('field.maxConnRetries')}
         style={{ marginBottom: 0 }}
       >
         <Input

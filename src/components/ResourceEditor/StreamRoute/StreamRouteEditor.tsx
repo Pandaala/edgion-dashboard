@@ -22,6 +22,7 @@ import {
   createEmptyTLSRoute, normalizeTLSRoute, tlsRouteToYaml, yamlToTLSRoute,
 } from '@/utils/tlsroute'
 import type { ResourceKind } from '@/api/types'
+import { useT } from '@/i18n'
 
 type RouteData = TCPRoute | UDPRoute | TLSRoute
 
@@ -70,6 +71,7 @@ const KIND_MAP: Record<StreamRouteKind, {
 const StreamRouteEditor: React.FC<StreamRouteEditorProps> = ({
   visible, mode, kind, resource, onClose,
 }) => {
+  const t = useT()
   const [activeTab, setActiveTab] = useState<'form' | 'yaml'>('form')
   const [formData, setFormData] = useState<RouteData>(() => KIND_MAP[kind].createEmpty())
   const [yamlContent, setYamlContent] = useState('')
@@ -100,7 +102,7 @@ const StreamRouteEditor: React.FC<StreamRouteEditorProps> = ({
       }
       setActiveTab(key as 'form' | 'yaml')
     } catch (e: any) {
-      message.error(`切换失败: ${e.message}`)
+      message.error(t('msg.tabSwitchFailed', { err: e.message }))
     }
   }
 
@@ -108,11 +110,11 @@ const StreamRouteEditor: React.FC<StreamRouteEditorProps> = ({
     mutationFn: (yamlStr: string) =>
       resourceApi.create(meta.apiKind, formData.metadata.namespace || 'default', yamlStr),
     onSuccess: () => {
-      message.success('创建成功')
+      message.success(t('msg.createOk'))
       queryClient.invalidateQueries({ queryKey: [meta.apiKind] })
       onClose()
     },
-    onError: (e: any) => message.error(`创建失败: ${e.message}`),
+    onError: (e: any) => message.error(t('msg.createFailed', { err: e.message })),
   })
 
   const updateMutation = useMutation({
@@ -124,11 +126,11 @@ const StreamRouteEditor: React.FC<StreamRouteEditorProps> = ({
         yamlStr,
       ),
     onSuccess: () => {
-      message.success('更新成功')
+      message.success(t('msg.updateOk'))
       queryClient.invalidateQueries({ queryKey: [meta.apiKind] })
       onClose()
     },
-    onError: (e: any) => message.error(`更新失败: ${e.message}`),
+    onError: (e: any) => message.error(t('msg.updateFailed', { err: e.message })),
   })
 
   const handleSubmit = () => {
@@ -143,19 +145,26 @@ const StreamRouteEditor: React.FC<StreamRouteEditorProps> = ({
   const isPending = createMutation.isPending || updateMutation.isPending
   const isReadOnly = mode === 'view'
 
+  const title =
+    mode === 'create'
+      ? t('modal.create', { resource: meta.label })
+      : mode === 'edit'
+      ? t('modal.edit', { resource: meta.label })
+      : t('modal.view', { resource: meta.label })
+
   return (
     <Modal
-      title={`${mode === 'create' ? '创建' : mode === 'edit' ? '编辑' : '查看'} ${meta.label}`}
+      title={title}
       open={visible}
       onCancel={onClose}
       width={860}
       footer={
         isReadOnly
-          ? [<Button key="close" onClick={onClose}>关闭</Button>]
+          ? [<Button key="close" onClick={onClose}>{t('btn.close')}</Button>]
           : [
-              <Button key="cancel" onClick={onClose}>取消</Button>,
+              <Button key="cancel" onClick={onClose}>{t('btn.cancel')}</Button>,
               <Button key="submit" type="primary" onClick={handleSubmit} loading={isPending}>
-                {mode === 'create' ? '创建' : '保存'}
+                {mode === 'create' ? t('btn.create') : t('btn.save')}
               </Button>,
             ]
       }
@@ -166,7 +175,7 @@ const StreamRouteEditor: React.FC<StreamRouteEditorProps> = ({
         items={[
           {
             key: 'form',
-            label: '表单',
+            label: t('tab.form'),
             children: (
               <StreamRouteForm
                 kind={kind}
@@ -179,7 +188,7 @@ const StreamRouteEditor: React.FC<StreamRouteEditorProps> = ({
           },
           {
             key: 'yaml',
-            label: 'YAML',
+            label: t('tab.yaml'),
             children: (
               <YamlEditor
                 value={yamlContent}

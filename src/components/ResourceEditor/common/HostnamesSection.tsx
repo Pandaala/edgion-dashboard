@@ -6,6 +6,7 @@
 import React from 'react';
 import { Card, Form, Select } from 'antd';
 import type { Hostname } from '@/types/gateway-api';
+import { useT } from '@/i18n';
 
 interface HostnamesSectionProps {
   value?: Hostname[];
@@ -18,11 +19,13 @@ const HostnamesSection: React.FC<HostnamesSectionProps> = ({
   onChange,
   disabled = false,
 }) => {
+  const t = useT();
+
   return (
-    <Card title="主机名 / Hostnames" size="small">
+    <Card title={t('section.hostnames')} size="small">
       <Form.Item
-        label="主机名列表（可选，支持通配符 *）"
-        help="输入主机名后按回车添加，支持通配符前缀，如 *.example.com"
+        label={t('field.hosts')}
+        help="Press Enter to add hostnames. Supports wildcard prefix, e.g. *.example.com"
       >
         <Select
           mode="tags"
@@ -38,4 +41,3 @@ const HostnamesSection: React.FC<HostnamesSectionProps> = ({
 };
 
 export default HostnamesSection;
-

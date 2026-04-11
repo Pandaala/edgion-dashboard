@@ -1,9 +1,9 @@
 ---
 name: edgion-dashboard-skills
-description: Root navigation for the Edgion Dashboard knowledge base. Read this first, then drill into the relevant subtree.
+description: Root navigation for the Edgion Controller knowledge base. Read this first, then drill into the relevant subtree.
 ---
 
-# Edgion Dashboard Skills
+# Edgion Controller Skills
 
 > React 18 + TypeScript + Ant Design 5 前端管理界面，对接 Edgion Controller REST API。
 > 管理 Gateway API 标准资源和 Edgion 自定义资源（路由、插件、TLS、服务等）。

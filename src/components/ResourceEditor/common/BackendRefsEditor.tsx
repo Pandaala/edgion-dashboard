@@ -8,6 +8,7 @@ import { Form, Input, InputNumber, Button, Space, Card } from 'antd';
 import { MinusCircleOutlined, PlusOutlined } from '@ant-design/icons';
 import { DEFAULT_VALUES, PORT_MIN, PORT_MAX, WEIGHT_MIN, WEIGHT_MAX } from '@/constants/gateway-api';
 import type { BackendRef } from '@/types/gateway-api';
+import { useT } from '@/i18n';
 
 interface BackendRefsEditorProps {
   value?: BackendRef[];
@@ -22,6 +23,8 @@ const BackendRefsEditor: React.FC<BackendRefsEditorProps> = ({
   disabled = false,
   namespace = DEFAULT_VALUES.defaultNamespace,
 }) => {
+  const t = useT();
+
   const handleBackendChange = (index: number, updatedBackend: BackendRef) => {
     const newBackends = [...value];
     newBackends[index] = updatedBackend;
@@ -53,7 +56,7 @@ const BackendRefsEditor: React.FC<BackendRefsEditorProps> = ({
         <Card
           key={index}
           size="small"
-          title={`后端服务 ${index + 1}`}
+          title={`${t('section.backends')} ${index + 1}`}
           extra={
             !disabled && value.length > 1 && (
               <Button
@@ -62,7 +65,7 @@ const BackendRefsEditor: React.FC<BackendRefsEditorProps> = ({
                 icon={<MinusCircleOutlined />}
                 onClick={() => handleRemoveBackend(index)}
               >
-                删除
+                {t('btn.delete')}
               </Button>
             )
           }
@@ -71,7 +74,7 @@ const BackendRefsEditor: React.FC<BackendRefsEditorProps> = ({
           <Space direction="vertical" style={{ width: '100%' }} size="middle">
             {/* Service 名称 */}
             <Form.Item
-              label="Service 名称 / Name"
+              label={t('field.name')}
               required
               style={{ marginBottom: 0 }}
             >
@@ -87,7 +90,7 @@ const BackendRefsEditor: React.FC<BackendRefsEditorProps> = ({
 
             {/* 端口号 */}
             <Form.Item
-              label="端口号 / Port"
+              label={t('field.port')}
               style={{ marginBottom: 0 }}
             >
               <InputNumber
@@ -105,7 +108,7 @@ const BackendRefsEditor: React.FC<BackendRefsEditorProps> = ({
 
             {/* 权重（流量分配） */}
             <Form.Item
-              label="权重 / Weight（流量分配比例）"
+              label={t('field.weight')}
               style={{ marginBottom: 0 }}
             >
               <InputNumber
@@ -122,7 +125,7 @@ const BackendRefsEditor: React.FC<BackendRefsEditorProps> = ({
 
             {/* 命名空间（可选） */}
             <Form.Item
-              label="命名空间 / Namespace（可选，默认同 HTTPRoute）"
+              label={t('field.nsOptDefault')}
               style={{ marginBottom: 0 }}
             >
               <Input
@@ -137,7 +140,7 @@ const BackendRefsEditor: React.FC<BackendRefsEditorProps> = ({
 
             {/* Group（高级） */}
             <Form.Item
-              label="Group（高级，默认为空）"
+              label={t('field.groupAdvEmpty')}
               style={{ marginBottom: 0 }}
             >
               <Input
@@ -152,7 +155,7 @@ const BackendRefsEditor: React.FC<BackendRefsEditorProps> = ({
 
             {/* Kind（高级） */}
             <Form.Item
-              label="Kind（高级，默认 Service）"
+              label={t('field.kindAdvService')}
               style={{ marginBottom: 0 }}
             >
               <Input
@@ -175,7 +178,7 @@ const BackendRefsEditor: React.FC<BackendRefsEditorProps> = ({
           block
           icon={<PlusOutlined />}
         >
-          添加后端服务
+          {t('btn.addBackend')}
         </Button>
       )}
     </div>
@@ -183,4 +186,3 @@ const BackendRefsEditor: React.FC<BackendRefsEditorProps> = ({
 };
 
 export default BackendRefsEditor;
-

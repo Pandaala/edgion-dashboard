@@ -5,10 +5,12 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { resourceApi } from '@/api/resources'
 import type { K8sResource } from '@/api/types'
 import EdgionTlsEditor from '@/components/ResourceEditor/EdgionTls/EdgionTlsEditor'
+import { useT } from '@/i18n'
 
 const { Search } = Input
 
 const EdgionTlsList = () => {
+  const t = useT()
   const [searchText, setSearchText] = useState('')
   const [selectedRowKeys, setSelectedRowKeys] = useState<React.Key[]>([])
   const [editorVisible, setEditorVisible] = useState(false)
@@ -24,14 +26,14 @@ const EdgionTlsList = () => {
   const deleteMutation = useMutation({
     mutationFn: ({ namespace, name }: { namespace: string; name: string }) =>
       resourceApi.delete('edgiontls', namespace, name),
-    onSuccess: () => { message.success('删除成功'); queryClient.invalidateQueries({ queryKey: ['edgiontls'] }) },
+    onSuccess: () => { message.success(t('msg.deleteOk')); queryClient.invalidateQueries({ queryKey: ['edgiontls'] }) },
   })
 
   const batchDeleteMutation = useMutation({
     mutationFn: (resources: Array<{ namespace: string; name: string }>) =>
       resourceApi.batchDelete('edgiontls', resources),
     onSuccess: () => {
-      message.success(`成功删除 ${selectedRowKeys.length} 个资源`)
+      message.success(t('msg.batchDeleteOk', { n: selectedRowKeys.length }))
       setSelectedRowKeys([])
       queryClient.invalidateQueries({ queryKey: ['edgiontls'] })
     },
@@ -49,8 +51,8 @@ const EdgionTlsList = () => {
 
   const handleDelete = (namespace: string, name: string) => {
     Modal.confirm({
-      title: '确认删除', content: `确定要删除 ${name} 吗？`,
-      okText: '确认删除', okType: 'danger', cancelText: '取消',
+      title: t('confirm.deleteTitle'), content: t('confirm.deleteMsg', { name }),
+      okText: t('confirm.okText'), okType: 'danger', cancelText: t('btn.cancel'),
       onOk: () => deleteMutation.mutate({ namespace, name }),
     })
   }
@@ -60,15 +62,15 @@ const EdgionTlsList = () => {
       .filter((r) => selectedRowKeys.includes(`${r.metadata.namespace}/${r.metadata.name}`))
       .map((r) => ({ namespace: r.metadata.namespace!, name: r.metadata.name }))
     Modal.confirm({
-      title: '批量删除', content: `确定要删除 ${selected.length} 个资源吗？`,
-      okText: '确认删除', okType: 'danger', cancelText: '取消',
+      title: t('confirm.batchDeleteTitle'), content: `${t('confirm.batchDeleteMsg', { n: selected.length })} ${t('confirm.deleteIrreversible')}`,
+      okText: t('confirm.okText'), okType: 'danger', cancelText: t('btn.cancel'),
       onOk: () => batchDeleteMutation.mutate(selected),
     })
   }
 
   const columns = [
-    { title: '名称', dataIndex: ['metadata', 'name'], key: 'name' },
-    { title: '命名空间', dataIndex: ['metadata', 'namespace'], key: 'namespace' },
+    { title: t('col.name'), dataIndex: ['metadata', 'name'], key: 'name' },
+    { title: t('col.namespace'), dataIndex: ['metadata', 'namespace'], key: 'namespace' },
     {
       title: 'Hosts',
       key: 'hosts',
@@ -82,7 +84,7 @@ const EdgionTlsList = () => {
       ),
     },
     {
-      title: 'mTLS 模式',
+      title: t('col.mTlsMode'),
       key: 'clientAuth',
       render: (_: any, r: K8sResource) => {
         const mode = r.spec?.clientAuth?.mode || 'Terminate'
@@ -91,13 +93,13 @@ const EdgionTlsList = () => {
       },
     },
     {
-      title: '操作', key: 'actions', width: 160,
+      title: t('col.actions'), key: 'actions', width: 160,
       render: (_: any, record: K8sResource) => (
         <Space>
-          <Button size="small" icon={<EyeOutlined />} onClick={() => openEditor('view', record)}>查看</Button>
-          <Button size="small" icon={<EditOutlined />} onClick={() => openEditor('edit', record)}>编辑</Button>
+          <Button size="small" icon={<EyeOutlined />} onClick={() => openEditor('view', record)}>{t('btn.view')}</Button>
+          <Button size="small" icon={<EditOutlined />} onClick={() => openEditor('edit', record)}>{t('btn.edit')}</Button>
           <Button size="small" danger icon={<DeleteOutlined />}
-            onClick={() => handleDelete(record.metadata.namespace!, record.metadata.name)}>删除</Button>
+            onClick={() => handleDelete(record.metadata.namespace!, record.metadata.name)}>{t('btn.delete')}</Button>
         </Space>
       ),
     },
@@ -107,21 +109,21 @@ const EdgionTlsList = () => {
     <div>
       <div style={{ marginBottom: 16, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
         <Space>
-          <Button type="primary" icon={<PlusOutlined />} onClick={() => openEditor('create')}>创建 EdgionTls</Button>
+          <Button type="primary" icon={<PlusOutlined />} onClick={() => openEditor('create')}>{`${t('btn.create')} EdgionTls`}</Button>
           <Button danger disabled={!selectedRowKeys.length} icon={<DeleteOutlined />} onClick={handleBatchDelete}>
-            批量删除 {selectedRowKeys.length > 0 ? `(${selectedRowKeys.length})` : ''}
+            {`${t('btn.batchDelete')}${selectedRowKeys.length > 0 ? ` (${selectedRowKeys.length})` : ''}`}
           </Button>
         </Space>
         <Space>
-          <Search placeholder="搜索名称/命名空间" value={searchText} onChange={(e) => setSearchText(e.target.value)}
+          <Search placeholder={t('ph.searchNameNs')} value={searchText} onChange={(e) => setSearchText(e.target.value)}
             style={{ width: 240 }} allowClear />
-          <Button icon={<ReloadOutlined />} onClick={() => refetch()}>刷新</Button>
+          <Button icon={<ReloadOutlined />} onClick={() => refetch()}>{t('btn.refresh')}</Button>
         </Space>
       </div>
       <Table rowKey={(r) => `${r.metadata.namespace}/${r.metadata.name}`}
         columns={columns} dataSource={filtered} loading={isLoading}
         rowSelection={{ selectedRowKeys, onChange: setSelectedRowKeys }}
-        pagination={{ pageSize: 20, showTotal: (t) => `共 ${t} 条` }} size="middle"
+        pagination={{ pageSize: 20, showTotal: (total) => t('table.totalItems', { n: total }) }} size="middle"
       />
       <EdgionTlsEditor visible={editorVisible} mode={editorMode} resource={selectedResource as any}
         onClose={() => setEditorVisible(false)} />

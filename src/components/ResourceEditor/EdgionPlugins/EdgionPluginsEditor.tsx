@@ -18,6 +18,7 @@ import {
 } from '@/utils/edgionplugins'
 import type { EdgionPlugins } from '@/types/edgion-plugins'
 import type { K8sResource } from '@/api/types'
+import { useT } from '@/i18n'
 
 const { TabPane } = Tabs
 
@@ -34,6 +35,7 @@ const EdgionPluginsEditor: React.FC<EdgionPluginsEditorProps> = ({
   resource,
   onClose,
 }) => {
+  const t = useT()
   const [activeTab, setActiveTab] = useState<'form' | 'yaml'>('form')
   const [formData, setFormData] = useState<EdgionPlugins | null>(null)
   const [yamlContent, setYamlContent] = useState<string>('')
@@ -84,12 +86,12 @@ const EdgionPluginsEditor: React.FC<EdgionPluginsEditorProps> = ({
     mutationFn: ({ namespace, name, content }: { namespace: string; name: string; content: string }) =>
       resourceApi.create('edgionplugins', namespace, content),
     onSuccess: () => {
-      message.success('创建成功')
+      message.success(t('msg.createOk'))
       queryClient.invalidateQueries({ queryKey: ['edgionplugins'] })
       onClose()
     },
     onError: (error: any) => {
-      message.error(`创建失败: ${error.message}`)
+      message.error(t('msg.createFailed', { err: error.message }))
     },
   })
 
@@ -98,12 +100,12 @@ const EdgionPluginsEditor: React.FC<EdgionPluginsEditorProps> = ({
     mutationFn: ({ namespace, name, content }: { namespace: string; name: string; content: string }) =>
       resourceApi.update('edgionplugins', namespace, name, content),
     onSuccess: () => {
-      message.success('更新成功')
+      message.success(t('msg.updateOk'))
       queryClient.invalidateQueries({ queryKey: ['edgionplugins'] })
       onClose()
     },
     onError: (error: any) => {
-      message.error(`更新失败: ${error.message}`)
+      message.error(t('msg.updateFailed', { err: error.message }))
     },
   })
 
@@ -115,7 +117,7 @@ const EdgionPluginsEditor: React.FC<EdgionPluginsEditorProps> = ({
 
       if (activeTab === 'form') {
         if (!formData) {
-          message.error('表单数据为空')
+          message.error(t('msg.formEmpty'))
           return
         }
         parsedResource = normalizeEdgionPlugins(formData)
@@ -129,7 +131,7 @@ const EdgionPluginsEditor: React.FC<EdgionPluginsEditorProps> = ({
       const namespace = parsedResource.metadata?.namespace
 
       if (!name || !namespace) {
-        message.error('必须填写 metadata.name 和 metadata.namespace')
+        message.error(t('msg.metaRequired'))
         return
       }
 
@@ -137,27 +139,27 @@ const EdgionPluginsEditor: React.FC<EdgionPluginsEditorProps> = ({
         createMutation.mutate({ namespace, name, content: contentToSubmit })
       } else if (resource) {
         if (name !== resource.metadata.name || namespace !== resource.metadata.namespace) {
-          message.error('不允许修改资源的名称或命名空间')
+          message.error(t('msg.noRename'))
           return
         }
         updateMutation.mutate({ namespace, name, content: contentToSubmit })
       }
     } catch (e: any) {
-      message.error(`提交失败: ${e.message || '未知错误'}`)
+      message.error(t('msg.submitFailed', { err: e.message || 'unknown error' }))
     }
   }
 
   const title =
     initialMode === 'create'
-      ? '创建 EdgionPlugins'
+      ? t('modal.create', { resource: 'EdgionPlugins' })
       : initialMode === 'edit'
-      ? `编辑 ${resource?.metadata.name}`
-      : `查看 ${resource?.metadata.name}`
+      ? t('modal.edit', { resource: resource?.metadata.name || 'EdgionPlugins' })
+      : t('modal.view', { resource: resource?.metadata.name || 'EdgionPlugins' })
 
   const footer = (
     <Space>
       <Button onClick={onClose}>
-        {initialMode === 'view' ? '关闭' : '取消'}
+        {initialMode === 'view' ? t('btn.close') : t('btn.cancel')}
       </Button>
       {initialMode !== 'view' && (
         <Button
@@ -165,7 +167,7 @@ const EdgionPluginsEditor: React.FC<EdgionPluginsEditorProps> = ({
           onClick={handleSubmit}
           loading={createMutation.isPending || updateMutation.isPending}
         >
-          {initialMode === 'create' ? '创建' : '保存'}
+          {initialMode === 'create' ? t('btn.create') : t('btn.save')}
         </Button>
       )}
     </Space>
@@ -182,7 +184,7 @@ const EdgionPluginsEditor: React.FC<EdgionPluginsEditorProps> = ({
       style={{ top: 20 }}
     >
       <Tabs activeKey={activeTab} onChange={(key) => setActiveTab(key as 'form' | 'yaml')}>
-        <TabPane tab="表单模式 / Form" key="form">
+        <TabPane tab={t('tab.form')} key="form">
           {formData && (
             <EdgionPluginsForm
               value={formData}
@@ -192,7 +194,7 @@ const EdgionPluginsEditor: React.FC<EdgionPluginsEditorProps> = ({
             />
           )}
         </TabPane>
-        <TabPane tab="YAML 模式 / YAML" key="yaml">
+        <TabPane tab={t('tab.yaml')} key="yaml">
           <YamlEditor
             value={yamlContent}
             onChange={handleYamlChange}

@@ -5,10 +5,12 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { resourceApi } from '@/api/resources'
 import type { K8sResource } from '@/api/types'
 import HTTPRouteEditor from '@/components/ResourceEditor/HTTPRoute/HTTPRouteEditor'
+import { useT } from '@/i18n'
 
 const { Search } = Input
 
 const HTTPRouteList = () => {
+  const t = useT()
   const [searchText, setSearchText] = useState('')
   const [selectedRowKeys, setSelectedRowKeys] = useState<React.Key[]>([])
   const [editorVisible, setEditorVisible] = useState(false)
@@ -27,7 +29,7 @@ const HTTPRouteList = () => {
     mutationFn: ({ namespace, name }: { namespace: string; name: string }) =>
       resourceApi.delete('httproute', namespace, name),
     onSuccess: () => {
-      message.success('删除成功')
+      message.success(t('msg.deleteOk'))
       queryClient.invalidateQueries({ queryKey: ['httproutes'] })
     },
   })
@@ -37,7 +39,7 @@ const HTTPRouteList = () => {
     mutationFn: (resources: Array<{ namespace: string; name: string }>) =>
       resourceApi.batchDelete('httproute', resources),
     onSuccess: () => {
-      message.success(`成功删除 ${selectedRowKeys.length} 个资源`)
+      message.success(t('msg.batchDeleteOk', { n: selectedRowKeys.length }))
       setSelectedRowKeys([])
       queryClient.invalidateQueries({ queryKey: ['httproutes'] })
     },
@@ -56,11 +58,11 @@ const HTTPRouteList = () => {
 
   const handleDelete = (namespace: string, name: string) => {
     Modal.confirm({
-      title: '确认删除',
-      content: `确定要删除 ${name} 吗？此操作不可恢复。`,
-      okText: '确认删除',
+      title: t('confirm.deleteTitle'),
+      content: t('confirm.deleteMsg', { name }),
+      okText: t('confirm.okText'),
       okType: 'danger',
-      cancelText: '取消',
+      cancelText: t('btn.cancel'),
       onOk: () => deleteMutation.mutate({ namespace, name }),
     })
   }
@@ -74,11 +76,11 @@ const HTTPRouteList = () => {
       }))
 
     Modal.confirm({
-      title: '批量删除',
-      content: `确定要删除 ${selectedResources.length} 个资源吗？此操作不可恢复。`,
-      okText: '确认删除',
+      title: t('confirm.batchDeleteTitle'),
+      content: `${t('confirm.batchDeleteMsg', { n: selectedResources.length })} ${t('confirm.deleteIrreversible')}`,
+      okText: t('confirm.okText'),
       okType: 'danger',
-      cancelText: '取消',
+      cancelText: t('btn.cancel'),
       onOk: () => batchDeleteMutation.mutate(selectedResources),
     })
   }
@@ -108,31 +110,31 @@ const HTTPRouteList = () => {
 
   const columns = [
     {
-      title: '名称',
+      title: t('col.name'),
       dataIndex: ['metadata', 'name'],
       key: 'name',
       sorter: (a: K8sResource, b: K8sResource) => a.metadata.name.localeCompare(b.metadata.name),
     },
     {
-      title: '命名空间',
+      title: t('col.namespace'),
       dataIndex: ['metadata', 'namespace'],
       key: 'namespace',
     },
     {
-      title: '状态',
+      title: t('col.status'),
       key: 'status',
       render: () => <Tag color="success">Active</Tag>,
     },
     {
-      title: '操作',
+      title: t('col.actions'),
       key: 'actions',
       render: (_: any, record: K8sResource) => (
         <Space>
           <Button type="link" icon={<EyeOutlined />} size="small" onClick={() => handleView(record)}>
-            查看
+            {t('btn.view')}
           </Button>
           <Button type="link" icon={<EditOutlined />} size="small" onClick={() => handleEdit(record)}>
-            编辑
+            {t('btn.edit')}
           </Button>
           <Button
             type="link"
@@ -141,7 +143,7 @@ const HTTPRouteList = () => {
             size="small"
             onClick={() => handleDelete(record.metadata.namespace!, record.metadata.name)}
           >
-            删除
+            {t('btn.delete')}
           </Button>
         </Space>
       ),
@@ -153,27 +155,27 @@ const HTTPRouteList = () => {
       <div style={{ marginBottom: 16, display: 'flex', justifyContent: 'space-between' }}>
         <Space>
           <Search
-            placeholder="搜索名称或命名空间"
+            placeholder={t('ph.searchNameNs')}
             allowClear
             style={{ width: 300 }}
             value={searchText}
             onChange={(e) => setSearchText(e.target.value)}
           />
           <Button icon={<ReloadOutlined />} onClick={() => refetch()}>
-            刷新
+            {t('btn.refresh')}
           </Button>
         </Space>
         <Button type="primary" icon={<PlusOutlined />} onClick={handleCreate}>
-          创建
+          {t('btn.create')}
         </Button>
       </div>
 
       {selectedRowKeys.length > 0 && (
         <div style={{ marginBottom: 16 }}>
           <Space>
-            <span>已选 {selectedRowKeys.length} 项</span>
+            <span>{t('status.selected', { n: selectedRowKeys.length })}</span>
             <Button danger onClick={handleBatchDelete}>
-              批量删除
+              {t('btn.batchDelete')}
             </Button>
           </Space>
         </div>
@@ -192,7 +194,7 @@ const HTTPRouteList = () => {
           defaultPageSize: 20,
           showSizeChanger: true,
           showQuickJumper: true,
-          showTotal: (total) => `共 ${total} 条记录`,
+          showTotal: (total) => t('table.totalItems', { n: total }),
         }}
       />
 

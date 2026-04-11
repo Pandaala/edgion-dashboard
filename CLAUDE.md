@@ -1,8 +1,8 @@
-# Edgion Dashboard — AI Agent 项目指令
+# Edgion Controller — AI Agent 项目指令
 
 ## 项目概要
 
-Edgion Dashboard 是 Edgion 网关的前端管理界面，基于 React 18 + TypeScript + Ant Design 5 + Vite 5。
+Edgion Controller 是 Edgion 网关的前端管理界面，基于 React 18 + TypeScript + Ant Design 5 + Vite 5。
 通过 REST API 与 Edgion Controller（端口 5800）交互，管理 Gateway API 资源和 Edgion 自定义资源。
 
 **技术栈**：React 18、TypeScript 5、Ant Design 5、Vite 5、React Router 6、React Query 5、Monaco Editor、Zod 验证、Axios。
@@ -82,7 +82,7 @@ Edgion Dashboard 是 Edgion 网关的前端管理界面，基于 React 18 + Type
 | EdgionStreamPlugins | namespaced | resourceApi | `edgionstreamplugins` | edgion.io/v1 |
 | EdgionTls | namespaced | resourceApi | `edgiontls` | edgion.io/v1 |
 | EdgionGatewayConfig | cluster | clusterResourceApi | `edgiongatewayconfig` | edgion.io/v1alpha1 |
-| PluginMetaData | cluster | clusterResourceApi | `pluginmetadata` | edgion.io/v1 |
+| PluginMetaData | namespaced | resourceApi | `pluginmetadata` | edgion.io/v1 |
 | Secret | namespaced | resourceApi | `secret` | v1 |
 | BackendTLSPolicy | namespaced | resourceApi | `backendtlspolicy` | gateway.networking.k8s.io/v1alpha3 |
 | ReferenceGrant | namespaced | resourceApi | `referencegrant` | gateway.networking.k8s.io/v1 |

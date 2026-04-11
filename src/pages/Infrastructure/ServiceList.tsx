@@ -5,10 +5,12 @@ import { useQuery } from '@tanstack/react-query'
 import { resourceApi } from '@/api/resources'
 import type { K8sResource } from '@/api/types'
 import SimpleResourceEditor from '@/components/ResourceEditor/common/SimpleResourceEditor'
+import { useT } from '@/i18n'
 
 const { Search } = Input
 
 const ServiceList = () => {
+  const t = useT()
   const [searchText, setSearchText] = useState('')
   const [editorVisible, setEditorVisible] = useState(false)
   const [selectedResource, setSelectedResource] = useState<K8sResource | null>(null)
@@ -25,12 +27,12 @@ const ServiceList = () => {
   })
 
   const columns = [
-    { title: '名称', dataIndex: ['metadata', 'name'], key: 'name' },
-    { title: '命名空间', dataIndex: ['metadata', 'namespace'], key: 'namespace' },
-    { title: '类型', key: 'type',
+    { title: t('col.name'), dataIndex: ['metadata', 'name'], key: 'name' },
+    { title: t('col.namespace'), dataIndex: ['metadata', 'namespace'], key: 'namespace' },
+    { title: t('col.type'), key: 'type',
       render: (_: any, r: K8sResource) => <Tag color="blue">{r.spec?.type || 'ClusterIP'}</Tag> },
     {
-      title: '端口', key: 'ports',
+      title: t('col.ports'), key: 'ports',
       render: (_: any, r: K8sResource) => (
         <Space wrap>
           {(r.spec?.ports || []).slice(0, 3).map((p: any) => (
@@ -40,10 +42,10 @@ const ServiceList = () => {
       ),
     },
     {
-      title: '操作', key: 'actions', width: 80,
+      title: t('col.actions'), key: 'actions', width: 80,
       render: (_: any, r: K8sResource) => (
         <Button size="small" icon={<EyeOutlined />}
-          onClick={() => { setSelectedResource(r); setEditorVisible(true) }}>查看</Button>
+          onClick={() => { setSelectedResource(r); setEditorVisible(true) }}>{t('btn.view')}</Button>
       ),
     },
   ]
@@ -51,15 +53,15 @@ const ServiceList = () => {
   return (
     <div>
       <div style={{ marginBottom: 16, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-        <span style={{ color: '#888', fontSize: 13 }}>Service 为只读资源，不支持在此创建</span>
+        <span style={{ color: '#888', fontSize: 13 }}>{t('notice.serviceReadonly')}</span>
         <Space>
-          <Search placeholder="搜索名称/命名空间" value={searchText} onChange={(e) => setSearchText(e.target.value)}
+          <Search placeholder={t('ph.searchNameNs')} value={searchText} onChange={(e) => setSearchText(e.target.value)}
             style={{ width: 240 }} allowClear />
-          <Button icon={<ReloadOutlined />} onClick={() => refetch()}>刷新</Button>
+          <Button icon={<ReloadOutlined />} onClick={() => refetch()}>{t('btn.refresh')}</Button>
         </Space>
       </div>
       <Table rowKey={(r) => `${r.metadata.namespace}/${r.metadata.name}`} columns={columns}
-        dataSource={filtered} loading={isLoading} pagination={{ pageSize: 20, showTotal: (t) => `共 ${t} 条` }} size="middle" />
+        dataSource={filtered} loading={isLoading} pagination={{ pageSize: 20, showTotal: (total) => t('table.totalItems', { n: total }) }} size="middle" />
       <SimpleResourceEditor visible={editorVisible} mode="view" resource={selectedResource} title="Service"
         onClose={() => setEditorVisible(false)} onSubmit={async () => {}} />
     </div>

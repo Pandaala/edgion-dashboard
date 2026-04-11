@@ -12,6 +12,7 @@ import type { GRPCRoute } from '@/types/gateway-api/grpcroute'
 import {
   createEmptyGRPCRoute, normalizeGRPCRoute, grpcRouteToYaml, yamlToGRPCRoute,
 } from '@/utils/grpcroute'
+import { useT } from '@/i18n'
 
 interface GRPCRouteEditorProps {
   visible: boolean
@@ -23,6 +24,7 @@ interface GRPCRouteEditorProps {
 const GRPCRouteEditor: React.FC<GRPCRouteEditorProps> = ({
   visible, mode, resource, onClose,
 }) => {
+  const t = useT()
   const [activeTab, setActiveTab] = useState<'form' | 'yaml'>('form')
   const [formData, setFormData] = useState<GRPCRoute>(() => createEmptyGRPCRoute())
   const [yamlContent, setYamlContent] = useState('')
@@ -51,7 +53,7 @@ const GRPCRouteEditor: React.FC<GRPCRouteEditorProps> = ({
       }
       setActiveTab(key as 'form' | 'yaml')
     } catch (e: any) {
-      message.error(`切换失败: ${e.message}`)
+      message.error(t('msg.tabSwitchFailed', { err: e.message }))
     }
   }
 
@@ -59,11 +61,11 @@ const GRPCRouteEditor: React.FC<GRPCRouteEditorProps> = ({
     mutationFn: (yamlStr: string) =>
       resourceApi.create('grpcroute', formData.metadata.namespace || 'default', yamlStr),
     onSuccess: () => {
-      message.success('创建成功')
+      message.success(t('msg.createOk'))
       queryClient.invalidateQueries({ queryKey: ['grpcroute'] })
       onClose()
     },
-    onError: (e: any) => message.error(`创建失败: ${e.message}`),
+    onError: (e: any) => message.error(t('msg.createFailed', { err: e.message })),
   })
 
   const updateMutation = useMutation({
@@ -75,11 +77,11 @@ const GRPCRouteEditor: React.FC<GRPCRouteEditorProps> = ({
         yamlStr,
       ),
     onSuccess: () => {
-      message.success('更新成功')
+      message.success(t('msg.updateOk'))
       queryClient.invalidateQueries({ queryKey: ['grpcroute'] })
       onClose()
     },
-    onError: (e: any) => message.error(`更新失败: ${e.message}`),
+    onError: (e: any) => message.error(t('msg.updateFailed', { err: e.message })),
   })
 
   const handleSubmit = () => {
@@ -91,19 +93,26 @@ const GRPCRouteEditor: React.FC<GRPCRouteEditorProps> = ({
   const isPending = createMutation.isPending || updateMutation.isPending
   const isReadOnly = mode === 'view'
 
+  const title =
+    mode === 'create'
+      ? t('modal.create', { resource: 'GRPCRoute' })
+      : mode === 'edit'
+      ? t('modal.edit', { resource: resource?.metadata.name || 'GRPCRoute' })
+      : t('modal.view', { resource: resource?.metadata.name || 'GRPCRoute' })
+
   return (
     <Modal
-      title={`${mode === 'create' ? '创建' : mode === 'edit' ? '编辑' : '查看'} GRPCRoute`}
+      title={title}
       open={visible}
       onCancel={onClose}
       width={900}
       footer={
         isReadOnly
-          ? [<Button key="close" onClick={onClose}>关闭</Button>]
+          ? [<Button key="close" onClick={onClose}>{t('btn.close')}</Button>]
           : [
-              <Button key="cancel" onClick={onClose}>取消</Button>,
+              <Button key="cancel" onClick={onClose}>{t('btn.cancel')}</Button>,
               <Button key="submit" type="primary" onClick={handleSubmit} loading={isPending}>
-                {mode === 'create' ? '创建' : '保存'}
+                {mode === 'create' ? t('btn.create') : t('btn.save')}
               </Button>,
             ]
       }
@@ -114,7 +123,7 @@ const GRPCRouteEditor: React.FC<GRPCRouteEditorProps> = ({
         items={[
           {
             key: 'form',
-            label: '表单',
+            label: t('tab.form'),
             children: (
               <GRPCRouteForm
                 data={formData}
@@ -126,7 +135,7 @@ const GRPCRouteEditor: React.FC<GRPCRouteEditorProps> = ({
           },
           {
             key: 'yaml',
-            label: 'YAML',
+            label: t('tab.yaml'),
             children: (
               <YamlEditor
                 value={yamlContent}

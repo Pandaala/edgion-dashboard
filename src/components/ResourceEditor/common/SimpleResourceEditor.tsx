@@ -8,6 +8,7 @@ import { Modal, Button, message } from 'antd'
 import * as yaml from 'js-yaml'
 import YamlEditor from '@/components/YamlEditor'
 import type { K8sResource } from '@/api/types'
+import { useT } from '@/i18n'
 
 interface SimpleResourceEditorProps {
   visible: boolean
@@ -30,6 +31,7 @@ const SimpleResourceEditor: React.FC<SimpleResourceEditorProps> = ({
   onSubmit,
   loading = false,
 }) => {
+  const t = useT()
   const [yamlContent, setYamlContent] = useState('')
 
   useEffect(() => {
@@ -47,19 +49,24 @@ const SimpleResourceEditor: React.FC<SimpleResourceEditorProps> = ({
 
   const handleSubmit = async () => {
     if (!yamlContent.trim()) {
-      message.error('YAML 内容不能为空')
+      message.error(t('msg.yamlEmpty'))
       return
     }
     try {
       yaml.load(yamlContent)
     } catch (e: any) {
-      message.error(`YAML 格式错误: ${e.message}`)
+      message.error(t('msg.yamlInvalid', { err: e.message }))
       return
     }
     await onSubmit(yamlContent)
   }
 
-  const modalTitle = mode === 'create' ? `创建 ${title}` : mode === 'edit' ? `编辑 ${title}` : `查看 ${title}`
+  const modalTitle =
+    mode === 'create'
+      ? t('modal.create', { resource: title })
+      : mode === 'edit'
+      ? t('modal.edit', { resource: title })
+      : t('modal.view', { resource: title })
 
   return (
     <Modal
@@ -69,11 +76,11 @@ const SimpleResourceEditor: React.FC<SimpleResourceEditorProps> = ({
       width={860}
       footer={
         mode === 'view'
-          ? [<Button key="close" onClick={onClose}>关闭</Button>]
+          ? [<Button key="close" onClick={onClose}>{t('btn.close')}</Button>]
           : [
-              <Button key="cancel" onClick={onClose}>取消</Button>,
+              <Button key="cancel" onClick={onClose}>{t('btn.cancel')}</Button>,
               <Button key="submit" type="primary" onClick={handleSubmit} loading={loading}>
-                {mode === 'create' ? '创建' : '保存'}
+                {mode === 'create' ? t('btn.create') : t('btn.save')}
               </Button>,
             ]
       }
