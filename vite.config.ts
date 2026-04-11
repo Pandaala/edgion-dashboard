@@ -18,11 +18,11 @@ export default defineConfig({
     // /api/v1/proxy/* 路径由 Center 服务处理，无需额外代理规则（前缀 /api 已覆盖）
     proxy: {
       '/api': {
-        target: 'http://localhost:5800',
+        target: 'http://localhost:5810',
         changeOrigin: true,
       },
       '/health': {
-        target: 'http://localhost:5800',
+        target: 'http://localhost:5810',
         changeOrigin: true,
       },
     },

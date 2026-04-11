@@ -7,7 +7,6 @@ export interface NodeTypeConfig {
 }
 
 export const NODE_TYPE_CONFIG: Record<string, NodeTypeConfig> = {
-  gatewayclass:  { color: '#722ed1', bgColor: '#f9f0ff', label: 'infra.gatewayclass',  width: 220, height: 70 },
   gateway:       { color: '#1890ff', bgColor: '#e6f7ff', label: 'infra.gateway',        width: 220, height: 80 },
   httproute:     { color: '#52c41a', bgColor: '#f6ffed', label: 'route.http',           width: 220, height: 80 },
   grpcroute:     { color: '#13c2c2', bgColor: '#e6fffb', label: 'route.grpc',           width: 220, height: 80 },

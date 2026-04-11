@@ -43,7 +43,7 @@ const ControllerCard = ({
   const navigate = useNavigate()
 
   const handleEnter = () => {
-    navigate(`/controller/${encodeURIComponent(controller.controller_id)}`)
+    navigate(`/controller/${controller.controller_id.replace(/\//g, '~')}`)
   }
 
   const handleReload = () => {

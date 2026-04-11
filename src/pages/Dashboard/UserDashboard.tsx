@@ -7,8 +7,8 @@ import {
   ReloadOutlined,
 } from '@ant-design/icons'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
-import { resourceApi } from '@/api/resources'
-import { systemApi } from '@/api/client'
+import { systemApi, apiClient } from '@/api/client'
+import { getActiveControllerId } from '@/utils/proxy'
 import { useT } from '@/i18n'
 
 function useResourceCount(kind: string) {
@@ -16,8 +16,8 @@ function useResourceCount(kind: string) {
     queryKey: ['count', kind],
     queryFn: async () => {
       try {
-        const result = await resourceApi.listAll(kind as any)
-        return result.count ?? result.data?.length ?? 0
+        const { data } = await apiClient.get(`/namespaced/${kind}`, { _silent: true } as any)
+        return data.count ?? data.data?.length ?? 0
       } catch {
         return 0
       }
@@ -38,7 +38,11 @@ const StatCard = ({
   return (
     <Card
       hoverable
-      onClick={() => navigate(path)}
+      onClick={() => {
+        const cid = getActiveControllerId()
+        const prefix = cid ? `/controller/${cid.replace(/\//g, '~')}` : ''
+        navigate(`${prefix}${path}`)
+      }}
       bodyStyle={{ padding: '16px 20px' }}
     >
       <Statistic

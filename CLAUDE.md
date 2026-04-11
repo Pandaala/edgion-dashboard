@@ -126,6 +126,14 @@ GET  /api/v1/cluster/{kind}                     # 列出集群级资源
 POST /api/v1/services/acme/{ns}/{name}/trigger  # 手动触发 ACME 签发
 ```
 
+### 认证
+
+- 登录页: `/login`，使用 httpOnly Cookie 认证
+- 认证 API: `authApi`（`src/api/auth.ts`）— login/logout/me
+- 登录态: `sessionStorage`（`src/utils/auth.ts`）— 不使用 localStorage 存 token
+- 路由守卫: `RequireAuth` 组件（`src/App.tsx`）
+- 401 处理: 自动跳转 `/login`（`src/api/client.ts`）
+
 ## 常用命令
 
 ```bash

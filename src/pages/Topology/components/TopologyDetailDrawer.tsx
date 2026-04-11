@@ -4,7 +4,6 @@ import { useT } from '@/i18n'
 import { NODE_TYPE_CONFIG } from './nodes/nodeStyles'
 
 const KIND_TO_PATH: Record<string, string> = {
-  gatewayclass: '/infrastructure/gatewayclasses',
   gateway: '/infrastructure/gateways',
   httproute: '/routes/http',
   grpcroute: '/routes/grpc',

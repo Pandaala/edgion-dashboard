@@ -20,7 +20,8 @@ export const centerApi = {
     return data
   },
   reloadController: async (id: string): Promise<{ success: boolean }> => {
-    const { data } = await apiClient.post(`controllers/${encodeURIComponent(id)}/reload`)
+    const safeId = id.replace(/\//g, '~')
+    const { data } = await apiClient.post(`controllers/${safeId}/reload`)
     return data
   },
 }

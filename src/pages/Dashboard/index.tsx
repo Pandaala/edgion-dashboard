@@ -7,8 +7,8 @@ import {
   ReloadOutlined,
 } from '@ant-design/icons'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
-import { resourceApi, clusterResourceApi } from '@/api/resources'
-import { systemApi } from '@/api/client'
+import { systemApi, apiClient } from '@/api/client'
+import { getActiveControllerId } from '@/utils/proxy'
 import { useT } from '@/i18n'
 
 function useResourceCount(kind: string, scope: 'namespaced' | 'cluster' = 'namespaced') {
@@ -16,10 +16,9 @@ function useResourceCount(kind: string, scope: 'namespaced' | 'cluster' = 'names
     queryKey: ['count', kind],
     queryFn: async () => {
       try {
-        const result = scope === 'namespaced'
-          ? await resourceApi.listAll(kind as any)
-          : await clusterResourceApi.listAll(kind as any)
-        return result.count ?? result.data?.length ?? 0
+        const path = scope === 'namespaced' ? `/namespaced/${kind}` : `/cluster/${kind}`
+        const { data } = await apiClient.get(path, { _silent: true } as any)
+        return data.count ?? data.data?.length ?? 0
       } catch {
         return 0
       }
@@ -41,7 +40,12 @@ const StatCard = ({
   return (
     <Card
       hoverable={!!path}
-      onClick={() => path && navigate(path)}
+      onClick={() => {
+        if (!path) return
+        const cid = getActiveControllerId()
+        const prefix = cid ? `/controller/${cid.replace(/\//g, '~')}` : ''
+        navigate(`${prefix}${path}`)
+      }}
       style={{ cursor: path ? 'pointer' : 'default' }}
       bodyStyle={{ padding: '16px 20px' }}
     >
@@ -151,31 +155,11 @@ const Dashboard = () => {
             </div>
           </Card>
         </Col>
-        <Col xs={24} lg={8}>
-          <Card title={t('section.quickLinks')} size="small">
-            {[
-              { label: t('dash.manageGateway'), path: '/infrastructure/gateways', color: '#722ed1' },
-              { label: t('dash.managePlugins'), path: '/plugins', color: '#13c2c2' },
-              { label: t('dash.sysConfig'), path: '/system/config', color: '#fa8c16' },
-              { label: 'Manage LinkSys', path: '/system/linksys', color: '#52c41a' },
-              { label: 'Manage ACME', path: '/system/acme', color: '#eb2f96' },
-            ].map((link) => (
-              <Button key={link.path} type="link" onClick={() => navigate(link.path)}
-                style={{ display: 'block', textAlign: 'left', padding: '4px 0', color: link.color }}>
-                → {link.label}
-              </Button>
-            ))}
-          </Card>
-        </Col>
-        <Col xs={24} lg={8}>
+        <Col xs={24} lg={16}>
           <Card title="ReferenceGrant" size="small" bodyStyle={{ padding: '16px 20px' }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: 12, fontSize: 13 }}>
               <span style={{ color: '#888' }}>ReferenceGrant</span>
               <ResourceCountCell kind="referencegrant" />
-              <Button size="small" type="link" onClick={() => navigate('/infrastructure/referencegrants')}
-                style={{ padding: 0, marginLeft: 'auto' }}>
-                → Manage
-              </Button>
             </div>
           </Card>
         </Col>

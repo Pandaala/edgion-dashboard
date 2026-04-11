@@ -5,6 +5,23 @@ description: Edgion Controller API 层设计——Axios 客户端、resourceApi/
 
 # API 层设计
 
+## authApi（认证）
+
+| 方法 | 路径 | 说明 |
+|------|------|------|
+| `authApi.login(req)` | POST `auth/login` | 登录，后端设置 httpOnly Cookie |
+| `authApi.logout()` | POST `auth/logout` | 退出，清除 Cookie |
+| `authApi.me()` | GET `auth/me` | 获取当前用户信息 |
+
+### Cookie 认证模式
+
+前端不存储 token（不用 localStorage）。登录后后端设置 `Set-Cookie: edgion_token=<jwt>; HttpOnly; SameSite=Strict`，浏览器自动携带。
+
+- `src/utils/auth.ts` — `sessionStorage` 标记登录态（`setLoggedIn`/`clearLoggedIn`/`isLoggedIn`）
+- `src/api/auth.ts` — authApi（login/logout/me）
+- `src/pages/Login/LoginPage.tsx` — 登录页
+- `src/App.tsx` — `RequireAuth` 路由守卫
+
 ## 双 API 客户端
 
 根据资源 Scope 选择：
@@ -55,6 +72,7 @@ export type ResourceKind =
 ## 错误处理
 
 Axios 拦截器自动处理常见错误码：
+- 401 Unauthorized → 自动跳转 `/login`（token 过期或未登录）
 - 409 Conflict → 资源已存在
 - 404 Not Found → 资源不存在
 - 400 Bad Request → 请求参数错误（显示后端 message）

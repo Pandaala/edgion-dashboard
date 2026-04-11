@@ -52,19 +52,8 @@ description: Root navigation for the Edgion Controller knowledge base. Read this
 | 3 编码实现 | 类型 → 工具函数 → 编辑器 → 列表页 → 路由注册 | `02-patterns/` + `01-architecture/` |
 | 4 测试验证 | 启动后端 + 加载数据 + 浏览器验证 | `04-testing/` |
 
-## 已完成的资源页面
+## 已完成的功能
 
-- **HTTPRoute** — `/routes/http`（完整 CRUD + Form/YAML 编辑器）
-- **EdgionPlugins** — `/plugins`（完整 CRUD + 四阶段插件概览）
-
-## 待开发资源页面
-
-按优先级排列（详见开发计划 `skills/PLAN.md`）：
-
-0. **Phase 0 — 基础重构**: API 层更新 + 公共组件提取 + SimpleResourceEditor
-1. **Phase 1 — 路由类**: GRPCRoute, TCPRoute, UDPRoute, TLSRoute
-2. **Phase 2 — 基础设施**: Gateway, GatewayClass, Service, EndpointSlice, ReferenceGrant
-3. **Phase 3 — 安全 & TLS**: EdgionTls, Secret, BackendTLSPolicy
-4. **Phase 4 — 插件扩展**: EdgionStreamPlugins, PluginMetaData, LinkSys
-5. **Phase 5 — 系统配置**: EdgionGatewayConfig, EdgionAcme
-6. **Phase 6 — Dashboard 增强**: 实时统计、资源关系展示、健康监控
+- **全部 20 个 CRUD 页面** — Phase 0-5 已完成，详见 [pages-and-routes](../../skills/02-dashboard/01-pages-and-routes.md)
+- **资源拓扑可视化** — `/topology`（React Flow + dagre，用户级 Gateway→Route→Service/Plugin 引用图）
+- **Center 模式** — 多 Controller 联邦管理（CenterLayout + ControllerProxy）

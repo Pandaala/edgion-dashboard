@@ -13,10 +13,13 @@ export const apiClient = axios.create({
 })
 
 // Proxy interceptor — rewrite baseURL when a controller is active (Center proxy mode)
+// controller_id contains "/" (e.g. "cluster-east/ctrl-01") which browsers decode
+// even when percent-encoded. Use "~" as separator in URL, Center converts back.
 apiClient.interceptors.request.use((config) => {
   const controllerId = getActiveControllerId()
   if (controllerId) {
-    config.baseURL = `/api/v1/proxy/${encodeURIComponent(controllerId)}/api/v1`
+    const safeId = controllerId.replace(/\//g, '~')
+    config.baseURL = `/api/v1/proxy/${safeId}/api/v1`
   }
   return config
 })
@@ -75,7 +78,8 @@ export const systemClient = axios.create({
 systemClient.interceptors.request.use((config) => {
   const controllerId = getActiveControllerId()
   if (controllerId) {
-    config.baseURL = `/api/v1/proxy/${encodeURIComponent(controllerId)}`
+    const safeId = controllerId.replace(/\//g, '~')
+    config.baseURL = `/api/v1/proxy/${safeId}`
   }
   return config
 })

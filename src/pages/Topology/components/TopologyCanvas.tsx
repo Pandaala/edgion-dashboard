@@ -11,7 +11,6 @@ import ReactFlow, {
 } from 'reactflow'
 import 'reactflow/dist/style.css'
 
-import GatewayClassNode from './nodes/GatewayClassNode'
 import GatewayNode from './nodes/GatewayNode'
 import RouteNode from './nodes/RouteNode'
 import ServiceNode from './nodes/ServiceNode'
@@ -22,7 +21,6 @@ import { NODE_TYPE_CONFIG } from './nodes/nodeStyles'
 
 // CRITICAL: defined outside component to prevent re-renders
 const nodeTypes = {
-  gatewayclass: GatewayClassNode,
   gateway: GatewayNode,
   route: RouteNode,
   service: ServiceNode,

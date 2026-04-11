@@ -1,7 +1,7 @@
 import { useMemo, useCallback } from 'react'
 import { useQueries } from '@tanstack/react-query'
 import type { Node, Edge } from 'reactflow'
-import { resourceApi, clusterResourceApi } from '@/api/resources'
+import { resourceApi } from '@/api/resources'
 import type { K8sResource } from '@/types/gateway-api/common'
 import { applyDagreLayout } from '../components/layout/dagreLayout'
 
@@ -59,7 +59,6 @@ function makeEdge(
 // ---------------------------------------------------------------------------
 
 export function buildTopologyGraph(
-  gatewayclasses: K8sResource[],
   gateways: K8sResource[],
   httproutes: K8sResource[],
   grpcroutes: K8sResource[],
@@ -84,27 +83,6 @@ export function buildTopologyGraph(
       edgeSet.add(edge.id)
       edges.push(edge)
     }
-  }
-
-  // -------------------------------------------------------------------------
-  // GatewayClass nodes (cluster-scoped)
-  // -------------------------------------------------------------------------
-  for (const res of gatewayclasses) {
-    const { name } = res.metadata
-    const id = `gatewayclass/${name}`
-    nodes.push({
-      id,
-      type: 'gatewayclass',
-      position: { x: 0, y: 0 },
-      data: {
-        name,
-        kind: 'gatewayclass',
-        controller: res.spec?.controllerName,
-        resource: res,
-        width: 220,
-        height: 70,
-      },
-    })
   }
 
   // -------------------------------------------------------------------------
@@ -263,21 +241,6 @@ export function buildTopologyGraph(
   const nodeIds = new Set(nodes.map((n) => n.id))
 
   // -------------------------------------------------------------------------
-  // Edges: GatewayClass → Gateway
-  // -------------------------------------------------------------------------
-  for (const res of gateways) {
-    const { name, namespace } = res.metadata
-    const gwClassName = res.spec?.gatewayClassName
-    if (gwClassName) {
-      const source = `gatewayclass/${gwClassName}`
-      const target = `gateway/${namespace}/${name}`
-      if (nodeIds.has(source)) {
-        addEdge(makeEdge(source, target))
-      }
-    }
-  }
-
-  // -------------------------------------------------------------------------
   // Edges: Gateway → Route
   // -------------------------------------------------------------------------
   for (const [routeList, routeKind] of routeGroups) {
@@ -380,39 +343,16 @@ export function buildTopologyGraph(
     filteredNodes = nodes
     filteredEdges = edges
   } else {
-    // Keep namespaced nodes that match, plus cluster-scoped nodes tentatively
-    const namespacedVisible = new Set<string>()
-    const clusterScopedIds = new Set<string>()
-
+    const visibleIds = new Set<string>()
     for (const node of nodes) {
-      const data = node.data
-      if (data.kind === 'gatewayclass') {
-        clusterScopedIds.add(node.id)
-      } else if (data.namespace === namespaceFilter) {
-        namespacedVisible.add(node.id)
+      if (node.data.namespace === namespaceFilter) {
+        visibleIds.add(node.id)
       }
     }
 
-    // Determine which edges are valid after filtering namespaced nodes
-    // (temporarily using namespacedVisible + clusterScopedIds as candidates)
-    const allVisible = new Set([...namespacedVisible, ...clusterScopedIds])
-
-    const validEdges = edges.filter(
-      (e) => allVisible.has(e.source) && allVisible.has(e.target)
-    )
-
-    // Keep cluster-scoped nodes only if they participate in a valid edge
-    const connectedCluster = new Set<string>()
-    for (const e of validEdges) {
-      if (clusterScopedIds.has(e.source)) connectedCluster.add(e.source)
-      if (clusterScopedIds.has(e.target)) connectedCluster.add(e.target)
-    }
-
-    const visibleSet = new Set([...namespacedVisible, ...connectedCluster])
-
-    filteredNodes = nodes.filter((n) => visibleSet.has(n.id))
-    filteredEdges = validEdges.filter(
-      (e) => visibleSet.has(e.source) && visibleSet.has(e.target)
+    filteredNodes = nodes.filter((n) => visibleIds.has(n.id))
+    filteredEdges = edges.filter(
+      (e) => visibleIds.has(e.source) && visibleIds.has(e.target)
     )
   }
 
@@ -433,11 +373,6 @@ const QUERY_OPTIONS = { staleTime: 30000, retry: 1 } as const
 export function useTopologyData(namespaceFilter: string | null): TopologyData {
   const results = useQueries({
     queries: [
-      {
-        queryKey: ['topology', 'gatewayclass'],
-        queryFn: () => clusterResourceApi.listAll<K8sResource>('gatewayclass').then((r) => r.data ?? []),
-        ...QUERY_OPTIONS,
-      },
       {
         queryKey: ['topology', 'gateway'],
         queryFn: () => resourceApi.listAll<K8sResource>('gateway').then((r) => r.data ?? []),
@@ -498,7 +433,6 @@ export function useTopologyData(namespaceFilter: string | null): TopologyData {
     if (isLoading) return { nodes: [], edges: [], namespaces: [] }
 
     const [
-      gcResult,
       gwResult,
       httpResult,
       grpcResult,
@@ -512,7 +446,6 @@ export function useTopologyData(namespaceFilter: string | null): TopologyData {
     ] = results
 
     return buildTopologyGraph(
-      gcResult.data ?? [],
       gwResult.data ?? [],
       httpResult.data ?? [],
       grpcResult.data ?? [],

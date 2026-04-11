@@ -44,56 +44,12 @@ function RequireAuth({ children }: { children: React.ReactNode }) {
   return <>{children}</>
 }
 
-// All controller sub-routes shared between controller mode and center proxy mode
-function ControllerRoutes() {
-  return (
-    <>
-      <Route index element={<Dashboard />} />
-      <Route path="user" element={<UserDashboard />} />
-      <Route path="topology" element={<TopologyPage />} />
-      <Route path="routes">
-        <Route path="http" element={<HTTPRouteList />} />
-        <Route path="grpc" element={<GRPCRouteList />} />
-        <Route path="tcp" element={<TCPRouteList />} />
-        <Route path="udp" element={<UDPRouteList />} />
-        <Route path="tls" element={<TLSRouteList />} />
-      </Route>
-      <Route path="infrastructure">
-        <Route path="gateways" element={<GatewayList />} />
-        <Route path="gatewayclasses" element={<GatewayClassList />} />
-        <Route path="referencegrants" element={<ReferenceGrantList />} />
-      </Route>
-      <Route path="services">
-        <Route path="list" element={<ServiceList />} />
-        <Route path="endpointslices" element={<EndpointSliceList />} />
-      </Route>
-      <Route path="security">
-        <Route path="tls" element={<EdgionTlsList />} />
-        <Route path="backendtls" element={<BackendTLSPolicyList />} />
-      </Route>
-      <Route path="plugins">
-        <Route index element={<EdgionPluginsList />} />
-        <Route path="stream" element={<EdgionStreamPluginsList />} />
-        <Route path="metadata" element={<PluginMetaDataList />} />
-      </Route>
-      <Route path="system">
-        <Route path="config" element={<EdgionGatewayConfigPage />} />
-        <Route path="linksys" element={<LinkSysList />} />
-        <Route path="acme" element={<EdgionAcmeList />} />
-      </Route>
-    </>
-  )
-}
-
 function App() {
   const [mode, setMode] = useState<'controller' | 'center' | null>(null)
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    if (!isLoggedIn()) {
-      setLoading(false)
-      return
-    }
+    // server-info is unauthenticated — always call it to detect mode
     systemApi
       .serverInfo()
       .then((res) => {
@@ -108,7 +64,7 @@ function App() {
       .finally(() => setLoading(false))
   }, [])
 
-  if (loading && isLoggedIn()) {
+  if (loading) {
     return (
       <Spin
         size="large"
@@ -122,44 +78,66 @@ function App() {
     )
   }
 
+  if (mode === 'center') {
+    return (
+      <Routes>
+        <Route path="/login" element={<LoginPage />} />
+        <Route path="/" element={<RequireAuth><CenterLayout /></RequireAuth>}>
+          <Route index element={<CenterDashboard />} />
+        </Route>
+        <Route path="/controller/:controllerId" element={<RequireAuth><ControllerProxy /></RequireAuth>}>
+          <Route index element={<Dashboard />} />
+          <Route path="user" element={<UserDashboard />} />
+          <Route path="topology" element={<TopologyPage />} />
+          <Route path="routes/http" element={<HTTPRouteList />} />
+          <Route path="routes/grpc" element={<GRPCRouteList />} />
+          <Route path="routes/tcp" element={<TCPRouteList />} />
+          <Route path="routes/udp" element={<UDPRouteList />} />
+          <Route path="routes/tls" element={<TLSRouteList />} />
+          <Route path="infrastructure/gateways" element={<GatewayList />} />
+          <Route path="infrastructure/gatewayclasses" element={<GatewayClassList />} />
+          <Route path="infrastructure/referencegrants" element={<ReferenceGrantList />} />
+          <Route path="services/list" element={<ServiceList />} />
+          <Route path="services/endpointslices" element={<EndpointSliceList />} />
+          <Route path="security/tls" element={<EdgionTlsList />} />
+          <Route path="security/backendtls" element={<BackendTLSPolicyList />} />
+          <Route path="plugins" element={<EdgionPluginsList />} />
+          <Route path="plugins/stream" element={<EdgionStreamPluginsList />} />
+          <Route path="plugins/metadata" element={<PluginMetaDataList />} />
+          <Route path="system/config" element={<EdgionGatewayConfigPage />} />
+          <Route path="system/linksys" element={<LinkSysList />} />
+          <Route path="system/acme" element={<EdgionAcmeList />} />
+        </Route>
+      </Routes>
+    )
+  }
+
   return (
     <Routes>
       <Route path="/login" element={<LoginPage />} />
-      {mode === 'center' ? (
-        <>
-          <Route
-            path="/"
-            element={
-              <RequireAuth>
-                <CenterLayout />
-              </RequireAuth>
-            }
-          >
-            <Route index element={<CenterDashboard />} />
-          </Route>
-          <Route
-            path="/controller/:controllerId"
-            element={
-              <RequireAuth>
-                <ControllerProxy />
-              </RequireAuth>
-            }
-          >
-            <ControllerRoutes />
-          </Route>
-        </>
-      ) : (
-        <Route
-          path="/"
-          element={
-            <RequireAuth>
-              <MainLayout />
-            </RequireAuth>
-          }
-        >
-          <ControllerRoutes />
-        </Route>
-      )}
+      <Route path="/" element={<RequireAuth><MainLayout /></RequireAuth>}>
+        <Route index element={<Dashboard />} />
+        <Route path="user" element={<UserDashboard />} />
+        <Route path="topology" element={<TopologyPage />} />
+        <Route path="routes/http" element={<HTTPRouteList />} />
+        <Route path="routes/grpc" element={<GRPCRouteList />} />
+        <Route path="routes/tcp" element={<TCPRouteList />} />
+        <Route path="routes/udp" element={<UDPRouteList />} />
+        <Route path="routes/tls" element={<TLSRouteList />} />
+        <Route path="infrastructure/gateways" element={<GatewayList />} />
+        <Route path="infrastructure/gatewayclasses" element={<GatewayClassList />} />
+        <Route path="infrastructure/referencegrants" element={<ReferenceGrantList />} />
+        <Route path="services/list" element={<ServiceList />} />
+        <Route path="services/endpointslices" element={<EndpointSliceList />} />
+        <Route path="security/tls" element={<EdgionTlsList />} />
+        <Route path="security/backendtls" element={<BackendTLSPolicyList />} />
+        <Route path="plugins" element={<EdgionPluginsList />} />
+        <Route path="plugins/stream" element={<EdgionStreamPluginsList />} />
+        <Route path="plugins/metadata" element={<PluginMetaDataList />} />
+        <Route path="system/config" element={<EdgionGatewayConfigPage />} />
+        <Route path="system/linksys" element={<LinkSysList />} />
+        <Route path="system/acme" element={<EdgionAcmeList />} />
+      </Route>
     </Routes>
   )
 }

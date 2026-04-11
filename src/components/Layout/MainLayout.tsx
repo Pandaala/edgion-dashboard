@@ -137,7 +137,7 @@ const MainLayout = () => {
   const effectivePath = (() => {
     let path = location.pathname
     if (activeControllerId) {
-      const prefix = `/controller/${encodeURIComponent(activeControllerId)}`
+      const prefix = `/controller/${activeControllerId.replace(/\//g, '~')}`
       if (path.startsWith(prefix)) {
         path = path.slice(prefix.length) || '/'
       }
@@ -146,7 +146,7 @@ const MainLayout = () => {
   })()
 
   const handleMenuClick: MenuProps['onClick'] = (e) => {
-    const prefix = activeControllerId ? `/controller/${encodeURIComponent(activeControllerId)}` : ''
+    const prefix = activeControllerId ? `/controller/${activeControllerId.replace(/\//g, '~')}` : ''
     navigate(`${prefix}${e.key}`)
   }
 
@@ -196,7 +196,18 @@ const MainLayout = () => {
             letterSpacing: collapsed ? 0 : 1,
           }}
         >
-          {collapsed ? 'EC' : (isCenterMode ? 'Controller' : 'Edgion Controller')}
+          {isCenterMode ? (
+            <span
+              onClick={() => navigate('/')}
+              style={{ cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 6 }}
+              title={t('center.backToCenter')}
+            >
+              <ArrowLeftOutlined style={{ fontSize: 14 }} />
+              {collapsed ? '' : 'Controller'}
+            </span>
+          ) : (
+            collapsed ? 'EC' : 'Edgion Controller'
+          )}
         </div>
         <Menu
           theme="dark"
@@ -234,7 +245,7 @@ const MainLayout = () => {
               {t('action.refresh')}
             </Button>
             <Button icon={<GlobalOutlined />} onClick={handleLangToggle}>
-              {lang === 'en' ? 'EN' : '中文'}
+              {lang === 'en' ? '中文' : 'EN'}
             </Button>
           </Space>
         </Header>
