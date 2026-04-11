@@ -80,7 +80,7 @@ const HTTPRouteEditor: React.FC<HTTPRouteEditorProps> = ({
       // Zod 验证（静默）
       const validated = httpRouteSchema.safeParse(parsed);
       if (validated.success) {
-        setFormData(validated.data);
+        setFormData(validated.data as any);
       }
     } catch (e: any) {
       console.error('YAML parse error:', e);
@@ -130,13 +130,13 @@ const HTTPRouteEditor: React.FC<HTTPRouteEditorProps> = ({
         }
         
         // Zod 验证
-        const validated = httpRouteSchema.parse(formData);
+        const validated = httpRouteSchema.parse(formData) as any;
         parsedResource = validated;
         contentToSubmit = httpRouteToYAML(validated);
       } else {
         // YAML 模式：解析并验证 YAML
         parsedResource = yamlToHTTPRoute(yamlContent);
-        const validated = httpRouteSchema.parse(parsedResource);
+        const validated = httpRouteSchema.parse(parsedResource) as any;
         contentToSubmit = httpRouteToYAML(validated);
       }
 

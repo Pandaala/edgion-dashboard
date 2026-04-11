@@ -199,7 +199,7 @@ const HTTPRouteList = () => {
       <HTTPRouteEditor
         visible={editorVisible}
         mode={editorMode}
-        resource={selectedResource}
+        resource={selectedResource as any}
         onClose={handleEditorClose}
       />
     </div>

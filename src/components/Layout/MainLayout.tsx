@@ -8,8 +8,12 @@ import {
   AppstoreOutlined,
   ReloadOutlined,
   GlobalOutlined,
+  ClusterOutlined,
+  SettingOutlined,
+  DatabaseOutlined,
 } from '@ant-design/icons'
 import type { MenuProps } from 'antd'
+import { useT, useLanguage } from '../../i18n/index.tsx'
 
 const { Header, Sider, Content } = Layout
 
@@ -17,53 +21,75 @@ type MenuItem = Required<MenuProps>['items'][number]
 
 const MainLayout = () => {
   const [collapsed, setCollapsed] = useState(false)
-  const [locale, setLocale] = useState('zh-CN')
   const navigate = useNavigate()
   const location = useLocation()
+  const t = useT()
+  const { lang, setLang } = useLanguage()
 
   const menuItems: MenuItem[] = [
     {
       key: '/',
       icon: <DashboardOutlined />,
-      label: 'Dashboard',
+      label: t('nav.dashboard'),
     },
     {
       key: 'routes',
       icon: <ApiOutlined />,
-      label: '路由管理',
+      label: t('nav.routes'),
       children: [
-        { key: '/routes/http', label: 'HTTPRoute' },
-        { key: '/routes/grpc', label: 'GRPCRoute' },
-        { key: '/routes/tcp', label: 'TCPRoute' },
-        { key: '/routes/udp', label: 'UDPRoute' },
-        { key: '/routes/tls', label: 'TLSRoute' },
+        { key: '/routes/http', label: t('route.http') },
+        { key: '/routes/grpc', label: t('route.grpc') },
+        { key: '/routes/tcp', label: t('route.tcp') },
+        { key: '/routes/udp', label: t('route.udp') },
+        { key: '/routes/tls', label: t('route.tls') },
+      ],
+    },
+    {
+      key: 'infrastructure',
+      icon: <ClusterOutlined />,
+      label: t('nav.infrastructure'),
+      children: [
+        { key: '/infrastructure/gateways', label: t('infra.gateway') },
+        { key: '/infrastructure/gatewayclasses', label: t('infra.gatewayclass') },
+        { key: '/infrastructure/referencegrants', label: t('infra.referencegrant') },
       ],
     },
     {
       key: 'services',
-      icon: <ApiOutlined />,
-      label: '服务管理',
+      icon: <DatabaseOutlined />,
+      label: t('nav.services'),
       children: [
-        { key: '/services', label: 'Service' },
-        { key: '/endpointslices', label: 'EndpointSlice' },
+        { key: '/services/list', label: t('infra.service') },
+        { key: '/services/endpointslices', label: t('infra.endpointslice') },
       ],
     },
     {
       key: 'security',
       icon: <SafetyOutlined />,
-      label: '安全配置',
+      label: t('nav.security'),
       children: [
-        { key: '/security/tls', label: 'TLS' },
-        { key: '/security/secret', label: 'Secret' },
+        { key: '/security/tls', label: t('security.tls') },
+        { key: '/security/backendtls', label: t('security.backendtls') },
       ],
     },
     {
       key: 'plugins',
       icon: <AppstoreOutlined />,
-      label: '插件管理',
+      label: t('nav.plugins'),
       children: [
-        { key: '/plugins', label: 'Plugins' },
-        { key: '/plugin-metadata', label: 'Metadata' },
+        { key: '/plugins', label: t('plugins.edgion') },
+        { key: '/plugins/stream', label: t('plugins.stream') },
+        { key: '/plugins/metadata', label: t('plugins.metadata') },
+      ],
+    },
+    {
+      key: 'system',
+      icon: <SettingOutlined />,
+      label: t('nav.system'),
+      children: [
+        { key: '/system/config', label: t('system.config') },
+        { key: '/system/linksys', label: t('system.linksys') },
+        { key: '/system/acme', label: t('system.acme') },
       ],
     },
   ]
@@ -72,9 +98,28 @@ const MainLayout = () => {
     navigate(e.key)
   }
 
-  const toggleLocale = () => {
-    setLocale(locale === 'zh-CN' ? 'en-US' : 'zh-CN')
-    // TODO: Implement i18n
+  // 获取当前激活的菜单 key
+  const getSelectedKey = () => {
+    const path = location.pathname
+    // 精确匹配 /plugins 不带子路径
+    if (path === '/plugins') return ['/plugins']
+    return [path]
+  }
+
+  // 获取默认打开的菜单组
+  const getOpenKeys = () => {
+    const path = location.pathname
+    if (path.startsWith('/routes')) return ['routes']
+    if (path.startsWith('/infrastructure')) return ['infrastructure']
+    if (path.startsWith('/services')) return ['services']
+    if (path.startsWith('/security')) return ['security']
+    if (path.startsWith('/plugins')) return ['plugins']
+    if (path.startsWith('/system')) return ['system']
+    return []
+  }
+
+  const handleLangToggle = () => {
+    setLang(lang === 'en' ? 'zh' : 'en')
   }
 
   return (
@@ -84,7 +129,7 @@ const MainLayout = () => {
         collapsed={collapsed}
         onCollapse={setCollapsed}
         theme="dark"
-        width={240}
+        width={220}
       >
         <div
           style={{
@@ -93,15 +138,17 @@ const MainLayout = () => {
             alignItems: 'center',
             justifyContent: 'center',
             color: '#fff',
-            fontSize: collapsed ? 16 : 20,
+            fontSize: collapsed ? 14 : 18,
             fontWeight: 'bold',
+            letterSpacing: collapsed ? 0 : 1,
           }}
         >
           {collapsed ? 'ED' : 'Edgion Dashboard'}
         </div>
         <Menu
           theme="dark"
-          selectedKeys={[location.pathname]}
+          selectedKeys={getSelectedKey()}
+          defaultOpenKeys={getOpenKeys()}
           mode="inline"
           items={menuItems}
           onClick={handleMenuClick}
@@ -109,13 +156,13 @@ const MainLayout = () => {
       </Sider>
       <Layout>
         <Header style={{ padding: '0 24px', background: '#fff', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-          <h2 style={{ margin: 0 }}>Edgion Controller</h2>
+          <h2 style={{ margin: 0, fontSize: 16 }}>Edgion Controller Dashboard</h2>
           <Space>
             <Button icon={<ReloadOutlined />} onClick={() => window.location.reload()}>
-              刷新
+              {t('action.refresh')}
             </Button>
-            <Button icon={<GlobalOutlined />} onClick={toggleLocale}>
-              {locale}
+            <Button icon={<GlobalOutlined />} onClick={handleLangToggle}>
+              {lang === 'en' ? 'EN' : '中文'}
             </Button>
           </Space>
         </Header>
@@ -128,4 +175,3 @@ const MainLayout = () => {
 }
 
 export default MainLayout
-

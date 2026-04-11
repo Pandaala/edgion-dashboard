@@ -47,15 +47,36 @@ apiClient.interceptors.response.use(
       errorMsg = error.response?.data?.error || error.message || '请求失败 / Request failed'
     }
     
-    message.error(errorMsg)
+    // 仅在非静默模式下弹出错误（Dashboard 的计数查询会静默失败）
+    const isSilent = (error.config as any)?._silent
+    if (!isSilent) {
+      message.error(errorMsg)
+    }
     return Promise.reject(error)
   }
 )
 
-// Health check API
-export const healthApi = {
-  check: async (): Promise<{ success: boolean; data?: string }> => {
-    const { data } = await axios.get('/health')
+// 不走 /api/v1 前缀的系统接口，直接用 axios
+export const systemClient = axios.create({
+  baseURL: '/',
+  timeout: 10000,
+})
+
+export const systemApi = {
+  health: async (): Promise<{ success: boolean; data?: string }> => {
+    const { data } = await systemClient.get('health')
+    return data
+  },
+  ready: async (): Promise<{ success: boolean; data?: string }> => {
+    const { data } = await systemClient.get('ready')
+    return data
+  },
+  serverInfo: async (): Promise<{ success: boolean; data?: { server_id: string; ready: boolean } }> => {
+    const { data } = await apiClient.get('server-info')
+    return data
+  },
+  reload: async (): Promise<{ success: boolean }> => {
+    const { data } = await apiClient.post('reload')
     return data
   },
 }

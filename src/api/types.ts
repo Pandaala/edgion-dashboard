@@ -9,6 +9,7 @@ export interface ListResponse<T> {
   success: boolean
   data?: T[]
   count: number
+  continue_token?: string
   error?: string
 }
 
@@ -47,6 +48,10 @@ export type ResourceKind =
   | 'gatewayclass'
   | 'edgiongatewayconfig'
   | 'gateway'
+  | 'edgionstreamplugins'
+  | 'referencegrant'
+  | 'edgionacme'
+  | 'backendtlspolicy'
 
 export type ResourceScope = 'namespaced' | 'cluster'
 
