@@ -12,6 +12,7 @@ import {
   DatabaseOutlined,
   LinkOutlined,
   LockOutlined,
+  ShareAltOutlined,
 } from '@ant-design/icons'
 import type { MenuProps } from 'antd'
 import { useT, useLanguage } from '../../i18n/index.tsx'
@@ -67,6 +68,21 @@ const MainLayout = () => {
             { key: '/security/backendtls', label: t('security.backendtls') },
           ],
         },
+        {
+          key: 'plugins',
+          icon: <AppstoreOutlined />,
+          label: t('nav.plugins'),
+          children: [
+            { key: '/plugins', label: t('plugins.edgion') },
+            { key: '/plugins/stream', label: t('plugins.stream') },
+            { key: '/plugins/metadata', label: t('plugins.metadata') },
+          ],
+        },
+        {
+          key: '/infrastructure/referencegrants',
+          icon: <ShareAltOutlined />,
+          label: t('infra.referencegrant'),
+        },
       ],
     },
     {
@@ -85,18 +101,7 @@ const MainLayout = () => {
           children: [
             { key: '/infrastructure/gateways', label: t('infra.gateway') },
             { key: '/infrastructure/gatewayclasses', label: t('infra.gatewayclass') },
-            { key: '/infrastructure/referencegrants', label: t('infra.referencegrant') },
             { key: '/system/config', label: t('system.config') },
-          ],
-        },
-        {
-          key: 'plugins',
-          icon: <AppstoreOutlined />,
-          label: t('nav.plugins'),
-          children: [
-            { key: '/plugins', label: t('plugins.edgion') },
-            { key: '/plugins/stream', label: t('plugins.stream') },
-            { key: '/plugins/metadata', label: t('plugins.metadata') },
           ],
         },
         {

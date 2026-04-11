@@ -166,11 +166,63 @@ src/
 └── main.tsx              # 入口（React/Router/Query/Ant Design）
 ```
 
+## 多语言（i18n）规范 — 强制
+
+> **禁止在组件中硬编码中文或双语混合字符串。所有 UI 文字必须通过 `t()` 输出。**
+
+### 快速用法
+
+```typescript
+import { useT } from '@/i18n'
+const t = useT()  // 在 React 组件函数体内调用
+
+t('btn.create')                              // "Create" / "创建"
+t('col.name')                               // "Name" / "名称"
+t('msg.deleteOk')                           // "Deleted successfully" / "删除成功"
+t('modal.create', { resource: 'Gateway' })  // "Create Gateway" / "创建 Gateway"
+t('msg.batchDeleteOk', { n: 5 })            // "5 resources deleted" / "成功删除 5 个资源"
+t('table.totalItems', { n: total })         // "Total: 42" / "共 42 条"
+t('confirm.deleteMsg', { name })            // 带资源名的确认文字
+t('msg.createFailed', { err: e.message })   // 带错误信息的失败提示
+```
+
+### 技术名词不翻译
+
+`HTTPRoute`、`GRPCRoute`、`Gateway`、`EdgionTls`、`YAML`、`HTTP`、`HTTPS`、`TCP`、`Exact` 等直接写字面量：
+```typescript
+`${t('btn.create')} Gateway`   // ✅ "Create Gateway" / "创建 Gateway"
+```
+
+### 新增 key 规则
+
+1. 先查 `skills/02-patterns/SKILL.md`（i18n 快速参考）或 `ws2/skills/02-dashboard/04-i18n.md`（完整清单）
+2. **同时**更新 `src/i18n/en.ts` 和 `src/i18n/zh.ts`（两文件 key 必须完全一致）
+3. 翻译文件位置：`src/i18n/en.ts`（英文，默认）、`src/i18n/zh.ts`（中文）
+
+### 分页标准写法
+
+```typescript
+pagination={{ showTotal: (n) => t('table.totalItems', { n }) }}
+```
+
+### 确认删除标准写法
+
+```typescript
+Modal.confirm({
+  title: t('confirm.deleteTitle'),
+  content: t('confirm.deleteMsg', { name }),
+  okText: t('confirm.okText'),
+  okType: 'danger',
+  cancelText: t('btn.cancel'),
+  onOk: () => deleteMutation.mutate(...),
+})
+```
+
 ## 编码规范
 
 - 组件文件用 PascalCase，工具文件用 camelCase
 - 列表页命名：`{Resource}List.tsx`，编辑器命名：`{Resource}Editor.tsx`
 - 新组件参考 HTTPRouteList / HTTPRouteEditor 的模式
 - 使用 Ant Design 组件，不引入额外 UI 库
-- 中文 UI 文本（后续 i18n 统一处理）
+- **所有 UI 文字走 i18n（见上方 i18n 规范）**
 - 类型定义单独文件，不内联在组件中
