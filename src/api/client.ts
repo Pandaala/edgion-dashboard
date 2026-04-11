@@ -1,6 +1,7 @@
 import axios, { AxiosError } from 'axios'
 import { message } from 'antd'
-import { getToken, removeToken } from '../utils/auth'
+import { clearLoggedIn } from '../utils/auth'
+import { getActiveControllerId } from '../utils/proxy'
 
 // Create axios instance
 export const apiClient = axios.create({
@@ -11,18 +12,19 @@ export const apiClient = axios.create({
   },
 })
 
+// Proxy interceptor — rewrite baseURL when a controller is active (Center proxy mode)
+apiClient.interceptors.request.use((config) => {
+  const controllerId = getActiveControllerId()
+  if (controllerId) {
+    config.baseURL = `/api/v1/proxy/${encodeURIComponent(controllerId)}/api/v1`
+  }
+  return config
+})
+
 // Request interceptor
 apiClient.interceptors.request.use(
-  (config) => {
-    const token = getToken()
-    if (token) {
-      config.headers.Authorization = `Bearer ${token}`
-    }
-    return config
-  },
-  (error) => {
-    return Promise.reject(error)
-  }
+  (config) => config,
+  (error) => Promise.reject(error)
 )
 
 // Response interceptor
@@ -34,9 +36,7 @@ apiClient.interceptors.response.use(
     let errorMsg: string
 
     if (status === 401) {
-      // Token expired or invalid — redirect to login
-      removeToken()
-      // Only redirect if not already on login page
+      clearLoggedIn()
       if (window.location.pathname !== '/login') {
         window.location.href = '/login'
       }
@@ -72,6 +72,14 @@ export const systemClient = axios.create({
   timeout: 10000,
 })
 
+systemClient.interceptors.request.use((config) => {
+  const controllerId = getActiveControllerId()
+  if (controllerId) {
+    config.baseURL = `/api/v1/proxy/${encodeURIComponent(controllerId)}`
+  }
+  return config
+})
+
 export const systemApi = {
   health: async (): Promise<{ success: boolean; data?: string }> => {
     const { data } = await systemClient.get('health')
@@ -81,7 +89,7 @@ export const systemApi = {
     const { data } = await systemClient.get('ready')
     return data
   },
-  serverInfo: async (): Promise<{ success: boolean; data?: { server_id: string; ready: boolean } }> => {
+  serverInfo: async (): Promise<{ success: boolean; data?: { mode?: string; server_id?: string; ready?: boolean } }> => {
     const { data } = await apiClient.get('server-info')
     return data
   },

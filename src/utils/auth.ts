@@ -1,17 +1,15 @@
-const TOKEN_KEY = 'edgion-token'
+const LOGGED_IN_KEY = 'edgion-logged-in'
 
-export function getToken(): string | null {
-  return localStorage.getItem(TOKEN_KEY)
+// Track login state via a simple flag (not the actual token)
+export function setLoggedIn(): void {
+  sessionStorage.setItem(LOGGED_IN_KEY, '1')
 }
 
-export function setToken(token: string): void {
-  localStorage.setItem(TOKEN_KEY, token)
+export function clearLoggedIn(): void {
+  sessionStorage.removeItem(LOGGED_IN_KEY)
 }
 
-export function removeToken(): void {
-  localStorage.removeItem(TOKEN_KEY)
-}
-
+// Quick sync check — may be stale, but avoids flash of login page
 export function isLoggedIn(): boolean {
-  return !!getToken()
+  return sessionStorage.getItem(LOGGED_IN_KEY) === '1'
 }

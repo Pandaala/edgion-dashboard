@@ -20,6 +20,9 @@ export const authApi = {
     const { data } = await apiClient.post('auth/login', req, { _silent: true } as any)
     return data
   },
+  logout: async (): Promise<void> => {
+    await apiClient.post('auth/logout', null, { _silent: true } as any).catch(() => {})
+  },
   me: async (): Promise<ApiResponse<MeResponse>> => {
     const { data } = await apiClient.get('auth/me', { _silent: true } as any)
     return data

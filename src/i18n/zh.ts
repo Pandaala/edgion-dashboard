@@ -9,6 +9,7 @@ const zh = {
   'nav.plugins': '插件管理',
   'nav.services': '服务管理',
   'nav.system': 'Gateway',
+  'nav.topology': '拓扑图',
 
   // Route types
   'route.http': 'HTTPRoute',
@@ -420,6 +421,29 @@ const zh = {
   'field.pluginDesc': '描述',
   'notice.pluginMetaYaml': '复杂的 schema 和 defaultConfig 请使用 YAML 标签编辑。',
 
+  // Center mode
+  'center.title': 'Edgion 中心',
+  'center.subtitle': '{n} 个 Controller',
+  'center.controllerId': 'Controller ID',
+  'center.cluster': '集群',
+  'center.status': '状态',
+  'center.online': '在线',
+  'center.offline': '离线',
+  'center.resourceCount': '资源数',
+  'center.lastSync': '最后同步',
+  'center.never': '从未',
+  'center.secsAgo': '{n} 秒前',
+  'center.minsAgo': '{n} 分钟前',
+  'center.hoursAgo': '{n} 小时前',
+  'center.enter': '进入',
+  'center.reload': '重载',
+  'center.reloadConfirm': '确定重载 Controller {name}？',
+  'center.reloadOk': '重载指令已发送',
+  'center.backToCenter': '返回中心',
+  'center.filterCluster': '按集群筛选',
+  'center.allClusters': '全部集群',
+  'center.searchPlaceholder': '搜索 Controller...',
+
   // Login
   'login.title': '登录',
   'login.subtitle': '登录 Edgion Controller',
@@ -429,6 +453,16 @@ const zh = {
   'login.failed': '用户名或密码错误',
   'login.logout': '退出登录',
   'login.required': '请输入{field}',
+
+  // Topology page
+  'topology.title': '资源拓扑',
+  'topology.allNamespaces': '全部命名空间',
+  'topology.legend': '图例',
+  'topology.noData': '未找到资源',
+  'topology.loading': '加载拓扑中...',
+  'topology.error': '加载拓扑数据失败',
+  'topology.goToList': '前往列表页',
+  'topology.resourceDetail': '资源详情',
 }
 
 export default zh

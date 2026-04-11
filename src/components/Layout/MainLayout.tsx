@@ -14,8 +14,12 @@ import {
   LockOutlined,
   ShareAltOutlined,
   LogoutOutlined,
+  ArrowLeftOutlined,
+  ApartmentOutlined,
 } from '@ant-design/icons'
-import { removeToken } from '../../utils/auth'
+import { clearLoggedIn } from '../../utils/auth'
+import { authApi } from '../../api/auth'
+import { getAppMode, getActiveControllerId } from '../../utils/proxy'
 import type { MenuProps } from 'antd'
 import { useT, useLanguage } from '../../i18n/index.tsx'
 
@@ -39,6 +43,11 @@ const MainLayout = () => {
           key: '/user',
           icon: <DashboardOutlined />,
           label: t('nav.dashboard'),
+        },
+        {
+          key: '/topology',
+          icon: <ApartmentOutlined />,
+          label: t('nav.topology'),
         },
         {
           key: 'routes',
@@ -120,27 +129,39 @@ const MainLayout = () => {
     },
   ]
 
+  const appMode = getAppMode()
+  const activeControllerId = getActiveControllerId()
+  const isCenterMode = appMode === 'center'
+
+  // Strip the /controller/:id prefix from the current path when in Center mode
+  const effectivePath = (() => {
+    let path = location.pathname
+    if (activeControllerId) {
+      const prefix = `/controller/${encodeURIComponent(activeControllerId)}`
+      if (path.startsWith(prefix)) {
+        path = path.slice(prefix.length) || '/'
+      }
+    }
+    return path
+  })()
+
   const handleMenuClick: MenuProps['onClick'] = (e) => {
-    navigate(e.key)
+    const prefix = activeControllerId ? `/controller/${encodeURIComponent(activeControllerId)}` : ''
+    navigate(`${prefix}${e.key}`)
   }
 
-  // 获取当前激活的菜单 key
   const getSelectedKey = () => {
-    const path = location.pathname
-    // 精确匹配 /plugins 不带子路径
-    if (path === '/plugins') return ['/plugins']
-    return [path]
+    if (effectivePath === '/plugins') return ['/plugins']
+    return [effectivePath]
   }
 
-  // 获取默认打开的菜单组
   const getOpenKeys = () => {
-    const path = location.pathname
-    if (path.startsWith('/routes')) return ['routes']
-    if (path.startsWith('/infrastructure')) return ['infrastructure']
-    if (path.startsWith('/services')) return ['services']
-    if (path.startsWith('/security')) return ['security']
-    if (path.startsWith('/plugins')) return ['plugins']
-    if (path.startsWith('/system')) return ['system']
+    if (effectivePath.startsWith('/routes')) return ['routes']
+    if (effectivePath.startsWith('/infrastructure')) return ['infrastructure']
+    if (effectivePath.startsWith('/services')) return ['services']
+    if (effectivePath.startsWith('/security')) return ['security']
+    if (effectivePath.startsWith('/plugins')) return ['plugins']
+    if (effectivePath.startsWith('/system')) return ['system']
     return []
   }
 
@@ -148,8 +169,9 @@ const MainLayout = () => {
     setLang(lang === 'en' ? 'zh' : 'en')
   }
 
-  const handleLogout = () => {
-    removeToken()
+  const handleLogout = async () => {
+    await authApi.logout()
+    clearLoggedIn()
     navigate('/login')
   }
 
@@ -174,7 +196,7 @@ const MainLayout = () => {
             letterSpacing: collapsed ? 0 : 1,
           }}
         >
-          {collapsed ? 'EC' : 'Edgion Controller'}
+          {collapsed ? 'EC' : (isCenterMode ? 'Controller' : 'Edgion Controller')}
         </div>
         <Menu
           theme="dark"
@@ -187,7 +209,23 @@ const MainLayout = () => {
       </Sider>
       <Layout>
         <Header style={{ padding: '0 24px', background: '#fff', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-          <h2 style={{ margin: 0, fontSize: 16 }}>Edgion Controller Dashboard</h2>
+          <Space>
+            {isCenterMode && (
+              <Button
+                icon={<ArrowLeftOutlined />}
+                type="link"
+                onClick={() => navigate('/')}
+                style={{ paddingLeft: 0 }}
+              >
+                {t('center.backToCenter')}
+              </Button>
+            )}
+            <h2 style={{ margin: 0, fontSize: 16 }}>
+              {isCenterMode && activeControllerId
+                ? `Controller: ${activeControllerId}`
+                : 'Edgion Controller Dashboard'}
+            </h2>
+          </Space>
           <Space>
             <Button icon={<LogoutOutlined />} onClick={handleLogout}>
               {t('login.logout')}

@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import { Form, Input, Button, Card, message, Typography } from 'antd'
 import { UserOutlined, LockOutlined } from '@ant-design/icons'
 import { authApi } from '../../api/auth'
-import { setToken, isLoggedIn } from '../../utils/auth'
+import { setLoggedIn, isLoggedIn } from '../../utils/auth'
 import { useT } from '../../i18n/index.tsx'
 
 const { Title, Text } = Typography
@@ -24,7 +24,7 @@ const LoginPage = () => {
     try {
       const res = await authApi.login({ username: values.username, password: values.password })
       if (res.success && res.data) {
-        setToken(res.data.token)
+        setLoggedIn()  // Just set the flag, cookie is already set by backend
         navigate('/', { replace: true })
       } else {
         message.error(t('login.failed'))

@@ -9,6 +9,7 @@ const en = {
   'nav.plugins': 'Plugin',
   'nav.services': 'Service',
   'nav.system': 'Gateway',
+  'nav.topology': 'Topology',
 
   // Route types
   'route.http': 'HTTPRoute',
@@ -420,6 +421,29 @@ const en = {
   'field.pluginDesc': 'Description',
   'notice.pluginMetaYaml': 'For complex schema and defaultConfig, use the YAML tab.',
 
+  // Center mode
+  'center.title': 'Edgion Center',
+  'center.subtitle': '{n} Controllers',
+  'center.controllerId': 'Controller ID',
+  'center.cluster': 'Cluster',
+  'center.status': 'Status',
+  'center.online': 'Online',
+  'center.offline': 'Offline',
+  'center.resourceCount': 'Resources',
+  'center.lastSync': 'Last Sync',
+  'center.never': 'Never',
+  'center.secsAgo': '{n}s ago',
+  'center.minsAgo': '{n}m ago',
+  'center.hoursAgo': '{n}h ago',
+  'center.enter': 'Enter',
+  'center.reload': 'Reload',
+  'center.reloadConfirm': 'Reload controller {name}?',
+  'center.reloadOk': 'Reload command sent',
+  'center.backToCenter': 'Back to Center',
+  'center.filterCluster': 'Filter by Cluster',
+  'center.allClusters': 'All Clusters',
+  'center.searchPlaceholder': 'Search controller...',
+
   // Login
   'login.title': 'Login',
   'login.subtitle': 'Sign in to Edgion Controller',
@@ -429,6 +453,16 @@ const en = {
   'login.failed': 'Invalid username or password',
   'login.logout': 'Logout',
   'login.required': 'Please enter {field}',
+
+  // Topology page
+  'topology.title': 'Resource Topology',
+  'topology.allNamespaces': 'All Namespaces',
+  'topology.legend': 'Legend',
+  'topology.noData': 'No resources found',
+  'topology.loading': 'Loading topology...',
+  'topology.error': 'Failed to load topology data',
+  'topology.goToList': 'Go to list page',
+  'topology.resourceDetail': 'Resource Detail',
 }
 
 export default en

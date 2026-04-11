@@ -13,6 +13,9 @@ export default defineConfig({
   server: {
     port: 5173,
     // 代理配置 - 解决开发环境跨域问题
+    // Controller 模式: target → http://localhost:5800 (Controller Admin API)
+    // Center 模式开发: 将 target 改为 http://localhost:5810 (Center API)
+    // /api/v1/proxy/* 路径由 Center 服务处理，无需额外代理规则（前缀 /api 已覆盖）
     proxy: {
       '/api': {
         target: 'http://localhost:5800',
@@ -34,6 +37,7 @@ export default defineConfig({
           'react-vendor': ['react', 'react-dom', 'react-router-dom'],
           'antd-vendor': ['antd'],
           'utils': ['axios', '@tanstack/react-query', 'zustand'],
+          'reactflow': ['reactflow'],
         },
       },
     },
