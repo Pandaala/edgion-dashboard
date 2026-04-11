@@ -4,6 +4,7 @@
 
 import * as yaml from 'js-yaml'
 import type { UDPRoute } from '@/types/gateway-api/udproute'
+import { removeEmpty } from './yaml-utils'
 
 export const DEFAULT_UDPROUTE_YAML = `apiVersion: gateway.networking.k8s.io/v1alpha2
 kind: UDPRoute
@@ -57,23 +58,6 @@ export function normalizeUDPRoute(raw: any): UDPRoute {
   }
 }
 
-function removeEmpty(obj: any): any {
-  if (Array.isArray(obj)) {
-    const arr = obj.map(removeEmpty).filter((v) => v !== null && v !== undefined)
-    return arr.length > 0 ? arr : undefined
-  }
-  if (obj !== null && typeof obj === 'object') {
-    const result: any = {}
-    for (const [k, v] of Object.entries(obj)) {
-      const cleaned = removeEmpty(v)
-      if (cleaned !== null && cleaned !== undefined && cleaned !== '') {
-        result[k] = cleaned
-      }
-    }
-    return Object.keys(result).length > 0 ? result : undefined
-  }
-  return obj
-}
 
 export function udpRouteToYaml(route: UDPRoute): string {
   const clean = removeEmpty(route)

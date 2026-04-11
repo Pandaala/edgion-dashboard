@@ -1,5 +1,6 @@
 import * as yaml from 'js-yaml'
 import type { EdgionGatewayConfig } from '@/types/edgion-gateway-config'
+import { dumpYaml } from './yaml-utils'
 
 export const DEFAULT_YAML = `apiVersion: edgion.io/v1alpha1
 kind: EdgionGatewayConfig
@@ -55,24 +56,8 @@ export function normalize(raw: any): EdgionGatewayConfig {
   }
 }
 
-function removeEmpty(obj: any): any {
-  if (Array.isArray(obj)) {
-    const arr = obj.map(removeEmpty).filter((v) => v !== null && v !== undefined)
-    return arr.length > 0 ? arr : undefined
-  }
-  if (obj !== null && typeof obj === 'object') {
-    const result: any = {}
-    for (const [k, v] of Object.entries(obj)) {
-      const cleaned = removeEmpty(v)
-      if (cleaned !== null && cleaned !== undefined && cleaned !== '') result[k] = cleaned
-    }
-    return Object.keys(result).length > 0 ? result : undefined
-  }
-  return obj
-}
-
 export function toYaml(cfg: EdgionGatewayConfig): string {
-  return yaml.dump(removeEmpty(cfg), { lineWidth: -1, noRefs: true })
+  return dumpYaml(cfg)
 }
 
 export function fromYaml(yamlStr: string): EdgionGatewayConfig {

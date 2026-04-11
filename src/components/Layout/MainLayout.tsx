@@ -13,7 +13,9 @@ import {
   LinkOutlined,
   LockOutlined,
   ShareAltOutlined,
+  LogoutOutlined,
 } from '@ant-design/icons'
+import { removeToken } from '../../utils/auth'
 import type { MenuProps } from 'antd'
 import { useT, useLanguage } from '../../i18n/index.tsx'
 
@@ -146,6 +148,11 @@ const MainLayout = () => {
     setLang(lang === 'en' ? 'zh' : 'en')
   }
 
+  const handleLogout = () => {
+    removeToken()
+    navigate('/login')
+  }
+
   return (
     <Layout style={{ minHeight: '100vh' }}>
       <Sider
@@ -182,6 +189,9 @@ const MainLayout = () => {
         <Header style={{ padding: '0 24px', background: '#fff', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
           <h2 style={{ margin: 0, fontSize: 16 }}>Edgion Controller Dashboard</h2>
           <Space>
+            <Button icon={<LogoutOutlined />} onClick={handleLogout}>
+              {t('login.logout')}
+            </Button>
             <Button icon={<ReloadOutlined />} onClick={() => window.location.reload()}>
               {t('action.refresh')}
             </Button>

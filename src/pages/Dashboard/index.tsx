@@ -94,7 +94,7 @@ const Dashboard = () => {
     { title: 'GatewayClass', kind: 'gatewayclass', scope: 'cluster' as const, path: '/infrastructure/gatewayclasses', color: '#1890ff', icon: <ClusterOutlined /> },
     { title: 'EdgionPlugins', kind: 'edgionplugins', path: '/plugins', color: '#13c2c2', icon: <AppstoreOutlined /> },
     { title: 'StreamPlugins', kind: 'edgionstreamplugins', path: '/plugins/stream', color: '#597ef7', icon: <AppstoreOutlined /> },
-    { title: 'PluginMetaData', kind: 'pluginmetadata', scope: 'cluster' as const, path: '/plugins/metadata', color: '#fa541c', icon: <AppstoreOutlined /> },
+    { title: 'PluginMetaData', kind: 'pluginmetadata', path: '/plugins/metadata', color: '#fa541c', icon: <AppstoreOutlined /> },
     { title: 'GatewayConfig', kind: 'edgiongatewayconfig', scope: 'cluster' as const, path: '/system/config', color: '#fa8c16', icon: <SettingOutlined /> },
     { title: 'LinkSys', kind: 'linksys', path: '/system/linksys', color: '#52c41a', icon: <SettingOutlined /> },
     { title: 'Acme', kind: 'edgionacme', path: '/system/acme', color: '#eb2f96', icon: <SettingOutlined /> },

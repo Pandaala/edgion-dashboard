@@ -1,5 +1,5 @@
 /**
- * StreamRoute 编辑器 Modal — 共享用于 TCPRoute / UDPRoute / TLSRoute
+ * PluginMetaData 编辑器 Modal
  */
 
 import React, { useEffect, useState } from 'react'
@@ -7,99 +7,48 @@ import { Modal, Button, Tabs, message } from 'antd'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { resourceApi } from '@/api/resources'
 import YamlEditor from '@/components/YamlEditor'
-import StreamRouteForm from './StreamRouteForm'
-import type { StreamRouteKind } from './StreamRouteForm'
-import type { TCPRoute } from '@/types/gateway-api/tcproute'
-import type { UDPRoute } from '@/types/gateway-api/udproute'
-import type { TLSRoute } from '@/types/gateway-api/tlsroute'
-import {
-  createEmptyTCPRoute, normalizeTCPRoute, tcpRouteToYaml, yamlToTCPRoute,
-} from '@/utils/tcproute'
-import {
-  createEmptyUDPRoute, normalizeUDPRoute, udpRouteToYaml, yamlToUDPRoute,
-} from '@/utils/udproute'
-import {
-  createEmptyTLSRoute, normalizeTLSRoute, tlsRouteToYaml, yamlToTLSRoute,
-} from '@/utils/tlsroute'
-import type { ResourceKind } from '@/api/types'
+import PluginMetaDataForm from './PluginMetaDataForm'
+import type { PluginMetaDataResource } from '@/utils/pluginmetadata'
+import { createEmpty, normalize, toYaml, fromYaml } from '@/utils/pluginmetadata'
 import { useT } from '@/i18n'
 
-type RouteData = TCPRoute | UDPRoute | TLSRoute
-
-interface StreamRouteEditorProps {
+interface PluginMetaDataEditorProps {
   visible: boolean
   mode: 'create' | 'edit' | 'view'
-  kind: StreamRouteKind
-  resource?: RouteData | null
+  resource?: any | null
   onClose: () => void
 }
 
-const KIND_MAP: Record<StreamRouteKind, {
-  apiKind: ResourceKind
-  label: string
-  createEmpty: () => RouteData
-  normalize: (raw: any) => RouteData
-  toYaml: (r: RouteData) => string
-  fromYaml: (s: string) => RouteData
-}> = {
-  TCPRoute: {
-    apiKind: 'tcproute',
-    label: 'TCPRoute',
-    createEmpty: createEmptyTCPRoute,
-    normalize: normalizeTCPRoute,
-    toYaml: (r) => tcpRouteToYaml(r as TCPRoute),
-    fromYaml: yamlToTCPRoute,
-  },
-  UDPRoute: {
-    apiKind: 'udproute',
-    label: 'UDPRoute',
-    createEmpty: createEmptyUDPRoute,
-    normalize: normalizeUDPRoute,
-    toYaml: (r) => udpRouteToYaml(r as UDPRoute),
-    fromYaml: yamlToUDPRoute,
-  },
-  TLSRoute: {
-    apiKind: 'tlsroute',
-    label: 'TLSRoute',
-    createEmpty: createEmptyTLSRoute,
-    normalize: normalizeTLSRoute,
-    toYaml: (r) => tlsRouteToYaml(r as TLSRoute),
-    fromYaml: yamlToTLSRoute,
-  },
-}
-
-const StreamRouteEditor: React.FC<StreamRouteEditorProps> = ({
-  visible, mode, kind, resource, onClose,
+const PluginMetaDataEditor: React.FC<PluginMetaDataEditorProps> = ({
+  visible,
+  mode,
+  resource,
+  onClose,
 }) => {
   const t = useT()
   const [activeTab, setActiveTab] = useState<'form' | 'yaml'>('form')
-  const [formData, setFormData] = useState<RouteData>(() => KIND_MAP[kind].createEmpty())
+  const [formData, setFormData] = useState<PluginMetaDataResource>(() => createEmpty())
   const [yamlContent, setYamlContent] = useState('')
   const queryClient = useQueryClient()
-
-  const meta = KIND_MAP[kind]
 
   useEffect(() => {
     if (!visible) return
     setActiveTab('form')
     if (mode === 'create') {
-      const empty = meta.createEmpty()
+      const empty = createEmpty()
       setFormData(empty)
-      setYamlContent(meta.toYaml(empty))
+      setYamlContent(toYaml(empty))
     } else if (resource) {
-      const normalized = meta.normalize(resource)
+      const normalized = normalize(resource)
       setFormData(normalized)
-      setYamlContent(meta.toYaml(normalized))
+      setYamlContent(toYaml(normalized))
     }
-  }, [visible, mode, resource, kind])
+  }, [visible, mode, resource])
 
   const handleTabChange = (key: string) => {
     try {
-      if (key === 'yaml') {
-        setYamlContent(meta.toYaml(formData))
-      } else {
-        setFormData(meta.fromYaml(yamlContent))
-      }
+      if (key === 'yaml') setYamlContent(toYaml(formData))
+      else setFormData(fromYaml(yamlContent))
       setActiveTab(key as 'form' | 'yaml')
     } catch (e: any) {
       message.error(t('msg.tabSwitchFailed', { err: e.message }))
@@ -108,10 +57,10 @@ const StreamRouteEditor: React.FC<StreamRouteEditorProps> = ({
 
   const createMutation = useMutation({
     mutationFn: ({ namespace, yamlStr }: { namespace: string; yamlStr: string }) =>
-      resourceApi.create(meta.apiKind, namespace, yamlStr),
+      resourceApi.create('pluginmetadata', namespace, yamlStr),
     onSuccess: () => {
       message.success(t('msg.createOk'))
-      queryClient.invalidateQueries({ queryKey: [meta.apiKind] })
+      queryClient.invalidateQueries({ queryKey: ['pluginmetadata'] })
       onClose()
     },
     onError: (e: any) => message.error(t('msg.createFailed', { err: e.message })),
@@ -119,10 +68,10 @@ const StreamRouteEditor: React.FC<StreamRouteEditorProps> = ({
 
   const updateMutation = useMutation({
     mutationFn: ({ namespace, name, yamlStr }: { namespace: string; name: string; yamlStr: string }) =>
-      resourceApi.update(meta.apiKind, namespace, name, yamlStr),
+      resourceApi.update('pluginmetadata', namespace, name, yamlStr),
     onSuccess: () => {
       message.success(t('msg.updateOk'))
-      queryClient.invalidateQueries({ queryKey: [meta.apiKind] })
+      queryClient.invalidateQueries({ queryKey: ['pluginmetadata'] })
       onClose()
     },
     onError: (e: any) => message.error(t('msg.updateFailed', { err: e.message })),
@@ -130,10 +79,10 @@ const StreamRouteEditor: React.FC<StreamRouteEditorProps> = ({
 
   const handleSubmit = () => {
     try {
-      const yamlStr = activeTab === 'yaml' ? yamlContent : meta.toYaml(formData)
-      const parsed = meta.fromYaml(yamlStr)
-      const name = parsed.metadata?.name
-      const namespace = parsed.metadata?.namespace
+      const isFormTab = activeTab === 'form'
+      const name = isFormTab ? formData.metadata?.name : fromYaml(yamlContent).metadata?.name
+      const namespace = isFormTab ? formData.metadata?.namespace : fromYaml(yamlContent).metadata?.namespace
+      const yamlStr = isFormTab ? toYaml(formData) : yamlContent
       if (!name || !namespace) {
         message.error(t('msg.metaRequired'))
         return
@@ -144,11 +93,8 @@ const StreamRouteEditor: React.FC<StreamRouteEditorProps> = ({
           return
         }
       }
-      if (mode === 'create') {
-        createMutation.mutate({ namespace, yamlStr })
-      } else {
-        updateMutation.mutate({ namespace, name, yamlStr })
-      }
+      if (mode === 'create') createMutation.mutate({ namespace, yamlStr })
+      else updateMutation.mutate({ namespace, name, yamlStr })
     } catch (e: any) {
       message.error(t('msg.submitFailed', { err: e.message || 'unknown error' }))
     }
@@ -159,17 +105,17 @@ const StreamRouteEditor: React.FC<StreamRouteEditorProps> = ({
 
   const title =
     mode === 'create'
-      ? t('modal.create', { resource: meta.label })
+      ? t('modal.create', { resource: 'PluginMetaData' })
       : mode === 'edit'
-      ? t('modal.edit', { resource: meta.label })
-      : t('modal.view', { resource: meta.label })
+      ? t('modal.edit', { resource: 'PluginMetaData' })
+      : t('modal.view', { resource: 'PluginMetaData' })
 
   return (
     <Modal
       title={title}
       open={visible}
       onCancel={onClose}
-      width={860}
+      width={900}
       destroyOnClose
       style={{ top: 20 }}
       footer={
@@ -191,8 +137,7 @@ const StreamRouteEditor: React.FC<StreamRouteEditorProps> = ({
             key: 'form',
             label: t('tab.form'),
             children: (
-              <StreamRouteForm
-                kind={kind}
+              <PluginMetaDataForm
                 data={formData}
                 onChange={setFormData}
                 readOnly={isReadOnly}
@@ -218,4 +163,4 @@ const StreamRouteEditor: React.FC<StreamRouteEditorProps> = ({
   )
 }
 
-export default StreamRouteEditor
+export default PluginMetaDataEditor

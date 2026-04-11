@@ -1,5 +1,5 @@
 /**
- * Gateway 编辑器 Modal
+ * Secret 编辑器 Modal
  */
 
 import React, { useEffect, useState } from 'react'
@@ -7,22 +7,22 @@ import { Modal, Button, Tabs, message } from 'antd'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { resourceApi } from '@/api/resources'
 import YamlEditor from '@/components/YamlEditor'
-import GatewayForm from './GatewayForm'
-import type { Gateway } from '@/types/gateway-api/gateway'
-import { createEmptyGateway, normalizeGateway, gatewayToYaml, yamlToGateway } from '@/utils/gateway'
+import SecretForm from './SecretForm'
+import type { SecretResource } from '@/utils/secret'
+import { createEmpty, normalize, toYaml, fromYaml } from '@/utils/secret'
 import { useT } from '@/i18n'
 
-interface GatewayEditorProps {
+interface SecretEditorProps {
   visible: boolean
   mode: 'create' | 'edit' | 'view'
-  resource?: Gateway | null
+  resource?: any | null
   onClose: () => void
 }
 
-const GatewayEditor: React.FC<GatewayEditorProps> = ({ visible, mode, resource, onClose }) => {
+const SecretEditor: React.FC<SecretEditorProps> = ({ visible, mode, resource, onClose }) => {
   const t = useT()
   const [activeTab, setActiveTab] = useState<'form' | 'yaml'>('form')
-  const [formData, setFormData] = useState<Gateway>(() => createEmptyGateway())
+  const [formData, setFormData] = useState<SecretResource>(() => createEmpty())
   const [yamlContent, setYamlContent] = useState('')
   const queryClient = useQueryClient()
 
@@ -30,44 +30,44 @@ const GatewayEditor: React.FC<GatewayEditorProps> = ({ visible, mode, resource, 
     if (!visible) return
     setActiveTab('form')
     if (mode === 'create') {
-      const empty = createEmptyGateway()
+      const empty = createEmpty()
       setFormData(empty)
-      setYamlContent(gatewayToYaml(empty))
+      setYamlContent(toYaml(empty))
     } else if (resource) {
-      const normalized = normalizeGateway(resource)
+      const normalized = normalize(resource)
       setFormData(normalized)
-      setYamlContent(gatewayToYaml(normalized))
+      setYamlContent(toYaml(normalized))
     }
   }, [visible, mode, resource])
 
   const handleTabChange = (key: string) => {
     try {
-      if (key === 'yaml') setYamlContent(gatewayToYaml(formData))
-      else setFormData(yamlToGateway(yamlContent))
+      if (key === 'yaml') setYamlContent(toYaml(formData))
+      else setFormData(fromYaml(yamlContent))
       setActiveTab(key as 'form' | 'yaml')
     } catch (e: any) { message.error(t('msg.tabSwitchFailed', { err: e.message })) }
   }
 
   const createMutation = useMutation({
     mutationFn: ({ namespace, yamlStr }: { namespace: string; yamlStr: string }) =>
-      resourceApi.create('gateway', namespace, yamlStr),
-    onSuccess: () => { message.success(t('msg.createOk')); queryClient.invalidateQueries({ queryKey: ['gateway'] }); onClose() },
+      resourceApi.create('secret', namespace, yamlStr),
+    onSuccess: () => { message.success(t('msg.createOk')); queryClient.invalidateQueries({ queryKey: ['secret'] }); onClose() },
     onError: (e: any) => message.error(t('msg.createFailed', { err: e.message })),
   })
 
   const updateMutation = useMutation({
     mutationFn: ({ namespace, name, yamlStr }: { namespace: string; name: string; yamlStr: string }) =>
-      resourceApi.update('gateway', namespace, name, yamlStr),
-    onSuccess: () => { message.success(t('msg.updateOk')); queryClient.invalidateQueries({ queryKey: ['gateway'] }); onClose() },
+      resourceApi.update('secret', namespace, name, yamlStr),
+    onSuccess: () => { message.success(t('msg.updateOk')); queryClient.invalidateQueries({ queryKey: ['secret'] }); onClose() },
     onError: (e: any) => message.error(t('msg.updateFailed', { err: e.message })),
   })
 
   const handleSubmit = () => {
     try {
-      const yamlStr = activeTab === 'yaml' ? yamlContent : gatewayToYaml(formData)
-      const parsed = yamlToGateway(yamlStr)
-      const name = parsed.metadata?.name
-      const namespace = parsed.metadata?.namespace
+      const isFormTab = activeTab === 'form'
+      const name = isFormTab ? formData.metadata?.name : fromYaml(yamlContent).metadata?.name
+      const namespace = isFormTab ? formData.metadata?.namespace : fromYaml(yamlContent).metadata?.namespace
+      const yamlStr = isFormTab ? toYaml(formData) : yamlContent
       if (!name || !namespace) {
         message.error(t('msg.metaRequired'))
         return
@@ -90,15 +90,15 @@ const GatewayEditor: React.FC<GatewayEditorProps> = ({ visible, mode, resource, 
 
   const title =
     mode === 'create'
-      ? t('modal.create', { resource: 'Gateway' })
+      ? t('modal.create', { resource: 'Secret' })
       : mode === 'edit'
-      ? t('modal.edit', { resource: 'Gateway' })
-      : t('modal.view', { resource: 'Gateway' })
+      ? t('modal.edit', { resource: 'Secret' })
+      : t('modal.view', { resource: 'Secret' })
 
   return (
     <Modal
       title={title}
-      open={visible} onCancel={onClose} width={920}
+      open={visible} onCancel={onClose} width={860}
       destroyOnClose
       style={{ top: 20 }}
       footer={
@@ -115,7 +115,7 @@ const GatewayEditor: React.FC<GatewayEditorProps> = ({ visible, mode, resource, 
       <Tabs activeKey={activeTab} onChange={handleTabChange} items={[
         {
           key: 'form', label: t('tab.form'),
-          children: <GatewayForm data={formData} onChange={setFormData} readOnly={isReadOnly} isCreate={mode === 'create'} />,
+          children: <SecretForm data={formData} onChange={setFormData} readOnly={isReadOnly} isCreate={mode === 'create'} />,
         },
         {
           key: 'yaml', label: t('tab.yaml'),
@@ -126,4 +126,4 @@ const GatewayEditor: React.FC<GatewayEditorProps> = ({ visible, mode, resource, 
   )
 }
 
-export default GatewayEditor
+export default SecretEditor

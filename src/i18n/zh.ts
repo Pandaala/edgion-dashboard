@@ -117,6 +117,7 @@ const zh = {
   'btn.batchDelete': '批量删除',
   'btn.addLabel': '添加 Label',
   'btn.addAnnotation': '添加 Annotation',
+  'btn.addDataEntry': '添加数据项',
   'btn.addGatewayRef': '添加 Gateway 引用',
   'btn.addBackend': '添加后端服务',
   'btn.addListener': '添加 Listener',
@@ -167,6 +168,8 @@ const zh = {
   'ph.searchNameNs': '搜索名称/命名空间',
   'ph.searchName': '搜索名称',
   'ph.searchNameNsService': '搜索名称/命名空间/Service',
+  'ph.dataKey': '例如 tls.crt',
+  'ph.dataValue': 'Base64 编码的值',
 
   // Pagination
   'table.totalItems': '共 {n} 条',
@@ -184,6 +187,11 @@ const zh = {
   'notice.endpointSliceReadonly': 'EndpointSlice 为只读资源',
 
   // Section titles
+  'section.acmeBasic': 'ACME 基本配置',
+  'section.challenge': 'Challenge 配置',
+  'section.storage': '证书存储',
+  'section.renewal': '续期配置（可选）',
+  'section.autoTls': '自动 EdgionTls（可选）',
   'section.basicInfo': '基础信息',
   'section.hostnames': '主机名（Hosts）',
   'section.parentRefs': 'Gateway 引用（ParentRefs）',
@@ -195,6 +203,8 @@ const zh = {
   'section.listeners': 'Listeners',
   'section.mtls': 'mTLS 客户端认证（可选）',
   'section.connType': '连接类型',
+  'section.secretType': 'Secret 类型',
+  'section.secretData': '数据',
 
   // Form field labels
   'field.name': '名称',
@@ -251,6 +261,53 @@ const zh = {
   'field.rejectMsg': '拒绝消息（可选）',
   'field.pluginType': '插件类型',
   'field.etcdEndpoints': 'Endpoints（回车添加）',
+  'field.secretType': '类型',
+  'field.dataKey': '键',
+  'field.dataValue': '值（base64）',
+
+  // EdgionAcme fields
+  'field.email': '邮箱',
+  'field.acmeDomains': '域名（回车添加）',
+  'field.acmeServer': 'ACME 服务器（可选）',
+  'field.keyType': '密钥类型（可选）',
+  'field.challengeType': 'Challenge 类型',
+  'field.gwRefName': 'Gateway 引用名称',
+  'field.gwRefNs': 'Gateway 引用命名空间（可选）',
+  'field.dnsProvider': 'DNS 提供商',
+  'field.credRefName': '凭据 Secret 名称',
+  'field.credRefNs': '凭据 Secret 命名空间（可选）',
+  'field.propagationTimeout': '传播超时（秒）',
+  'field.propagationInterval': '传播检查间隔（秒）',
+  'field.storageSecretName': '存储 Secret 名称',
+  'field.storageSecretNs': '存储 Secret 命名空间（可选）',
+  'field.renewBeforeDays': '到期前续期天数',
+  'field.checkInterval': '检查间隔（秒）',
+  'field.failBackoff': '失败退避（秒）',
+  'field.autoTlsEnabled': '启用自动 EdgionTls',
+  'field.autoTlsName': 'EdgionTls 名称（可选）',
+
+  // GatewayClass
+  'field.controllerName': 'Controller 名称',
+  'field.descriptionOpt': '描述（可选）',
+  'section.controllerInfo': 'Controller 信息',
+  'msg.metaNameRequired': 'YAML 中必须包含 metadata.name',
+
+  // BackendTLSPolicy
+  'section.targetRefs': '目标 Service 引用',
+  'section.validation': 'TLS 验证',
+  'field.validationHostname': '验证域名',
+  'field.caRefs': 'CA 证书引用',
+  'field.serviceName': 'Service 名称',
+  'field.group': 'Group',
+  'field.kind': 'Kind',
+  'btn.addTargetRef': '添加目标',
+  'btn.addCaRef': '添加 CA 引用',
+
+  // ReferenceGrant
+  'section.fromRefs': 'From（来源授权）',
+  'section.toRefs': 'To（目标资源）',
+  'btn.addFromRef': '添加来源规则',
+  'btn.addToRef': '添加目标规则',
 
   // Validation messages
   'valid.nameRequired': '请输入资源名称',
@@ -332,6 +389,46 @@ const zh = {
 
   // EdgionStreamPlugins
   'sp.ipRestriction': 'IpRestriction（IP 访问控制）',
+
+  // EdgionGatewayConfig sections
+  'section.serverConfig': '服务器配置',
+  'section.httpTimeout': 'HTTP 超时',
+  'section.retryResilience': '重试与韧性',
+  'section.realIp': 'Real IP 配置',
+  'section.preflightPolicy': 'Preflight 策略',
+
+  // EdgionGatewayConfig fields
+  'field.gracePeriod': '优雅期（秒）',
+  'field.shutdownTimeout': '优雅关闭超时（秒）',
+  'field.keepalivePoolSize': '上游 Keepalive 池大小',
+  'field.enableCompression': '启用压缩',
+  'field.clientReadTimeout': '客户端读超时',
+  'field.clientWriteTimeout': '客户端写超时',
+  'field.clientKeepaliveTimeout': '客户端 Keepalive 超时',
+  'field.backendConnectTimeout': '后端连接超时',
+  'field.backendRequestTimeout': '后端请求超时',
+  'field.backendIdleTimeout': '后端空闲超时',
+  'field.maxRetries': '最大重试次数',
+  'field.realIpHeader': 'Real IP Header',
+  'field.trustedIps': '可信 IP（CIDR，回车添加）',
+  'field.recursive': '递归',
+  'field.preflightMode': '模式',
+  'field.preflightStatusCode': '状态码',
+
+  // PluginMetaData sections / fields / notices
+  'section.pluginInfo': '插件信息',
+  'field.pluginDesc': '描述',
+  'notice.pluginMetaYaml': '复杂的 schema 和 defaultConfig 请使用 YAML 标签编辑。',
+
+  // Login
+  'login.title': '登录',
+  'login.subtitle': '登录 Edgion Controller',
+  'login.username': '用户名',
+  'login.password': '密码',
+  'login.submit': '登录',
+  'login.failed': '用户名或密码错误',
+  'login.logout': '退出登录',
+  'login.required': '请输入{field}',
 }
 
 export default zh

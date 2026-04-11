@@ -4,6 +4,7 @@
 
 import * as yaml from 'js-yaml'
 import type { EdgionStreamPlugins } from '@/types/edgion-stream-plugins'
+import { dumpYaml } from './yaml-utils'
 
 export const DEFAULT_YAML = `apiVersion: edgion.io/v1
 kind: EdgionStreamPlugins
@@ -51,24 +52,8 @@ export function normalize(raw: any): EdgionStreamPlugins {
   }
 }
 
-function removeEmpty(obj: any): any {
-  if (Array.isArray(obj)) {
-    const arr = obj.map(removeEmpty).filter((v) => v !== null && v !== undefined)
-    return arr.length > 0 ? arr : undefined
-  }
-  if (obj !== null && typeof obj === 'object') {
-    const result: any = {}
-    for (const [k, v] of Object.entries(obj)) {
-      const cleaned = removeEmpty(v)
-      if (cleaned !== null && cleaned !== undefined && cleaned !== '') result[k] = cleaned
-    }
-    return Object.keys(result).length > 0 ? result : undefined
-  }
-  return obj
-}
-
 export function toYaml(sp: EdgionStreamPlugins): string {
-  return yaml.dump(removeEmpty(sp), { lineWidth: -1, noRefs: true })
+  return dumpYaml(sp)
 }
 
 export function fromYaml(yamlStr: string): EdgionStreamPlugins {

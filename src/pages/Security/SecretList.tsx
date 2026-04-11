@@ -4,21 +4,10 @@ import { PlusOutlined, ReloadOutlined, EyeOutlined, EditOutlined, DeleteOutlined
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { resourceApi } from '@/api/resources'
 import type { K8sResource } from '@/api/types'
-import SimpleResourceEditor from '@/components/ResourceEditor/common/SimpleResourceEditor'
+import SecretEditor from '@/components/ResourceEditor/Secret/SecretEditor'
 import { useT } from '@/i18n'
 
 const { Search } = Input
-
-const DEFAULT_SECRET_YAML = `apiVersion: v1
-kind: Secret
-metadata:
-  name: my-tls-cert
-  namespace: default
-type: kubernetes.io/tls
-data:
-  tls.crt: <base64-encoded-cert>
-  tls.key: <base64-encoded-key>
-`
 
 const SecretList = () => {
   const t = useT()
@@ -27,7 +16,6 @@ const SecretList = () => {
   const [editorVisible, setEditorVisible] = useState(false)
   const [editorMode, setEditorMode] = useState<'create' | 'edit' | 'view'>('create')
   const [selectedResource, setSelectedResource] = useState<K8sResource | null>(null)
-  const [submitLoading, setSubmitLoading] = useState(false)
   const queryClient = useQueryClient()
 
   const { data, isLoading, refetch } = useQuery({
@@ -80,23 +68,6 @@ const SecretList = () => {
     })
   }
 
-  const handleSubmit = async (yamlContent: string) => {
-    setSubmitLoading(true)
-    try {
-      const ns = selectedResource?.metadata.namespace || 'default'
-      if (editorMode === 'create') {
-        await resourceApi.create('secret', ns, yamlContent)
-        message.success(t('msg.createOk'))
-      } else {
-        await resourceApi.update('secret', ns, selectedResource!.metadata.name, yamlContent)
-        message.success(t('msg.updateOk'))
-      }
-      queryClient.invalidateQueries({ queryKey: ['secret'] })
-      setEditorVisible(false)
-    } catch (e: any) { message.error(t('msg.opFailed', { err: e.message })) }
-    finally { setSubmitLoading(false) }
-  }
-
   const getDataKeys = (r: K8sResource) => {
     const d = (r as any)['data'] || {}
     return Object.keys(d).join(', ')
@@ -147,9 +118,8 @@ const SecretList = () => {
         rowSelection={{ selectedRowKeys, onChange: setSelectedRowKeys }}
         pagination={{ pageSize: 20, showTotal: (total) => t('table.totalItems', { n: total }) }} size="middle"
       />
-      <SimpleResourceEditor visible={editorVisible} mode={editorMode} resource={selectedResource}
-        title="Secret" defaultYaml={DEFAULT_SECRET_YAML} onClose={() => setEditorVisible(false)}
-        onSubmit={handleSubmit} loading={submitLoading} />
+      <SecretEditor visible={editorVisible} mode={editorMode} resource={selectedResource}
+        onClose={() => setEditorVisible(false)} />
     </div>
   )
 }

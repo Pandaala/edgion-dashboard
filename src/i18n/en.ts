@@ -117,6 +117,7 @@ const en = {
   'btn.batchDelete': 'Batch Delete',
   'btn.addLabel': 'Add Label',
   'btn.addAnnotation': 'Add Annotation',
+  'btn.addDataEntry': 'Add Data Entry',
   'btn.addGatewayRef': 'Add Gateway Ref',
   'btn.addBackend': 'Add Backend',
   'btn.addListener': 'Add Listener',
@@ -167,6 +168,8 @@ const en = {
   'ph.searchNameNs': 'Search by name/namespace',
   'ph.searchName': 'Search by name',
   'ph.searchNameNsService': 'Search name/namespace/service',
+  'ph.dataKey': 'e.g. tls.crt',
+  'ph.dataValue': 'Base64 encoded value',
 
   // Pagination
   'table.totalItems': 'Total: {n}',
@@ -184,6 +187,11 @@ const en = {
   'notice.endpointSliceReadonly': 'EndpointSlice is read-only',
 
   // Section titles
+  'section.acmeBasic': 'ACME Basic Config',
+  'section.challenge': 'Challenge Config',
+  'section.storage': 'Certificate Storage',
+  'section.renewal': 'Renewal Config (Optional)',
+  'section.autoTls': 'Auto EdgionTls (Optional)',
   'section.basicInfo': 'Basic Info',
   'section.hostnames': 'Hostnames',
   'section.parentRefs': 'Gateway Refs',
@@ -195,6 +203,8 @@ const en = {
   'section.listeners': 'Listeners',
   'section.mtls': 'mTLS Client Auth (Optional)',
   'section.connType': 'Connection Type',
+  'section.secretType': 'Secret Type',
+  'section.secretData': 'Data',
 
   // Form field labels
   'field.name': 'Name',
@@ -251,6 +261,53 @@ const en = {
   'field.rejectMsg': 'Reject Message (optional)',
   'field.pluginType': 'Plugin Type',
   'field.etcdEndpoints': 'Endpoints (press Enter to add)',
+  'field.secretType': 'Type',
+  'field.dataKey': 'Key',
+  'field.dataValue': 'Value (base64)',
+
+  // EdgionAcme fields
+  'field.email': 'Email',
+  'field.acmeDomains': 'Domains (press Enter to add)',
+  'field.acmeServer': 'ACME Server (optional)',
+  'field.keyType': 'Key Type (optional)',
+  'field.challengeType': 'Challenge Type',
+  'field.gwRefName': 'Gateway Ref Name',
+  'field.gwRefNs': 'Gateway Ref Namespace (optional)',
+  'field.dnsProvider': 'DNS Provider',
+  'field.credRefName': 'Credential Secret Name',
+  'field.credRefNs': 'Credential Secret Namespace (optional)',
+  'field.propagationTimeout': 'Propagation Timeout (seconds)',
+  'field.propagationInterval': 'Propagation Check Interval (seconds)',
+  'field.storageSecretName': 'Storage Secret Name',
+  'field.storageSecretNs': 'Storage Secret Namespace (optional)',
+  'field.renewBeforeDays': 'Renew Before Days',
+  'field.checkInterval': 'Check Interval (seconds)',
+  'field.failBackoff': 'Fail Backoff (seconds)',
+  'field.autoTlsEnabled': 'Enable Auto EdgionTls',
+  'field.autoTlsName': 'EdgionTls Name (optional)',
+
+  // GatewayClass
+  'field.controllerName': 'Controller Name',
+  'field.descriptionOpt': 'Description (optional)',
+  'section.controllerInfo': 'Controller Info',
+  'msg.metaNameRequired': 'metadata.name is required',
+
+  // BackendTLSPolicy
+  'section.targetRefs': 'Target Service References',
+  'section.validation': 'TLS Validation',
+  'field.validationHostname': 'Validation Hostname',
+  'field.caRefs': 'CA Certificate References',
+  'field.serviceName': 'Service Name',
+  'field.group': 'Group',
+  'field.kind': 'Kind',
+  'btn.addTargetRef': 'Add Target',
+  'btn.addCaRef': 'Add CA Ref',
+
+  // ReferenceGrant
+  'section.fromRefs': 'From (Source Permissions)',
+  'section.toRefs': 'To (Target Resources)',
+  'btn.addFromRef': 'Add From Rule',
+  'btn.addToRef': 'Add To Rule',
 
   // Validation messages
   'valid.nameRequired': 'Please enter resource name',
@@ -332,6 +389,46 @@ const en = {
 
   // EdgionStreamPlugins
   'sp.ipRestriction': 'IpRestriction (IP Access Control)',
+
+  // EdgionGatewayConfig sections
+  'section.serverConfig': 'Server Config',
+  'section.httpTimeout': 'HTTP Timeout',
+  'section.retryResilience': 'Retry & Resilience',
+  'section.realIp': 'Real IP Config',
+  'section.preflightPolicy': 'Preflight Policy',
+
+  // EdgionGatewayConfig fields
+  'field.gracePeriod': 'Grace Period (seconds)',
+  'field.shutdownTimeout': 'Graceful Shutdown Timeout (seconds)',
+  'field.keepalivePoolSize': 'Upstream Keepalive Pool Size',
+  'field.enableCompression': 'Enable Compression',
+  'field.clientReadTimeout': 'Client Read Timeout',
+  'field.clientWriteTimeout': 'Client Write Timeout',
+  'field.clientKeepaliveTimeout': 'Client Keepalive Timeout',
+  'field.backendConnectTimeout': 'Backend Connect Timeout',
+  'field.backendRequestTimeout': 'Backend Request Timeout',
+  'field.backendIdleTimeout': 'Backend Idle Timeout',
+  'field.maxRetries': 'Max Retries',
+  'field.realIpHeader': 'Real IP Header',
+  'field.trustedIps': 'Trusted IPs (CIDR, press Enter to add)',
+  'field.recursive': 'Recursive',
+  'field.preflightMode': 'Mode',
+  'field.preflightStatusCode': 'Status Code',
+
+  // PluginMetaData sections / fields / notices
+  'section.pluginInfo': 'Plugin Info',
+  'field.pluginDesc': 'Description',
+  'notice.pluginMetaYaml': 'For complex schema and defaultConfig, use the YAML tab.',
+
+  // Login
+  'login.title': 'Login',
+  'login.subtitle': 'Sign in to Edgion Controller',
+  'login.username': 'Username',
+  'login.password': 'Password',
+  'login.submit': 'Sign In',
+  'login.failed': 'Invalid username or password',
+  'login.logout': 'Logout',
+  'login.required': 'Please enter {field}',
 }
 
 export default en

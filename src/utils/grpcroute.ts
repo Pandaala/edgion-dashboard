@@ -4,6 +4,7 @@
 
 import * as yaml from 'js-yaml'
 import type { GRPCRoute, GRPCRouteRule } from '@/types/gateway-api/grpcroute'
+import { removeEmpty } from './yaml-utils'
 
 export const DEFAULT_GRPCROUTE_YAML = `apiVersion: gateway.networking.k8s.io/v1
 kind: GRPCRoute
@@ -77,23 +78,6 @@ export function normalizeGRPCRoute(raw: any): GRPCRoute {
   }
 }
 
-function removeEmpty(obj: any): any {
-  if (Array.isArray(obj)) {
-    const arr = obj.map(removeEmpty).filter((v) => v !== null && v !== undefined)
-    return arr.length > 0 ? arr : undefined
-  }
-  if (obj !== null && typeof obj === 'object') {
-    const result: any = {}
-    for (const [k, v] of Object.entries(obj)) {
-      const cleaned = removeEmpty(v)
-      if (cleaned !== null && cleaned !== undefined && cleaned !== '') {
-        result[k] = cleaned
-      }
-    }
-    return Object.keys(result).length > 0 ? result : undefined
-  }
-  return obj
-}
 
 export function grpcRouteToYaml(route: GRPCRoute): string {
   const clean = removeEmpty(route)

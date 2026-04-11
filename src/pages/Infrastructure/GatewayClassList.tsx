@@ -4,19 +4,10 @@ import { PlusOutlined, ReloadOutlined, EyeOutlined, EditOutlined, DeleteOutlined
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { clusterResourceApi } from '@/api/resources'
 import type { K8sResource } from '@/api/types'
-import SimpleResourceEditor from '@/components/ResourceEditor/common/SimpleResourceEditor'
+import GatewayClassEditor from '@/components/ResourceEditor/GatewayClass/GatewayClassEditor'
 import { useT } from '@/i18n'
 
 const { Search } = Input
-
-const DEFAULT_YAML = `apiVersion: gateway.networking.k8s.io/v1
-kind: GatewayClass
-metadata:
-  name: edgion
-spec:
-  controllerName: edgion.io/gateway-controller
-  description: "Edgion Gateway Controller"
-`
 
 const GatewayClassList = () => {
   const t = useT()
@@ -24,7 +15,6 @@ const GatewayClassList = () => {
   const [editorVisible, setEditorVisible] = useState(false)
   const [editorMode, setEditorMode] = useState<'create' | 'edit' | 'view'>('create')
   const [selectedResource, setSelectedResource] = useState<K8sResource | null>(null)
-  const [submitLoading, setSubmitLoading] = useState(false)
   const queryClient = useQueryClient()
 
   const { data, isLoading, refetch } = useQuery({
@@ -50,22 +40,6 @@ const GatewayClassList = () => {
       okText: t('confirm.okText'), okType: 'danger', cancelText: t('btn.cancel'),
       onOk: () => deleteMutation.mutate(name),
     })
-  }
-
-  const handleSubmit = async (yamlContent: string) => {
-    setSubmitLoading(true)
-    try {
-      if (editorMode === 'create') {
-        await clusterResourceApi.create('gatewayclass', yamlContent)
-        message.success(t('msg.createOk'))
-      } else {
-        await clusterResourceApi.update('gatewayclass', selectedResource!.metadata.name, yamlContent)
-        message.success(t('msg.updateOk'))
-      }
-      queryClient.invalidateQueries({ queryKey: ['gatewayclass'] })
-      setEditorVisible(false)
-    } catch (e: any) { message.error(t('msg.opFailed', { err: e.message })) }
-    finally { setSubmitLoading(false) }
   }
 
   const columns = [
@@ -97,10 +71,13 @@ const GatewayClassList = () => {
         </Space>
       </div>
       <Table rowKey={(r) => r.metadata.name} columns={columns} dataSource={filtered}
-        loading={isLoading} pagination={{ pageSize: 20 }} size="middle" />
-      <SimpleResourceEditor visible={editorVisible} mode={editorMode} resource={selectedResource}
-        title="GatewayClass" defaultYaml={DEFAULT_YAML} onClose={() => setEditorVisible(false)}
-        onSubmit={handleSubmit} loading={submitLoading} />
+        loading={isLoading} pagination={{ pageSize: 20, showTotal: (n) => t('table.totalItems', { n }) }} size="middle" />
+      <GatewayClassEditor
+        visible={editorVisible}
+        mode={editorMode}
+        resource={selectedResource}
+        onClose={() => setEditorVisible(false)}
+      />
     </div>
   )
 }

@@ -8,8 +8,7 @@ import { PlusOutlined, ReloadOutlined, EyeOutlined, EditOutlined, DeleteOutlined
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { clusterResourceApi } from '@/api/resources'
 import type { K8sResource } from '@/api/types'
-import SimpleResourceEditor from '@/components/ResourceEditor/common/SimpleResourceEditor'
-import { DEFAULT_YAML } from '@/utils/edgiongatewayconfig'
+import EdgionGatewayConfigEditor from '@/components/ResourceEditor/EdgionGatewayConfig/EdgionGatewayConfigEditor'
 import { useT } from '@/i18n'
 
 const EdgionGatewayConfigPage = () => {
@@ -17,7 +16,6 @@ const EdgionGatewayConfigPage = () => {
   const [editorVisible, setEditorVisible] = useState(false)
   const [editorMode, setEditorMode] = useState<'create' | 'edit' | 'view'>('create')
   const [selectedResource, setSelectedResource] = useState<K8sResource | null>(null)
-  const [submitLoading, setSubmitLoading] = useState(false)
   const queryClient = useQueryClient()
 
   const { data, isLoading, refetch } = useQuery({
@@ -34,22 +32,6 @@ const EdgionGatewayConfigPage = () => {
 
   const openEditor = (mode: 'create' | 'edit' | 'view', resource?: K8sResource) => {
     setEditorMode(mode); setSelectedResource(resource || null); setEditorVisible(true)
-  }
-
-  const handleSubmit = async (yamlContent: string) => {
-    setSubmitLoading(true)
-    try {
-      if (editorMode === 'create') {
-        await clusterResourceApi.create('edgiongatewayconfig', yamlContent)
-        message.success(t('msg.createOk'))
-      } else {
-        await clusterResourceApi.update('edgiongatewayconfig', selectedResource!.metadata.name, yamlContent)
-        message.success(t('msg.updateOk'))
-      }
-      queryClient.invalidateQueries({ queryKey: ['edgiongatewayconfig'] })
-      setEditorVisible(false)
-    } catch (e: any) { message.error(t('msg.opFailed', { err: e.message })) }
-    finally { setSubmitLoading(false) }
   }
 
   const columns = [
@@ -86,9 +68,8 @@ const EdgionGatewayConfigPage = () => {
       </div>
       <Table rowKey={(r) => r.metadata.name} columns={columns} dataSource={items}
         loading={isLoading} pagination={{ pageSize: 20 }} size="middle" />
-      <SimpleResourceEditor visible={editorVisible} mode={editorMode} resource={selectedResource}
-        title="EdgionGatewayConfig" defaultYaml={DEFAULT_YAML} onClose={() => setEditorVisible(false)}
-        onSubmit={handleSubmit} loading={submitLoading} />
+      <EdgionGatewayConfigEditor visible={editorVisible} mode={editorMode} resource={selectedResource}
+        onClose={() => setEditorVisible(false)} />
     </div>
   )
 }

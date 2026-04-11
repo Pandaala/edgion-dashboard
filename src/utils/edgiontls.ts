@@ -4,6 +4,7 @@
 
 import * as yaml from 'js-yaml'
 import type { EdgionTls } from '@/types/edgion-tls'
+import { dumpYaml } from './yaml-utils'
 
 export const DEFAULT_EDGIONTLS_YAML = `apiVersion: edgion.io/v1
 kind: EdgionTls
@@ -50,24 +51,8 @@ export function normalizeEdgionTls(raw: any): EdgionTls {
   }
 }
 
-function removeEmpty(obj: any): any {
-  if (Array.isArray(obj)) {
-    const arr = obj.map(removeEmpty).filter((v) => v !== null && v !== undefined)
-    return arr.length > 0 ? arr : undefined
-  }
-  if (obj !== null && typeof obj === 'object') {
-    const result: any = {}
-    for (const [k, v] of Object.entries(obj)) {
-      const cleaned = removeEmpty(v)
-      if (cleaned !== null && cleaned !== undefined && cleaned !== '') result[k] = cleaned
-    }
-    return Object.keys(result).length > 0 ? result : undefined
-  }
-  return obj
-}
-
 export function edgionTlsToYaml(tls: EdgionTls): string {
-  return yaml.dump(removeEmpty(tls), { lineWidth: -1, noRefs: true })
+  return dumpYaml(tls)
 }
 
 export function yamlToEdgionTls(yamlStr: string): EdgionTls {

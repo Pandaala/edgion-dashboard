@@ -1,5 +1,6 @@
 import * as yaml from 'js-yaml'
 import type { EdgionAcme } from '@/types/edgion-acme'
+import { dumpYaml } from './yaml-utils'
 
 export const DEFAULT_YAML = `apiVersion: edgion.io/v1
 kind: EdgionAcme
@@ -56,24 +57,8 @@ export function normalize(raw: any): EdgionAcme {
   }
 }
 
-function removeEmpty(obj: any): any {
-  if (Array.isArray(obj)) {
-    const arr = obj.map(removeEmpty).filter((v) => v !== null && v !== undefined)
-    return arr.length > 0 ? arr : undefined
-  }
-  if (obj !== null && typeof obj === 'object') {
-    const result: any = {}
-    for (const [k, v] of Object.entries(obj)) {
-      const cleaned = removeEmpty(v)
-      if (cleaned !== null && cleaned !== undefined && cleaned !== '') result[k] = cleaned
-    }
-    return Object.keys(result).length > 0 ? result : undefined
-  }
-  return obj
-}
-
 export function toYaml(acme: EdgionAcme): string {
-  return yaml.dump(removeEmpty(acme), { lineWidth: -1, noRefs: true })
+  return dumpYaml(acme)
 }
 
 export function fromYaml(yamlStr: string): EdgionAcme {

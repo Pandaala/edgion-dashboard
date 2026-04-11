@@ -20,7 +20,6 @@ import {
 import type { HTTPRoute } from '@/types/gateway-api';
 import { useT } from '@/i18n';
 
-const { TabPane } = Tabs;
 
 interface HTTPRouteEditorProps {
   visible: boolean;
@@ -204,26 +203,32 @@ const HTTPRouteEditor: React.FC<HTTPRouteEditorProps> = ({
       destroyOnClose
       style={{ top: 20 }}
     >
-      <Tabs activeKey={activeTab} onChange={(key) => setActiveTab(key as 'form' | 'yaml')}>
-        <TabPane tab={t('tab.form')} key="form">
-          {formData && (
+      <Tabs activeKey={activeTab} onChange={(key) => setActiveTab(key as 'form' | 'yaml')} items={[
+        {
+          key: 'form',
+          label: t('tab.form'),
+          children: formData && (
             <HTTPRouteForm
               value={formData}
               onChange={handleFormChange}
               disabled={isReadOnly}
               isCreate={initialMode === 'create'}
             />
-          )}
-        </TabPane>
-        <TabPane tab={t('tab.yaml')} key="yaml">
-          <YamlEditor
-            value={yamlContent}
-            onChange={handleYamlChange}
-            readOnly={isReadOnly}
-            height="65vh"
-          />
-        </TabPane>
-      </Tabs>
+          ),
+        },
+        {
+          key: 'yaml',
+          label: t('tab.yaml'),
+          children: (
+            <YamlEditor
+              value={yamlContent}
+              onChange={handleYamlChange}
+              readOnly={isReadOnly}
+              height="65vh"
+            />
+          ),
+        },
+      ]} />
     </Modal>
   );
 };

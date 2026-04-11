@@ -4,23 +4,10 @@ import { PlusOutlined, ReloadOutlined, EyeOutlined, EditOutlined, DeleteOutlined
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { resourceApi } from '@/api/resources'
 import type { K8sResource } from '@/api/types'
-import SimpleResourceEditor from '@/components/ResourceEditor/common/SimpleResourceEditor'
+import PluginMetaDataEditor from '@/components/ResourceEditor/PluginMetaData/PluginMetaDataEditor'
 import { useT } from '@/i18n'
 
 const { Search } = Input
-
-const DEFAULT_YAML = `apiVersion: edgion.io/v1
-kind: PluginMetaData
-metadata:
-  name: my-plugin
-  namespace: default
-spec:
-  description: "My plugin description"
-  schema:
-    type: object
-    properties: {}
-  defaultConfig: {}
-`
 
 const PluginMetaDataList = () => {
   const t = useT()
@@ -28,7 +15,6 @@ const PluginMetaDataList = () => {
   const [editorVisible, setEditorVisible] = useState(false)
   const [editorMode, setEditorMode] = useState<'create' | 'edit' | 'view'>('create')
   const [selectedResource, setSelectedResource] = useState<K8sResource | null>(null)
-  const [submitLoading, setSubmitLoading] = useState(false)
   const queryClient = useQueryClient()
 
   const { data, isLoading, refetch } = useQuery({
@@ -50,23 +36,6 @@ const PluginMetaDataList = () => {
 
   const openEditor = (mode: 'create' | 'edit' | 'view', resource?: K8sResource) => {
     setEditorMode(mode); setSelectedResource(resource || null); setEditorVisible(true)
-  }
-
-  const handleSubmit = async (yamlContent: string) => {
-    setSubmitLoading(true)
-    try {
-      const ns = selectedResource?.metadata.namespace || 'default'
-      if (editorMode === 'create') {
-        await resourceApi.create('pluginmetadata', ns, yamlContent)
-        message.success(t('msg.createOk'))
-      } else {
-        await resourceApi.update('pluginmetadata', ns, selectedResource!.metadata.name, yamlContent)
-        message.success(t('msg.updateOk'))
-      }
-      queryClient.invalidateQueries({ queryKey: ['pluginmetadata'] })
-      setEditorVisible(false)
-    } catch (e: any) { message.error(t('msg.opFailed', { err: e.message })) }
-    finally { setSubmitLoading(false) }
   }
 
   const columns = [
@@ -105,9 +74,8 @@ const PluginMetaDataList = () => {
       <Table rowKey={(r) => `${r.metadata.namespace}/${r.metadata.name}`}
         columns={columns} dataSource={filtered} loading={isLoading}
         pagination={{ pageSize: 20, showTotal: (total) => t('table.totalItems', { n: total }) }} size="middle" />
-      <SimpleResourceEditor visible={editorVisible} mode={editorMode} resource={selectedResource}
-        title="PluginMetaData" defaultYaml={DEFAULT_YAML} onClose={() => setEditorVisible(false)}
-        onSubmit={handleSubmit} loading={submitLoading} />
+      <PluginMetaDataEditor visible={editorVisible} mode={editorMode} resource={selectedResource}
+        onClose={() => setEditorVisible(false)} />
     </div>
   )
 }

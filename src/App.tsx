@@ -1,5 +1,7 @@
-import { Routes, Route } from 'react-router-dom'
+import { Routes, Route, Navigate } from 'react-router-dom'
 import MainLayout from './components/Layout/MainLayout'
+import { isLoggedIn } from './utils/auth'
+import LoginPage from './pages/Login/LoginPage'
 import Dashboard from './pages/Dashboard'
 import UserDashboard from './pages/Dashboard/UserDashboard'
 // Routes
@@ -27,10 +29,18 @@ import LinkSysList from './pages/System/LinkSysList'
 import EdgionAcmeList from './pages/System/EdgionAcmeList'
 import './App.css'
 
+function RequireAuth({ children }: { children: React.ReactNode }) {
+  if (!isLoggedIn()) {
+    return <Navigate to="/login" replace />
+  }
+  return <>{children}</>
+}
+
 function App() {
   return (
     <Routes>
-      <Route path="/" element={<MainLayout />}>
+      <Route path="/login" element={<LoginPage />} />
+      <Route path="/" element={<RequireAuth><MainLayout /></RequireAuth>}>
         <Route index element={<Dashboard />} />
         <Route path="user" element={<UserDashboard />} />
         <Route path="routes">

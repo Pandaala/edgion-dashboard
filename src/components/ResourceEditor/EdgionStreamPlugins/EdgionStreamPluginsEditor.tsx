@@ -38,20 +38,37 @@ const EdgionStreamPluginsEditor: React.FC<Props> = ({ visible, mode, resource, o
   }
 
   const createMutation = useMutation({
-    mutationFn: (y: string) => resourceApi.create('edgionstreamplugins', formData.metadata.namespace || 'default', y),
+    mutationFn: ({ namespace, y }: { namespace: string; y: string }) => resourceApi.create('edgionstreamplugins', namespace, y),
     onSuccess: () => { message.success(t('msg.createOk')); queryClient.invalidateQueries({ queryKey: ['edgionstreamplugins'] }); onClose() },
     onError: (e: any) => message.error(t('msg.createFailed', { err: e.message })),
   })
   const updateMutation = useMutation({
-    mutationFn: (y: string) => resourceApi.update('edgionstreamplugins', formData.metadata.namespace || 'default', formData.metadata.name, y),
+    mutationFn: ({ namespace, name, y }: { namespace: string; name: string; y: string }) => resourceApi.update('edgionstreamplugins', namespace, name, y),
     onSuccess: () => { message.success(t('msg.updateOk')); queryClient.invalidateQueries({ queryKey: ['edgionstreamplugins'] }); onClose() },
     onError: (e: any) => message.error(t('msg.updateFailed', { err: e.message })),
   })
 
   const handleSubmit = () => {
-    const y = activeTab === 'yaml' ? yamlContent : toYaml(formData)
-    if (mode === 'create') createMutation.mutate(y)
-    else updateMutation.mutate(y)
+    try {
+      const y = activeTab === 'yaml' ? yamlContent : toYaml(formData)
+      const parsed = fromYaml(y)
+      const name = parsed.metadata?.name
+      const namespace = parsed.metadata?.namespace
+      if (!name || !namespace) {
+        message.error(t('msg.metaRequired'))
+        return
+      }
+      if (mode !== 'create' && resource) {
+        if (name !== resource.metadata.name || namespace !== resource.metadata.namespace) {
+          message.error(t('msg.noRename'))
+          return
+        }
+      }
+      if (mode === 'create') createMutation.mutate({ namespace, y })
+      else updateMutation.mutate({ namespace, name, y })
+    } catch (e: any) {
+      message.error(t('msg.submitFailed', { err: e.message || 'unknown error' }))
+    }
   }
 
   const isPending = createMutation.isPending || updateMutation.isPending
@@ -67,6 +84,8 @@ const EdgionStreamPluginsEditor: React.FC<Props> = ({ visible, mode, resource, o
   return (
     <Modal title={title}
       open={visible} onCancel={onClose} width={820}
+      destroyOnClose
+      style={{ top: 20 }}
       footer={isRO ? [<Button key="close" onClick={onClose}>{t('btn.close')}</Button>] : [
         <Button key="cancel" onClick={onClose}>{t('btn.cancel')}</Button>,
         <Button key="submit" type="primary" onClick={handleSubmit} loading={isPending}>

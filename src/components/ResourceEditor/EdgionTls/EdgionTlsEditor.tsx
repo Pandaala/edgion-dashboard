@@ -49,23 +49,40 @@ const EdgionTlsEditor: React.FC<EdgionTlsEditorProps> = ({ visible, mode, resour
   }
 
   const createMutation = useMutation({
-    mutationFn: (yamlStr: string) =>
-      resourceApi.create('edgiontls', formData.metadata.namespace || 'default', yamlStr),
+    mutationFn: ({ namespace, yamlStr }: { namespace: string; yamlStr: string }) =>
+      resourceApi.create('edgiontls', namespace, yamlStr),
     onSuccess: () => { message.success(t('msg.createOk')); queryClient.invalidateQueries({ queryKey: ['edgiontls'] }); onClose() },
     onError: (e: any) => message.error(t('msg.createFailed', { err: e.message })),
   })
 
   const updateMutation = useMutation({
-    mutationFn: (yamlStr: string) =>
-      resourceApi.update('edgiontls', formData.metadata.namespace || 'default', formData.metadata.name, yamlStr),
+    mutationFn: ({ namespace, name, yamlStr }: { namespace: string; name: string; yamlStr: string }) =>
+      resourceApi.update('edgiontls', namespace, name, yamlStr),
     onSuccess: () => { message.success(t('msg.updateOk')); queryClient.invalidateQueries({ queryKey: ['edgiontls'] }); onClose() },
     onError: (e: any) => message.error(t('msg.updateFailed', { err: e.message })),
   })
 
   const handleSubmit = () => {
-    const yamlStr = activeTab === 'yaml' ? yamlContent : edgionTlsToYaml(formData)
-    if (mode === 'create') createMutation.mutate(yamlStr)
-    else updateMutation.mutate(yamlStr)
+    try {
+      const yamlStr = activeTab === 'yaml' ? yamlContent : edgionTlsToYaml(formData)
+      const parsed = yamlToEdgionTls(yamlStr)
+      const name = parsed.metadata?.name
+      const namespace = parsed.metadata?.namespace
+      if (!name || !namespace) {
+        message.error(t('msg.metaRequired'))
+        return
+      }
+      if (mode !== 'create' && resource) {
+        if (name !== resource.metadata.name || namespace !== resource.metadata.namespace) {
+          message.error(t('msg.noRename'))
+          return
+        }
+      }
+      if (mode === 'create') createMutation.mutate({ namespace, yamlStr })
+      else updateMutation.mutate({ namespace, name, yamlStr })
+    } catch (e: any) {
+      message.error(t('msg.submitFailed', { err: e.message || 'unknown error' }))
+    }
   }
 
   const isPending = createMutation.isPending || updateMutation.isPending
@@ -82,6 +99,8 @@ const EdgionTlsEditor: React.FC<EdgionTlsEditorProps> = ({ visible, mode, resour
     <Modal
       title={title}
       open={visible} onCancel={onClose} width={860}
+      destroyOnClose
+      style={{ top: 20 }}
       footer={
         isReadOnly
           ? [<Button key="close" onClick={onClose}>{t('btn.close')}</Button>]

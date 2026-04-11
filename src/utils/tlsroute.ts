@@ -4,6 +4,7 @@
 
 import * as yaml from 'js-yaml'
 import type { TLSRoute } from '@/types/gateway-api/tlsroute'
+import { removeEmpty } from './yaml-utils'
 
 export const DEFAULT_TLSROUTE_YAML = `apiVersion: gateway.networking.k8s.io/v1
 kind: TLSRoute
@@ -61,23 +62,6 @@ export function normalizeTLSRoute(raw: any): TLSRoute {
   }
 }
 
-function removeEmpty(obj: any): any {
-  if (Array.isArray(obj)) {
-    const arr = obj.map(removeEmpty).filter((v) => v !== null && v !== undefined)
-    return arr.length > 0 ? arr : undefined
-  }
-  if (obj !== null && typeof obj === 'object') {
-    const result: any = {}
-    for (const [k, v] of Object.entries(obj)) {
-      const cleaned = removeEmpty(v)
-      if (cleaned !== null && cleaned !== undefined && cleaned !== '') {
-        result[k] = cleaned
-      }
-    }
-    return Object.keys(result).length > 0 ? result : undefined
-  }
-  return obj
-}
 
 export function tlsRouteToYaml(route: TLSRoute): string {
   const clean = removeEmpty(route)

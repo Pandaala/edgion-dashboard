@@ -20,7 +20,6 @@ import type { EdgionPlugins } from '@/types/edgion-plugins'
 import type { K8sResource } from '@/api/types'
 import { useT } from '@/i18n'
 
-const { TabPane } = Tabs
 
 interface EdgionPluginsEditorProps {
   visible: boolean
@@ -183,26 +182,32 @@ const EdgionPluginsEditor: React.FC<EdgionPluginsEditorProps> = ({
       destroyOnClose
       style={{ top: 20 }}
     >
-      <Tabs activeKey={activeTab} onChange={(key) => setActiveTab(key as 'form' | 'yaml')}>
-        <TabPane tab={t('tab.form')} key="form">
-          {formData && (
+      <Tabs activeKey={activeTab} onChange={(key) => setActiveTab(key as 'form' | 'yaml')} items={[
+        {
+          key: 'form',
+          label: t('tab.form'),
+          children: formData && (
             <EdgionPluginsForm
               value={formData}
               onChange={handleFormChange}
               disabled={isReadOnly}
               isCreate={initialMode === 'create'}
             />
-          )}
-        </TabPane>
-        <TabPane tab={t('tab.yaml')} key="yaml">
-          <YamlEditor
-            value={yamlContent}
-            onChange={handleYamlChange}
-            readOnly={isReadOnly}
-            height="65vh"
-          />
-        </TabPane>
-      </Tabs>
+          ),
+        },
+        {
+          key: 'yaml',
+          label: t('tab.yaml'),
+          children: (
+            <YamlEditor
+              value={yamlContent}
+              onChange={handleYamlChange}
+              readOnly={isReadOnly}
+              height="65vh"
+            />
+          ),
+        },
+      ]} />
     </Modal>
   )
 }

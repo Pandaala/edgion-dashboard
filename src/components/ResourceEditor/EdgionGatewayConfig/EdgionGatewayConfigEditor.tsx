@@ -1,32 +1,33 @@
 /**
- * GRPCRoute 编辑器 Modal
+ * EdgionGatewayConfig 编辑器 Modal（集群级资源）
  */
 
 import React, { useEffect, useState } from 'react'
 import { Modal, Button, Tabs, message } from 'antd'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
-import { resourceApi } from '@/api/resources'
+import { clusterResourceApi } from '@/api/resources'
 import YamlEditor from '@/components/YamlEditor'
-import GRPCRouteForm from './GRPCRouteForm'
-import type { GRPCRoute } from '@/types/gateway-api/grpcroute'
-import {
-  createEmptyGRPCRoute, normalizeGRPCRoute, grpcRouteToYaml, yamlToGRPCRoute,
-} from '@/utils/grpcroute'
+import EdgionGatewayConfigForm from './EdgionGatewayConfigForm'
+import type { EdgionGatewayConfig } from '@/types/edgion-gateway-config'
+import { createEmpty, normalize, toYaml, fromYaml } from '@/utils/edgiongatewayconfig'
 import { useT } from '@/i18n'
 
-interface GRPCRouteEditorProps {
+interface EdgionGatewayConfigEditorProps {
   visible: boolean
   mode: 'create' | 'edit' | 'view'
-  resource?: GRPCRoute | null
+  resource?: any | null
   onClose: () => void
 }
 
-const GRPCRouteEditor: React.FC<GRPCRouteEditorProps> = ({
-  visible, mode, resource, onClose,
+const EdgionGatewayConfigEditor: React.FC<EdgionGatewayConfigEditorProps> = ({
+  visible,
+  mode,
+  resource,
+  onClose,
 }) => {
   const t = useT()
   const [activeTab, setActiveTab] = useState<'form' | 'yaml'>('form')
-  const [formData, setFormData] = useState<GRPCRoute>(() => createEmptyGRPCRoute())
+  const [formData, setFormData] = useState<EdgionGatewayConfig>(() => createEmpty())
   const [yamlContent, setYamlContent] = useState('')
   const queryClient = useQueryClient()
 
@@ -34,23 +35,20 @@ const GRPCRouteEditor: React.FC<GRPCRouteEditorProps> = ({
     if (!visible) return
     setActiveTab('form')
     if (mode === 'create') {
-      const empty = createEmptyGRPCRoute()
+      const empty = createEmpty()
       setFormData(empty)
-      setYamlContent(grpcRouteToYaml(empty))
+      setYamlContent(toYaml(empty))
     } else if (resource) {
-      const normalized = normalizeGRPCRoute(resource)
+      const normalized = normalize(resource)
       setFormData(normalized)
-      setYamlContent(grpcRouteToYaml(normalized))
+      setYamlContent(toYaml(normalized))
     }
   }, [visible, mode, resource])
 
   const handleTabChange = (key: string) => {
     try {
-      if (key === 'yaml') {
-        setYamlContent(grpcRouteToYaml(formData))
-      } else {
-        setFormData(yamlToGRPCRoute(yamlContent))
-      }
+      if (key === 'yaml') setYamlContent(toYaml(formData))
+      else setFormData(fromYaml(yamlContent))
       setActiveTab(key as 'form' | 'yaml')
     } catch (e: any) {
       message.error(t('msg.tabSwitchFailed', { err: e.message }))
@@ -58,22 +56,21 @@ const GRPCRouteEditor: React.FC<GRPCRouteEditorProps> = ({
   }
 
   const createMutation = useMutation({
-    mutationFn: ({ namespace, yamlStr }: { namespace: string; yamlStr: string }) =>
-      resourceApi.create('grpcroute', namespace, yamlStr),
+    mutationFn: ({ yamlStr }: { yamlStr: string }) => clusterResourceApi.create('edgiongatewayconfig', yamlStr),
     onSuccess: () => {
       message.success(t('msg.createOk'))
-      queryClient.invalidateQueries({ queryKey: ['grpcroute'] })
+      queryClient.invalidateQueries({ queryKey: ['edgiongatewayconfig'] })
       onClose()
     },
     onError: (e: any) => message.error(t('msg.createFailed', { err: e.message })),
   })
 
   const updateMutation = useMutation({
-    mutationFn: ({ namespace, name, yamlStr }: { namespace: string; name: string; yamlStr: string }) =>
-      resourceApi.update('grpcroute', namespace, name, yamlStr),
+    mutationFn: ({ name, yamlStr }: { name: string; yamlStr: string }) =>
+      clusterResourceApi.update('edgiongatewayconfig', name, yamlStr),
     onSuccess: () => {
       message.success(t('msg.updateOk'))
-      queryClient.invalidateQueries({ queryKey: ['grpcroute'] })
+      queryClient.invalidateQueries({ queryKey: ['edgiongatewayconfig'] })
       onClose()
     },
     onError: (e: any) => message.error(t('msg.updateFailed', { err: e.message })),
@@ -81,22 +78,21 @@ const GRPCRouteEditor: React.FC<GRPCRouteEditorProps> = ({
 
   const handleSubmit = () => {
     try {
-      const yamlStr = activeTab === 'yaml' ? yamlContent : grpcRouteToYaml(formData)
-      const parsed = yamlToGRPCRoute(yamlStr)
-      const name = parsed.metadata?.name
-      const namespace = parsed.metadata?.namespace
-      if (!name || !namespace) {
-        message.error(t('msg.metaRequired'))
+      const isFormTab = activeTab === 'form'
+      const name = isFormTab ? formData.metadata?.name : fromYaml(yamlContent).metadata?.name
+      const yamlStr = isFormTab ? toYaml(formData) : yamlContent
+      if (!name) {
+        message.error(t('msg.metaNameRequired'))
         return
       }
       if (mode !== 'create' && resource) {
-        if (name !== resource.metadata.name || namespace !== resource.metadata.namespace) {
+        if (name !== resource.metadata.name) {
           message.error(t('msg.noRename'))
           return
         }
       }
-      if (mode === 'create') createMutation.mutate({ namespace, yamlStr })
-      else updateMutation.mutate({ namespace, name, yamlStr })
+      if (mode === 'create') createMutation.mutate({ yamlStr })
+      else updateMutation.mutate({ name, yamlStr })
     } catch (e: any) {
       message.error(t('msg.submitFailed', { err: e.message || 'unknown error' }))
     }
@@ -107,10 +103,10 @@ const GRPCRouteEditor: React.FC<GRPCRouteEditorProps> = ({
 
   const title =
     mode === 'create'
-      ? t('modal.create', { resource: 'GRPCRoute' })
+      ? t('modal.create', { resource: 'EdgionGatewayConfig' })
       : mode === 'edit'
-      ? t('modal.edit', { resource: resource?.metadata.name || 'GRPCRoute' })
-      : t('modal.view', { resource: resource?.metadata.name || 'GRPCRoute' })
+      ? t('modal.edit', { resource: 'EdgionGatewayConfig' })
+      : t('modal.view', { resource: 'EdgionGatewayConfig' })
 
   return (
     <Modal
@@ -139,7 +135,7 @@ const GRPCRouteEditor: React.FC<GRPCRouteEditorProps> = ({
             key: 'form',
             label: t('tab.form'),
             children: (
-              <GRPCRouteForm
+              <EdgionGatewayConfigForm
                 data={formData}
                 onChange={setFormData}
                 readOnly={isReadOnly}
@@ -165,4 +161,4 @@ const GRPCRouteEditor: React.FC<GRPCRouteEditorProps> = ({
   )
 }
 
-export default GRPCRouteEditor
+export default EdgionGatewayConfigEditor

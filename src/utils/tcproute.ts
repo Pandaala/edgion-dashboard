@@ -4,6 +4,7 @@
 
 import * as yaml from 'js-yaml'
 import type { TCPRoute } from '@/types/gateway-api/tcproute'
+import { removeEmpty } from './yaml-utils'
 
 export const DEFAULT_TCPROUTE_YAML = `apiVersion: gateway.networking.k8s.io/v1alpha2
 kind: TCPRoute
@@ -57,23 +58,6 @@ export function normalizeTCPRoute(raw: any): TCPRoute {
   }
 }
 
-function removeEmpty(obj: any): any {
-  if (Array.isArray(obj)) {
-    const arr = obj.map(removeEmpty).filter((v) => v !== null && v !== undefined)
-    return arr.length > 0 ? arr : undefined
-  }
-  if (obj !== null && typeof obj === 'object') {
-    const result: any = {}
-    for (const [k, v] of Object.entries(obj)) {
-      const cleaned = removeEmpty(v)
-      if (cleaned !== null && cleaned !== undefined && cleaned !== '') {
-        result[k] = cleaned
-      }
-    }
-    return Object.keys(result).length > 0 ? result : undefined
-  }
-  return obj
-}
 
 export function tcpRouteToYaml(route: TCPRoute): string {
   const clean = removeEmpty(route)

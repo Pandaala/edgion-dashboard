@@ -1,5 +1,6 @@
 import axios, { AxiosError } from 'axios'
 import { message } from 'antd'
+import { getToken, removeToken } from '../utils/auth'
 
 // Create axios instance
 export const apiClient = axios.create({
@@ -13,11 +14,10 @@ export const apiClient = axios.create({
 // Request interceptor
 apiClient.interceptors.request.use(
   (config) => {
-    // TODO: Add authentication token if needed
-    // const token = getToken()
-    // if (token) {
-    //   config.headers.Authorization = `Bearer ${token}`
-    // }
+    const token = getToken()
+    if (token) {
+      config.headers.Authorization = `Bearer ${token}`
+    }
     return config
   },
   (error) => {
@@ -32,7 +32,17 @@ apiClient.interceptors.response.use(
     // Handle error responses
     const status = error.response?.status
     let errorMsg: string
-    
+
+    if (status === 401) {
+      // Token expired or invalid — redirect to login
+      removeToken()
+      // Only redirect if not already on login page
+      if (window.location.pathname !== '/login') {
+        window.location.href = '/login'
+      }
+      return Promise.reject(error)
+    }
+
     if (status === 409) {
       errorMsg = '资源已存在，无法创建重复资源 / Resource already exists'
     } else if (status === 404) {
