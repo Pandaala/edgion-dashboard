@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { Table, Button, Space, Input, Tag, Badge, Modal, message } from 'antd'
+import { Table, Button, Space, Input, Tag, Modal, message } from 'antd'
 import { ReloadOutlined, EyeOutlined, EditOutlined, DeleteOutlined, PlusOutlined } from '@ant-design/icons'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { resourceApi } from '@/api/resources'
@@ -9,7 +9,7 @@ import { useT } from '@/i18n'
 
 const { Search } = Input
 
-const EndpointSliceList = () => {
+const EndpointList = () => {
   const t = useT()
   const queryClient = useQueryClient()
   const [searchText, setSearchText] = useState('')
@@ -18,28 +18,21 @@ const EndpointSliceList = () => {
   const [selectedResource, setSelectedResource] = useState<K8sResource | null>(null)
 
   const { data, isLoading, refetch } = useQuery({
-    queryKey: ['endpointslice'],
-    queryFn: () => resourceApi.listAll<K8sResource>('endpointslice'),
+    queryKey: ['endpoint'],
+    queryFn: () => resourceApi.listAll<K8sResource>('endpoint'),
   })
 
   const deleteMutation = useMutation({
     mutationFn: ({ ns, name }: { ns: string; name: string }) =>
-      resourceApi.delete('endpointslice', ns, name),
-    onSuccess: () => { message.success(t('msg.deleteOk')); queryClient.invalidateQueries({ queryKey: ['endpointslice'] }) },
+      resourceApi.delete('endpoint', ns, name),
+    onSuccess: () => { message.success(t('msg.deleteOk')); queryClient.invalidateQueries({ queryKey: ['endpoint'] }) },
   })
 
   const items = data?.data || []
   const filtered = items.filter((r) => {
     const s = searchText.toLowerCase()
-    const svcName = r.metadata.labels?.['kubernetes.io/service-name'] || ''
-    return r.metadata.name.toLowerCase().includes(s) || r.metadata.namespace?.toLowerCase().includes(s) ||
-      svcName.toLowerCase().includes(s)
+    return r.metadata.name.toLowerCase().includes(s) || r.metadata.namespace?.toLowerCase().includes(s)
   })
-
-  const getReadyCount = (r: K8sResource) => {
-    const endpoints: any[] = (r as any)['endpoints'] || []
-    return endpoints.filter((e) => e.conditions?.ready).length
-  }
 
   const openEditor = (mode: 'create' | 'edit' | 'view', resource?: K8sResource) => {
     setEditorMode(mode)
@@ -49,14 +42,14 @@ const EndpointSliceList = () => {
 
   const handleSubmit = async (yamlContent: string) => {
     if (editorMode === 'create') {
-      await resourceApi.create('endpointslice', 'default', yamlContent)
+      await resourceApi.create('endpoint', 'default', yamlContent)
       message.success(t('msg.createOk'))
     } else if (editorMode === 'edit' && selectedResource) {
-      await resourceApi.update('endpointslice', selectedResource.metadata.namespace || 'default', selectedResource.metadata.name, yamlContent)
+      await resourceApi.update('endpoint', selectedResource.metadata.namespace || 'default', selectedResource.metadata.name, yamlContent)
       message.success(t('msg.updateOk'))
     }
     setEditorVisible(false)
-    queryClient.invalidateQueries({ queryKey: ['endpointslice'] })
+    queryClient.invalidateQueries({ queryKey: ['endpoint'] })
   }
 
   const handleDelete = (r: K8sResource) => {
@@ -70,25 +63,31 @@ const EndpointSliceList = () => {
     })
   }
 
+  const getAddressCount = (r: K8sResource) => {
+    const subsets: any[] = r.spec?.subsets || (r as any).subsets || []
+    return subsets.reduce((sum: number, s: any) => sum + (s.addresses?.length || 0), 0)
+  }
+
   const columns = [
     { title: t('col.name'), dataIndex: ['metadata', 'name'], key: 'name' },
     { title: t('col.namespace'), dataIndex: ['metadata', 'namespace'], key: 'namespace' },
     {
-      title: t('col.assocService'), key: 'service',
+      title: t('col.address'), key: 'addresses',
       render: (_: any, r: K8sResource) => {
-        const svc = r.metadata.labels?.['kubernetes.io/service-name']
-        return svc ? <Tag color="blue">{svc}</Tag> : '-'
+        const count = getAddressCount(r)
+        return <Tag color={count > 0 ? 'green' : 'default'}>{count} addresses</Tag>
       },
     },
     {
-      title: t('col.endpoints'), key: 'endpoints',
+      title: t('col.ports'), key: 'ports',
       render: (_: any, r: K8sResource) => {
-        const total = ((r as any)['endpoints'] || []).length
-        const ready = getReadyCount(r)
+        const subsets: any[] = r.spec?.subsets || (r as any).subsets || []
+        const ports = subsets.flatMap((s: any) => s.ports || []).slice(0, 3)
         return (
-          <Space>
-            <Badge color="green" text={`${ready} Ready`} />
-            <span>/ {total} Total</span>
+          <Space wrap>
+            {ports.map((p: any, i: number) => (
+              <Tag key={i}>{p.name ? `${p.name}:` : ''}{p.port}/{p.protocol || 'TCP'}</Tag>
+            ))}
           </Space>
         )
       },
@@ -110,17 +109,17 @@ const EndpointSliceList = () => {
       <div style={{ marginBottom: 16, display: 'flex', justifyContent: 'space-between' }}>
         <Space>
           <Search placeholder={t('ph.searchNameNs')} value={searchText} onChange={(e) => setSearchText(e.target.value)}
-            style={{ width: 260 }} allowClear />
+            style={{ width: 240 }} allowClear />
           <Button icon={<ReloadOutlined />} onClick={() => refetch()}>{t('btn.refresh')}</Button>
         </Space>
         <Button type="primary" icon={<PlusOutlined />} onClick={() => openEditor('create')}>{t('btn.create')}</Button>
       </div>
       <Table rowKey={(r) => `${r.metadata.namespace}/${r.metadata.name}`} columns={columns}
         dataSource={filtered} loading={isLoading} pagination={{ pageSize: 20, showTotal: (n) => t('table.totalItems', { n }) }} size="middle" />
-      <SimpleResourceEditor visible={editorVisible} mode={editorMode} resource={selectedResource} title="EndpointSlice"
+      <SimpleResourceEditor visible={editorVisible} mode={editorMode} resource={selectedResource} title="Endpoint"
         onClose={() => setEditorVisible(false)} onSubmit={handleSubmit} />
     </div>
   )
 }
 
-export default EndpointSliceList
+export default EndpointList

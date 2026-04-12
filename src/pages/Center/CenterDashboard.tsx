@@ -173,12 +173,9 @@ export default function CenterDashboard() {
           marginBottom: 24,
         }}
       >
-        <div>
-          <h2 style={{ margin: 0 }}>{t('center.title')}</h2>
-          <span style={{ color: '#888', fontSize: 13 }}>
-            {t('center.subtitle', { n: totalCount })}
-          </span>
-        </div>
+        <span style={{ color: '#888', fontSize: 13 }}>
+          {t('center.subtitle', { n: totalCount })}
+        </span>
         <Button icon={<ReloadOutlined />} onClick={handleRefresh}>
           {t('btn.refresh')}
         </Button>

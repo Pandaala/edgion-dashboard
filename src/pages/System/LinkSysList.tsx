@@ -83,20 +83,23 @@ const LinkSysList = () => {
 
   return (
     <div>
-      <div style={{ marginBottom: 16, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-        <Space>
-          <Button type="primary" icon={<PlusOutlined />} onClick={() => openEditor('create')}>{`${t('btn.create')} LinkSys`}</Button>
-          <Button danger disabled={!selectedRowKeys.length} icon={<DeleteOutlined />}
-            onClick={() => {}}>
-            {`${t('btn.batchDelete')}${selectedRowKeys.length > 0 ? ` (${selectedRowKeys.length})` : ''}`}
-          </Button>
-        </Space>
+      <div style={{ marginBottom: 16, display: 'flex', justifyContent: 'space-between' }}>
         <Space>
           <Search placeholder={t('ph.searchNameNs')} value={searchText} onChange={(e) => setSearchText(e.target.value)}
             style={{ width: 240 }} allowClear />
           <Button icon={<ReloadOutlined />} onClick={() => refetch()}>{t('btn.refresh')}</Button>
         </Space>
+        <Button type="primary" icon={<PlusOutlined />} onClick={() => openEditor('create')}>{t('btn.create')}</Button>
       </div>
+
+      {selectedRowKeys.length > 0 && (
+        <div style={{ marginBottom: 16 }}>
+          <Space>
+            <span>{t('status.selected', { n: selectedRowKeys.length })}</span>
+            <Button danger onClick={() => {}}>{t('btn.batchDelete')}</Button>
+          </Space>
+        </div>
+      )}
       <Table rowKey={(r) => `${r.metadata.namespace}/${r.metadata.name}`}
         columns={columns} dataSource={filtered} loading={isLoading}
         rowSelection={{ selectedRowKeys, onChange: setSelectedRowKeys }}

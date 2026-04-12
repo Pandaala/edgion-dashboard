@@ -22,6 +22,7 @@ const zh = {
   'infra.gateway': 'Gateway',
   'infra.gatewayclass': 'GatewayClass',
   'infra.service': 'Service',
+  'infra.endpoint': 'Endpoint',
   'infra.endpointslice': 'EndpointSlice',
   'infra.referencegrant': 'ReferenceGrant',
 

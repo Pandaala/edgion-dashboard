@@ -39,6 +39,7 @@ export type ResourceKind =
   | 'udproute'
   | 'tlsroute'
   | 'service'
+  | 'endpoint'
   | 'endpointslice'
   | 'edgiontls'
   | 'edgionplugins'

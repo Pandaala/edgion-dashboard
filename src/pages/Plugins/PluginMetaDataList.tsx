@@ -63,13 +63,13 @@ const PluginMetaDataList = () => {
 
   return (
     <div>
-      <div style={{ marginBottom: 16, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-        <Button type="primary" icon={<PlusOutlined />} onClick={() => openEditor('create')}>{`${t('btn.create')} PluginMetaData`}</Button>
+      <div style={{ marginBottom: 16, display: 'flex', justifyContent: 'space-between' }}>
         <Space>
           <Search placeholder={t('ph.searchNameNs')} value={searchText} onChange={(e) => setSearchText(e.target.value)}
             style={{ width: 240 }} allowClear />
           <Button icon={<ReloadOutlined />} onClick={() => refetch()}>{t('btn.refresh')}</Button>
         </Space>
+        <Button type="primary" icon={<PlusOutlined />} onClick={() => openEditor('create')}>{t('btn.create')}</Button>
       </div>
       <Table rowKey={(r) => `${r.metadata.namespace}/${r.metadata.name}`}
         columns={columns} dataSource={filtered} loading={isLoading}

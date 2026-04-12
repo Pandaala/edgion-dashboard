@@ -21,6 +21,7 @@ import TLSRouteList from './pages/Routes/TLSRouteList'
 import GatewayList from './pages/Infrastructure/GatewayList'
 import GatewayClassList from './pages/Infrastructure/GatewayClassList'
 import ServiceList from './pages/Infrastructure/ServiceList'
+import EndpointList from './pages/Infrastructure/EndpointList'
 import EndpointSliceList from './pages/Infrastructure/EndpointSliceList'
 import ReferenceGrantList from './pages/Infrastructure/ReferenceGrantList'
 // Security
@@ -98,6 +99,7 @@ function App() {
           <Route path="infrastructure/gatewayclasses" element={<GatewayClassList />} />
           <Route path="infrastructure/referencegrants" element={<ReferenceGrantList />} />
           <Route path="services/list" element={<ServiceList />} />
+          <Route path="services/endpoints" element={<EndpointList />} />
           <Route path="services/endpointslices" element={<EndpointSliceList />} />
           <Route path="security/tls" element={<EdgionTlsList />} />
           <Route path="security/backendtls" element={<BackendTLSPolicyList />} />

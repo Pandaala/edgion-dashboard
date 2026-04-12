@@ -67,6 +67,7 @@ const MainLayout = () => {
           label: t('nav.services'),
           children: [
             { key: '/services/list', label: t('infra.service') },
+            { key: '/services/endpoints', label: t('infra.endpoint') },
             { key: '/services/endpointslices', label: t('infra.endpointslice') },
           ],
         },

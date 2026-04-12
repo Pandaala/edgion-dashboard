@@ -62,13 +62,13 @@ const GatewayClassList = () => {
 
   return (
     <div>
-      <div style={{ marginBottom: 16, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-        <Button type="primary" icon={<PlusOutlined />} onClick={() => openEditor('create')}>{`${t('btn.create')} GatewayClass`}</Button>
+      <div style={{ marginBottom: 16, display: 'flex', justifyContent: 'space-between' }}>
         <Space>
           <Search placeholder={t('ph.searchName')} value={searchText} onChange={(e) => setSearchText(e.target.value)}
             style={{ width: 240 }} allowClear />
           <Button icon={<ReloadOutlined />} onClick={() => refetch()}>{t('btn.refresh')}</Button>
         </Space>
+        <Button type="primary" icon={<PlusOutlined />} onClick={() => openEditor('create')}>{t('btn.create')}</Button>
       </div>
       <Table rowKey={(r) => r.metadata.name} columns={columns} dataSource={filtered}
         loading={isLoading} pagination={{ pageSize: 20, showTotal: (n) => t('table.totalItems', { n }) }} size="middle" />

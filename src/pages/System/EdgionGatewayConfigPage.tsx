@@ -62,9 +62,9 @@ const EdgionGatewayConfigPage = () => {
 
   return (
     <div>
-      <div style={{ marginBottom: 16, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-        <Button type="primary" icon={<PlusOutlined />} onClick={() => openEditor('create')}>{`${t('btn.create')} EdgionGatewayConfig`}</Button>
+      <div style={{ marginBottom: 16, display: 'flex', justifyContent: 'space-between' }}>
         <Button icon={<ReloadOutlined />} onClick={() => refetch()}>{t('btn.refresh')}</Button>
+        <Button type="primary" icon={<PlusOutlined />} onClick={() => openEditor('create')}>{t('btn.create')}</Button>
       </div>
       <Table rowKey={(r) => r.metadata.name} columns={columns} dataSource={items}
         loading={isLoading} pagination={{ pageSize: 20 }} size="middle" />
