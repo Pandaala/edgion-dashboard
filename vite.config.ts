@@ -37,7 +37,6 @@ export default defineConfig({
           'react-vendor': ['react', 'react-dom', 'react-router-dom'],
           'antd-vendor': ['antd'],
           'utils': ['axios', '@tanstack/react-query', 'zustand'],
-          'reactflow': ['reactflow'],
         },
       },
     },

@@ -1,54 +1,96 @@
-import { Layout, Button, Space, Typography } from 'antd'
-import { Outlet, useNavigate } from 'react-router-dom'
+import { useState } from 'react'
+import { Layout, Menu, Button, Space } from 'antd'
+import { Outlet, useNavigate, useLocation } from 'react-router-dom'
+import {
+  ClusterOutlined,
+  GlobalOutlined,
+  LogoutOutlined,
+  ReloadOutlined,
+  ShareAltOutlined,
+} from '@ant-design/icons'
 import { useT, useLanguage } from '@/i18n'
 import { clearLoggedIn } from '@/utils/auth'
 import { authApi } from '@/api/auth'
+import type { MenuProps } from 'antd'
 
-const { Header, Content } = Layout
-const { Title } = Typography
+const { Header, Sider, Content } = Layout
 
 export default function CenterLayout() {
   const t = useT()
   const navigate = useNavigate()
+  const location = useLocation()
   const { lang, setLang } = useLanguage()
+  const [collapsed, setCollapsed] = useState(false)
+
+  const menuItems: MenuProps['items'] = [
+    {
+      key: '/',
+      icon: <ClusterOutlined />,
+      label: t('center.nav.controllers'),
+    },
+    {
+      key: '/region-routes',
+      icon: <ShareAltOutlined />,
+      label: t('center.nav.regionRoutes'),
+    },
+  ]
+
+  const handleLogout = async () => {
+    await authApi.logout()
+    clearLoggedIn()
+    navigate('/login')
+  }
 
   return (
     <Layout style={{ minHeight: '100vh' }}>
-      <Header
-        style={{
+      <Sider
+        collapsible
+        collapsed={collapsed}
+        onCollapse={setCollapsed}
+        theme="dark"
+        width={200}
+      >
+        <div style={{
+          height: 64,
           display: 'flex',
           alignItems: 'center',
-          justifyContent: 'space-between',
-          padding: '0 24px',
-        }}
-      >
-        <Title level={4} style={{ color: '#fff', margin: 0 }}>
-          Edgion Center
-        </Title>
-        <Space>
-          <Button
-            type="text"
-            style={{ color: '#fff' }}
-            onClick={() => setLang(lang === 'en' ? 'zh' : 'en')}
-          >
-            {lang === 'en' ? '中文' : 'EN'}
-          </Button>
-          <Button
-            type="text"
-            style={{ color: '#fff' }}
-            onClick={async () => {
-              await authApi.logout()
-              clearLoggedIn()
-              navigate('/login')
-            }}
-          >
-            {t('login.logout')}
-          </Button>
-        </Space>
-      </Header>
-      <Content style={{ padding: 24 }}>
-        <Outlet />
-      </Content>
+          justifyContent: 'center',
+          color: '#fff',
+          fontSize: collapsed ? 13 : 17,
+          fontWeight: 'bold',
+          letterSpacing: collapsed ? 0 : 1,
+        }}>
+          {collapsed ? 'EC' : 'Edgion Center'}
+        </div>
+        <Menu
+          theme="dark"
+          selectedKeys={[location.pathname]}
+          mode="inline"
+          items={menuItems}
+          onClick={({ key }) => navigate(key)}
+        />
+      </Sider>
+
+      <Layout>
+        <Header style={{ padding: '0 24px', background: '#fff', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+          <span style={{ fontWeight: 600, fontSize: 16 }}>Edgion Center</span>
+          <Space>
+            <Button icon={<LogoutOutlined />} onClick={handleLogout}>
+              {t('login.logout')}
+            </Button>
+            <Button icon={<ReloadOutlined />} onClick={() => window.location.reload()}>
+              {t('action.refresh')}
+            </Button>
+            <Button icon={<GlobalOutlined />} onClick={() => setLang(lang === 'en' ? 'zh' : 'en')}>
+              {lang === 'en' ? '中文' : 'EN'}
+            </Button>
+          </Space>
+        </Header>
+
+        <Content style={{ margin: 24, background: '#fff', padding: 24, minHeight: 280 }}>
+          <Outlet />
+        </Content>
+      </Layout>
     </Layout>
   )
 }

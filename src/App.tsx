@@ -11,6 +11,7 @@ import LoginPage from './pages/Login/LoginPage'
 import Dashboard from './pages/Dashboard'
 import UserDashboard from './pages/Dashboard/UserDashboard'
 import CenterDashboard from './pages/Center/CenterDashboard'
+import RegionRoutePage from './pages/Center/RegionRoutePage'
 // Routes
 import HTTPRouteList from './pages/Routes/HTTPRouteList'
 import GRPCRouteList from './pages/Routes/GRPCRouteList'
@@ -85,6 +86,7 @@ function App() {
         <Route path="/login" element={<LoginPage />} />
         <Route path="/" element={<RequireAuth><CenterLayout /></RequireAuth>}>
           <Route index element={<CenterDashboard />} />
+          <Route path="region-routes" element={<RegionRoutePage />} />
         </Route>
         <Route path="/controller/:controllerId" element={<RequireAuth><ControllerProxy /></RequireAuth>}>
           <Route index element={<Dashboard />} />
