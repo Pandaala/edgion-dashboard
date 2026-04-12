@@ -465,6 +465,12 @@ const zh = {
   'topology.error': '加载拓扑数据失败',
   'topology.goToList': '前往列表页',
   'topology.resourceDetail': '资源详情',
+  'topology.gateway': '所属 Gateway',
+  'topology.rules': '路由规则',
+  'topology.serviceType': '类型',
+  'topology.ports': '端口',
+  'topology.selector': 'Selector',
+  'field.hostnames': 'Hostnames',
 }
 
 export default zh

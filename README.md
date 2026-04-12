@@ -96,3 +96,7 @@ await resourceApi.create('httproute', 'default', yamlContent)
 3. **端口配置**：
    - 前端开发：5173
    - 后端 API：5800
+
+## License
+
+This project is licensed under the [Apache License, Version 2.0](./LICENSE).

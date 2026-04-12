@@ -465,6 +465,12 @@ const en = {
   'topology.error': 'Failed to load topology data',
   'topology.goToList': 'Go to list page',
   'topology.resourceDetail': 'Resource Detail',
+  'topology.gateway': 'Gateway',
+  'topology.rules': 'Rules',
+  'topology.serviceType': 'Type',
+  'topology.ports': 'Ports',
+  'topology.selector': 'Selector',
+  'field.hostnames': 'Hostnames',
 }
 
 export default en

@@ -1,20 +1,7 @@
-import { Drawer, Descriptions, Tag, Button, Space } from 'antd'
-import { useNavigate } from 'react-router-dom'
-import { useT } from '@/i18n'
-import { NODE_TYPE_CONFIG } from './nodes/nodeStyles'
+import { Drawer, Typography, Tag, Divider } from 'antd'
+import yaml from 'js-yaml'
 
-const KIND_TO_PATH: Record<string, string> = {
-  gateway: '/infrastructure/gateways',
-  httproute: '/routes/http',
-  grpcroute: '/routes/grpc',
-  tcproute: '/routes/tcp',
-  udproute: '/routes/udp',
-  tlsroute: '/routes/tls',
-  service: '/services/list',
-  edgionplugins: '/plugins',
-  edgiontls: '/security/tls',
-  secret: '/security/tls',
-}
+const { Text } = Typography
 
 interface Props {
   visible: boolean
@@ -23,72 +10,104 @@ interface Props {
     name: string
     namespace?: string
     resource: any
+    _matchedListener?: string
+    [key: string]: any
   } | null
   onClose: () => void
 }
 
-export default function TopologyDetailDrawer({ visible, data, onClose }: Props) {
-  const t = useT()
-  const navigate = useNavigate()
+function GatewayListeners({ resource, matchedListener }: { resource: any; matchedListener?: string }) {
+  const listeners: any[] = resource?.spec?.listeners ?? []
+  if (listeners.length === 0) return null
 
-  const config = data ? (NODE_TYPE_CONFIG[data.kind] ?? null) : null
-  const labels = data?.resource?.metadata?.labels as Record<string, string> | undefined
-  const createdAt = data?.resource?.metadata?.creationTimestamp as string | undefined
-  const listPath = data ? KIND_TO_PATH[data.kind] : undefined
+  return (
+    <>
+      <Divider style={{ margin: '12px 0 8px' }}>Listeners</Divider>
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 6, marginBottom: 12 }}>
+        {listeners.map((l: any, i: number) => {
+          const matched = l.name === matchedListener
+          return (
+            <div
+              key={i}
+              style={{
+                padding: '6px 10px',
+                border: `1px solid ${matched ? '#52c41a' : '#f0f0f0'}`,
+                borderLeft: `3px solid ${matched ? '#52c41a' : '#d9d9d9'}`,
+                borderRadius: 4,
+                background: matched ? '#f6ffed' : '#fafafa',
+                display: 'flex',
+                alignItems: 'center',
+                gap: 6,
+                flexWrap: 'wrap',
+              }}
+            >
+              <Text strong style={{ color: matched ? '#389e0d' : '#262626', fontSize: 13 }}>
+                {l.name}
+              </Text>
+              {l.port && <Tag style={{ margin: 0 }}>:{l.port}</Tag>}
+              {l.protocol && <Tag style={{ margin: 0 }} color="blue">{l.protocol}</Tag>}
+              {l.hostname && <Text type="secondary" style={{ fontSize: 11 }}>{l.hostname}</Text>}
+              {matched && <Tag color="success" style={{ margin: 0 }}>matched</Tag>}
+            </div>
+          )
+        })}
+      </div>
+    </>
+  )
+}
+
+export default function TopologyDetailDrawer({ visible, data, onClose }: Props) {
+  const rawYaml = data?.resource ? yaml.dump(data.resource, { indent: 2, lineWidth: -1 }) : ''
+  const isGateway = data?.kind === 'gateway'
 
   return (
     <Drawer
-      title={t('topology.resourceDetail')}
+      title={
+        data && (
+          <div style={{ lineHeight: 1.6 }}>
+            <div>
+              <Tag color="blue" style={{ marginRight: 4 }}>{data.resource?.apiVersion ?? data.kind}</Tag>
+              <Tag>{data.resource?.kind ?? data.kind}</Tag>
+            </div>
+            <div style={{ marginTop: 4 }}>
+              {data.namespace && (
+                <Text type="secondary" style={{ fontSize: 12 }}>{data.namespace} / </Text>
+              )}
+              <Text strong style={{ fontSize: 14 }}>{data.name}</Text>
+            </div>
+          </div>
+        )
+      }
       placement="right"
-      width={480}
+      width={560}
       open={visible}
       onClose={onClose}
-      footer={
-        listPath ? (
-          <div style={{ textAlign: 'right' }}>
-            <Button
-              type="primary"
-              onClick={() => {
-                onClose()
-                navigate(listPath)
-              }}
-            >
-              {t('topology.goToList')}
-            </Button>
-          </div>
-        ) : null
-      }
+      styles={{ body: { padding: '12px 16px' } }}
     >
       {data && (
-        <Descriptions column={1} bordered size="small">
-          <Descriptions.Item label={t('col.type')}>
-            <Tag color={config?.color ?? 'default'}>{data.kind}</Tag>
-          </Descriptions.Item>
-
-          <Descriptions.Item label={t('col.name')}>{data.name}</Descriptions.Item>
-
-          {data.namespace && (
-            <Descriptions.Item label={t('col.namespace')}>{data.namespace}</Descriptions.Item>
+        <>
+          {isGateway && (
+            <GatewayListeners resource={data.resource} matchedListener={data._matchedListener} />
           )}
 
-          {createdAt && (
-            <Descriptions.Item label={t('col.createdAt')}>
-              {new Date(createdAt).toLocaleString()}
-            </Descriptions.Item>
-          )}
-
-          {labels && Object.keys(labels).length > 0 && (
-            <Descriptions.Item label={t('field.labels')}>
-              <Space size={4} wrap>
-                {Object.entries(labels).map(([k, v]) => (
-                  <Tag key={k} style={{ fontSize: 11 }}>
-                    {k}={v}
-                  </Tag>
-                ))}
-              </Space>
-            </Descriptions.Item>
-          )}
-        </Descriptions>
+          <pre
+            style={{
+              margin: 0,
+              padding: '12px 14px',
+              background: '#f6f8fa',
+              border: '1px solid #e8e8e8',
+              borderRadius: 6,
+              fontSize: 12,
+              lineHeight: 1.6,
+              overflowX: 'auto',
+              whiteSpace: 'pre',
+              color: '#24292f',
+              fontFamily: '"SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace',
+            }}
+          >
+            {rawYaml}
+          </pre>
+        </>
       )}
     </Drawer>
   )

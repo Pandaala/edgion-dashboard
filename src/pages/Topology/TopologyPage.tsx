@@ -1,7 +1,6 @@
 import { useState, useCallback } from 'react'
 import { Select, Button, Space, Spin, Alert, Empty } from 'antd'
 import { ReloadOutlined } from '@ant-design/icons'
-import type { Node } from 'reactflow'
 import { useT } from '@/i18n'
 import TopologyCanvas from './components/TopologyCanvas'
 import TopologyLegend from './components/TopologyLegend'
@@ -10,29 +9,21 @@ import { useTopologyData } from './hooks/useTopologyData'
 
 export default function TopologyPage() {
   const t = useT()
-
   const [namespaceFilter, setNamespaceFilter] = useState<string | null>(null)
   const [selectedNode, setSelectedNode] = useState<any | null>(null)
   const [drawerVisible, setDrawerVisible] = useState(false)
 
-  const { nodes, edges, namespaces, isLoading, isError, refetch } = useTopologyData(namespaceFilter)
+  const { nodes, edges, namespaces, plugins, gateways, isLoading, isError, refetch } = useTopologyData(namespaceFilter)
 
-  const handleNodeClick = useCallback((_: React.MouseEvent, node: Node) => {
-    setSelectedNode(node.data)
+  const handleNodeClick = useCallback((nodeData: Record<string, any>) => {
+    setSelectedNode(nodeData)
     setDrawerVisible(true)
   }, [])
 
   return (
     <div style={{ height: 'calc(100vh - 140px)', display: 'flex', flexDirection: 'column' }}>
       {/* Toolbar */}
-      <div
-        style={{
-          marginBottom: 12,
-          display: 'flex',
-          justifyContent: 'space-between',
-          alignItems: 'center',
-        }}
-      >
+      <div style={{ marginBottom: 12, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
         <Space>
           <span style={{ fontWeight: 600, fontSize: 16 }}>{t('topology.title')}</span>
           <Select
@@ -46,53 +37,24 @@ export default function TopologyPage() {
         </Space>
         <Space>
           <TopologyLegend />
-          <Button icon={<ReloadOutlined />} onClick={() => refetch()}>
-            {t('btn.refresh')}
-          </Button>
+          <Button icon={<ReloadOutlined />} onClick={() => refetch()}>{t('btn.refresh')}</Button>
         </Space>
       </div>
 
-      {/* Canvas area */}
-      <div
-        style={{
-          flex: 1,
-          border: '1px solid #f0f0f0',
-          borderRadius: 8,
-          overflow: 'hidden',
-          background: '#fafafa',
-        }}
-      >
+      {/* Canvas */}
+      <div style={{ flex: 1, border: '1px solid #f0f0f0', borderRadius: 8, overflow: 'auto', background: '#fafafa' }}>
         {isLoading ? (
-          <div
-            style={{
-              display: 'flex',
-              justifyContent: 'center',
-              alignItems: 'center',
-              height: '100%',
-            }}
-          >
+          <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100%' }}>
             <Spin size="large" tip={t('topology.loading')} />
           </div>
         ) : isError ? (
-          <Alert
-            type="error"
-            message={t('topology.error')}
-            showIcon
-            style={{ margin: 24 }}
-          />
+          <Alert type="error" message={t('topology.error')} showIcon style={{ margin: 24 }} />
         ) : nodes.length === 0 ? (
-          <div
-            style={{
-              display: 'flex',
-              justifyContent: 'center',
-              alignItems: 'center',
-              height: '100%',
-            }}
-          >
+          <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100%' }}>
             <Empty description={t('topology.noData')} />
           </div>
         ) : (
-          <TopologyCanvas nodes={nodes} edges={edges} onNodeClick={handleNodeClick} />
+          <TopologyCanvas nodes={nodes} edges={edges} plugins={plugins} gateways={gateways} onNodeClick={handleNodeClick} />
         )}
       </div>
 
