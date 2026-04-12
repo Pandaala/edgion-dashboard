@@ -4,6 +4,7 @@ import { Form, Input, Button, Card, message, Typography } from 'antd'
 import { UserOutlined, LockOutlined } from '@ant-design/icons'
 import { authApi } from '../../api/auth'
 import { setLoggedIn, isLoggedIn } from '../../utils/auth'
+import { getAppMode } from '../../utils/proxy'
 import { useT } from '../../i18n/index.tsx'
 
 const { Title, Text } = Typography
@@ -55,9 +56,9 @@ const LoginPage = () => {
       >
         <div style={{ textAlign: 'center', marginBottom: 32 }}>
           <Title level={3} style={{ marginBottom: 4 }}>
-            Edgion Controller
+            {getAppMode() === 'center' ? 'Edgion Center' : 'Edgion Controller'}
           </Title>
-          <Text type="secondary">{t('login.subtitle')}</Text>
+          <Text type="secondary">{t(getAppMode() === 'center' ? 'login.subtitle.center' : 'login.subtitle')}</Text>
         </div>
         <Form
           name="login"

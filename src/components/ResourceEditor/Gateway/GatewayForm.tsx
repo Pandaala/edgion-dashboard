@@ -16,12 +16,6 @@ interface GatewayFormProps {
   isCreate?: boolean
 }
 
-const GATEWAY_ANNOTATIONS = [
-  'edgion.io/http-to-https-redirect',
-  'edgion.io/https-redirect-port',
-  'edgion.io/enable-http2',
-  'edgion.io/edgion-stream-plugins',
-]
 
 const GatewayForm: React.FC<GatewayFormProps> = ({ data, onChange, readOnly = false, isCreate = true }) => {
   const t = useT()

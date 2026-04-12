@@ -448,6 +448,7 @@ const zh = {
   // Login
   'login.title': '登录',
   'login.subtitle': '登录 Edgion Controller',
+  'login.subtitle.center': '登录 Edgion Center',
   'login.username': '用户名',
   'login.password': '密码',
   'login.submit': '登录',

@@ -448,6 +448,7 @@ const en = {
   // Login
   'login.title': 'Login',
   'login.subtitle': 'Sign in to Edgion Controller',
+  'login.subtitle.center': 'Sign in to Edgion Center',
   'login.username': 'Username',
   'login.password': 'Password',
   'login.submit': 'Sign In',

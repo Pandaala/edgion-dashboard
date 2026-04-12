@@ -1,4 +1,4 @@
-import { useNavigate } from 'react-router-dom'
+import { useNavigate, useParams } from 'react-router-dom'
 import { Row, Col, Card, Statistic, Badge, Button, Space, Spin } from 'antd'
 import {
   ClusterOutlined,
@@ -12,8 +12,9 @@ import { getActiveControllerId } from '@/utils/proxy'
 import { useT } from '@/i18n'
 
 function useResourceCount(kind: string, scope: 'namespaced' | 'cluster' = 'namespaced') {
+  const { controllerId } = useParams<{ controllerId?: string }>()
   return useQuery({
-    queryKey: ['count', kind],
+    queryKey: ['count', kind, controllerId ?? ''],
     queryFn: async () => {
       try {
         const path = scope === 'namespaced' ? `/namespaced/${kind}` : `/cluster/${kind}`
@@ -70,17 +71,17 @@ const ResourceCountCell = ({ kind, scope }: { kind: string; scope?: 'namespaced'
 const Dashboard = () => {
   const t = useT()
   const queryClient = useQueryClient()
-  const navigate = useNavigate()
+  const { controllerId } = useParams<{ controllerId?: string }>()
 
   const { data: healthData } = useQuery({
-    queryKey: ['health'],
+    queryKey: ['health', controllerId ?? ''],
     queryFn: systemApi.health,
     staleTime: 15 * 1000,
     retry: false,
   })
 
   const { data: serverInfo } = useQuery({
-    queryKey: ['server-info'],
+    queryKey: ['server-info', controllerId ?? ''],
     queryFn: systemApi.serverInfo,
     staleTime: 30 * 1000,
     retry: false,

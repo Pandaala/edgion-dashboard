@@ -82,7 +82,7 @@ const EdgionPluginsEditor: React.FC<EdgionPluginsEditorProps> = ({
 
   // 创建 Mutation
   const createMutation = useMutation({
-    mutationFn: ({ namespace, name, content }: { namespace: string; name: string; content: string }) =>
+    mutationFn: ({ namespace, content }: { namespace: string; name: string; content: string }) =>
       resourceApi.create('edgionplugins', namespace, content),
     onSuccess: () => {
       message.success(t('msg.createOk'))

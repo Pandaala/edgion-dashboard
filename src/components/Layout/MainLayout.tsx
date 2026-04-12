@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { Outlet, useNavigate, useLocation } from 'react-router-dom'
+import { Outlet, useNavigate, useLocation, useParams } from 'react-router-dom'
 import { Layout, Menu, Button, Space } from 'antd'
 import {
   DashboardOutlined,
@@ -19,7 +19,7 @@ import {
 } from '@ant-design/icons'
 import { clearLoggedIn } from '../../utils/auth'
 import { authApi } from '../../api/auth'
-import { getAppMode, getActiveControllerId } from '../../utils/proxy'
+import { getAppMode } from '../../utils/proxy'
 import type { MenuProps } from 'antd'
 import { useT, useLanguage } from '../../i18n/index.tsx'
 
@@ -131,8 +131,11 @@ const MainLayout = () => {
   ]
 
   const appMode = getAppMode()
-  const activeControllerId = getActiveControllerId()
   const isCenterMode = appMode === 'center'
+  // Read controllerId from URL params (reliable during render).
+  // getActiveControllerId() is set in useLayoutEffect and is null during render.
+  const { controllerId: _controllerIdParam } = useParams<{ controllerId?: string }>()
+  const activeControllerId = _controllerIdParam?.replace(/~/g, '/') ?? null
 
   // Strip the /controller/:id prefix from the current path when in Center mode
   const effectivePath = (() => {

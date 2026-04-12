@@ -4,7 +4,7 @@
  */
 
 import React from 'react';
-import { Form, Select, Input, Space } from 'antd';
+import { Select, Input, Space } from 'antd';
 import { PATH_MATCH_TYPES, DEFAULT_VALUES } from '@/constants/gateway-api';
 import type { HTTPPathMatch } from '@/types/gateway-api';
 

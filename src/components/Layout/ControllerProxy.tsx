@@ -1,5 +1,5 @@
 import { useParams } from 'react-router-dom'
-import { useEffect } from 'react'
+import { useLayoutEffect } from 'react'
 import { setActiveControllerId } from '@/utils/proxy'
 import MainLayout from './MainLayout'
 
@@ -10,14 +10,18 @@ export default function ControllerProxy() {
   // Restore to real id for display/API usage; the proxy interceptor
   // in client.ts converts back to "~" when building proxy URLs.
   const realId = controllerId?.replace(/~/g, '/') ?? null
-  setActiveControllerId(realId)
 
-  // Cleanup only: clear the ID when leaving controller view
-  useEffect(() => {
+  // useLayoutEffect (not useEffect) so activeControllerId is set
+  // before React Query's useEffect fires queryFn. With useEffect the
+  // cleanup from the previous render ran after commit but before
+  // React Query executed, leaving activeControllerId = null and
+  // sending requests to center instead of the target controller.
+  useLayoutEffect(() => {
+    setActiveControllerId(realId)
     return () => {
       setActiveControllerId(null)
     }
-  }, [controllerId])
+  }, [realId])
 
   return <MainLayout />
 }

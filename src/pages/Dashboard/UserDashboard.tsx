@@ -1,4 +1,4 @@
-import { useNavigate } from 'react-router-dom'
+import { useNavigate, useParams } from 'react-router-dom'
 import { Row, Col, Card, Statistic, Badge, Button, Space } from 'antd'
 import {
   ApiOutlined,
@@ -12,8 +12,9 @@ import { getActiveControllerId } from '@/utils/proxy'
 import { useT } from '@/i18n'
 
 function useResourceCount(kind: string) {
+  const { controllerId } = useParams<{ controllerId?: string }>()
   return useQuery({
-    queryKey: ['count', kind],
+    queryKey: ['count', kind, controllerId ?? ''],
     queryFn: async () => {
       try {
         const { data } = await apiClient.get(`/namespaced/${kind}`, { _silent: true } as any)
@@ -60,9 +61,10 @@ const UserDashboard = () => {
   const t = useT()
   const queryClient = useQueryClient()
   const navigate = useNavigate()
+  const { controllerId } = useParams<{ controllerId?: string }>()
 
   const { data: healthData } = useQuery({
-    queryKey: ['health'],
+    queryKey: ['health', controllerId ?? ''],
     queryFn: systemApi.health,
     staleTime: 15 * 1000,
     retry: false,
@@ -137,7 +139,11 @@ const UserDashboard = () => {
               { label: t('dash.configureTls'), path: '/security/tls', color: '#eb2f96' },
               { label: 'BackendTLS Policy', path: '/security/backendtls', color: '#fa541c' },
             ].map((link) => (
-              <Button key={link.path} type="link" onClick={() => navigate(link.path)}
+              <Button key={link.path} type="link" onClick={() => {
+                const cid = getActiveControllerId()
+                const prefix = cid ? `/controller/${cid.replace(/\//g, '~')}` : ''
+                navigate(`${prefix}${link.path}`)
+              }}
                 style={{ display: 'block', textAlign: 'left', padding: '4px 0', color: link.color }}>
                 → {link.label}
               </Button>

@@ -4,7 +4,6 @@
 
 import { z } from 'zod';
 import {
-  dns1123SubdomainSchema,
   hostnameSchema,
   portSchema,
   k8sObjectMetaSchema,
