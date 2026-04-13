@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { Table, Button, Space, Input, Tag, Modal, message } from 'antd'
 import { ReloadOutlined, EyeOutlined, EditOutlined, DeleteOutlined, PlusOutlined } from '@ant-design/icons'
+import { useParams } from 'react-router-dom'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { resourceApi } from '@/api/resources'
 import type { K8sResource } from '@/api/types'
@@ -12,20 +13,21 @@ const { Search } = Input
 const EndpointList = () => {
   const t = useT()
   const queryClient = useQueryClient()
+  const { controllerId } = useParams<{ controllerId?: string }>()
   const [searchText, setSearchText] = useState('')
   const [editorVisible, setEditorVisible] = useState(false)
   const [editorMode, setEditorMode] = useState<'create' | 'edit' | 'view'>('view')
   const [selectedResource, setSelectedResource] = useState<K8sResource | null>(null)
 
   const { data, isLoading, refetch } = useQuery({
-    queryKey: ['endpoint'],
+    queryKey: ['endpoint', controllerId ?? ''],
     queryFn: () => resourceApi.listAll<K8sResource>('endpoint'),
   })
 
   const deleteMutation = useMutation({
     mutationFn: ({ ns, name }: { ns: string; name: string }) =>
       resourceApi.delete('endpoint', ns, name),
-    onSuccess: () => { message.success(t('msg.deleteOk')); queryClient.invalidateQueries({ queryKey: ['endpoint'] }) },
+    onSuccess: () => { message.success(t('msg.deleteOk')); queryClient.invalidateQueries({ queryKey: ['endpoint', controllerId ?? ''] }) },
   })
 
   const items = data?.data || []
@@ -49,7 +51,7 @@ const EndpointList = () => {
       message.success(t('msg.updateOk'))
     }
     setEditorVisible(false)
-    queryClient.invalidateQueries({ queryKey: ['endpoint'] })
+    queryClient.invalidateQueries({ queryKey: ['endpoint', controllerId ?? ''] })
   }
 
   const handleDelete = (r: K8sResource) => {

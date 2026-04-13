@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { Table, Button, Space, Input, Tag, Modal, message, Badge } from 'antd'
 import { PlusOutlined, ReloadOutlined, EyeOutlined, EditOutlined, DeleteOutlined, ThunderboltOutlined } from '@ant-design/icons'
+import { useParams } from 'react-router-dom'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { resourceApi } from '@/api/resources'
 import type { K8sResource } from '@/api/types'
@@ -22,16 +23,17 @@ const EdgionAcmeList = () => {
   const [editorMode, setEditorMode] = useState<'create' | 'edit' | 'view'>('create')
   const [selectedResource, setSelectedResource] = useState<K8sResource | null>(null)
   const queryClient = useQueryClient()
+  const { controllerId } = useParams<{ controllerId?: string }>()
 
   const { data, isLoading, refetch } = useQuery({
-    queryKey: ['edgionacme'],
+    queryKey: ['edgionacme', controllerId ?? ''],
     queryFn: () => resourceApi.listAll<K8sResource>('edgionacme'),
   })
 
   const deleteMutation = useMutation({
     mutationFn: ({ namespace, name }: { namespace: string; name: string }) =>
       resourceApi.delete('edgionacme', namespace, name),
-    onSuccess: () => { message.success(t('msg.deleteOk')); queryClient.invalidateQueries({ queryKey: ['edgionacme'] }) },
+    onSuccess: () => { message.success(t('msg.deleteOk')); queryClient.invalidateQueries({ queryKey: ['edgionacme', controllerId ?? ''] }) },
   })
 
   const items = data?.data || []

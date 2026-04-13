@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { Table, Button, Space, Input, Tag, Modal, message } from 'antd'
 import { PlusOutlined, ReloadOutlined, EyeOutlined, EditOutlined, DeleteOutlined } from '@ant-design/icons'
+import { useParams } from 'react-router-dom'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { resourceApi } from '@/api/resources'
 import type { K8sResource } from '@/api/types'
@@ -17,16 +18,17 @@ const SecretList = () => {
   const [editorMode, setEditorMode] = useState<'create' | 'edit' | 'view'>('create')
   const [selectedResource, setSelectedResource] = useState<K8sResource | null>(null)
   const queryClient = useQueryClient()
+  const { controllerId } = useParams<{ controllerId?: string }>()
 
   const { data, isLoading, refetch } = useQuery({
-    queryKey: ['secret'],
+    queryKey: ['secret', controllerId ?? ''],
     queryFn: () => resourceApi.listAll<K8sResource>('secret'),
   })
 
   const deleteMutation = useMutation({
     mutationFn: ({ namespace, name }: { namespace: string; name: string }) =>
       resourceApi.delete('secret', namespace, name),
-    onSuccess: () => { message.success(t('msg.deleteOk')); queryClient.invalidateQueries({ queryKey: ['secret'] }) },
+    onSuccess: () => { message.success(t('msg.deleteOk')); queryClient.invalidateQueries({ queryKey: ['secret', controllerId ?? ''] }) },
   })
 
   const batchDeleteMutation = useMutation({
@@ -35,7 +37,7 @@ const SecretList = () => {
     onSuccess: () => {
       message.success(t('msg.batchDeleteOk', { n: selectedRowKeys.length }))
       setSelectedRowKeys([])
-      queryClient.invalidateQueries({ queryKey: ['secret'] })
+      queryClient.invalidateQueries({ queryKey: ['secret', controllerId ?? ''] })
     },
   })
 

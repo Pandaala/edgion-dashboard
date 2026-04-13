@@ -148,18 +148,16 @@ function ExpandedDetail({
   serviceGroup,
   cluster,
   namespace,
-  kind,
 }: {
   serviceGroup: string
   cluster: string
   namespace: string
-  kind: string
 }) {
   const t = useT()
 
   const { data, isLoading, isError } = useQuery({
-    queryKey: ['center-region-route-detail', serviceGroup, cluster, namespace, kind],
-    queryFn: () => centerApi.getRegionRouteDetail(serviceGroup, cluster, namespace, kind),
+    queryKey: ['center-region-route-detail', serviceGroup, cluster, namespace],
+    queryFn: () => centerApi.getRegionRouteDetail(serviceGroup, cluster, namespace),
     staleTime: 5 * 60 * 1000,
   })
 
@@ -176,7 +174,7 @@ function ExpandedDetail({
     return (
       <Alert
         type="error"
-        message={t('center.regionRoute.fetchError', { id: `${serviceGroup}/${cluster}/${namespace}/${kind}` })}
+        message={t('center.regionRoute.fetchError', { id: `${serviceGroup}/${cluster}/${namespace}` })}
         showIcon
       />
     )
@@ -268,9 +266,11 @@ export default function RegionRoutePage() {
     },
     {
       title: 'Kind',
-      dataIndex: 'kind',
       key: 'kind',
-      render: (v: string) => <Tag color="purple">{v}</Tag>,
+      render: (_: unknown, record: CenterRegionRouteKey) => {
+        const kinds = [...new Set(record.controllers.flatMap((c) => c.resources.map((r) => r.kind)))]
+        return <Space size={4}>{kinds.map((k) => <Tag key={k} color="purple">{k}</Tag>)}</Space>
+      },
     },
     {
       title: t('center.regionRoute.controllers'),
@@ -368,7 +368,7 @@ export default function RegionRoutePage() {
         <Table
           dataSource={items}
           columns={columns}
-          rowKey={(record) => `${record.serviceGroup}/${record.cluster}/${record.namespace}/${record.kind}`}
+          rowKey={(record) => `${record.serviceGroup}/${record.cluster}/${record.namespace}`}
           pagination={{
             showTotal: (n) => t('table.totalItems', { n }),
           }}
@@ -378,7 +378,6 @@ export default function RegionRoutePage() {
                 serviceGroup={record.serviceGroup}
                 cluster={record.cluster}
                 namespace={record.namespace}
-                kind={record.kind}
               />
             ),
           }}

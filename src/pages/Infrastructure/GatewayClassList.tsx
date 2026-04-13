@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { Table, Button, Space, Input, Tag, Modal, message } from 'antd'
 import { PlusOutlined, ReloadOutlined, EyeOutlined, EditOutlined, DeleteOutlined } from '@ant-design/icons'
+import { useParams } from 'react-router-dom'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { clusterResourceApi } from '@/api/resources'
 import type { K8sResource } from '@/api/types'
@@ -16,15 +17,16 @@ const GatewayClassList = () => {
   const [editorMode, setEditorMode] = useState<'create' | 'edit' | 'view'>('create')
   const [selectedResource, setSelectedResource] = useState<K8sResource | null>(null)
   const queryClient = useQueryClient()
+  const { controllerId } = useParams<{ controllerId?: string }>()
 
   const { data, isLoading, refetch } = useQuery({
-    queryKey: ['gatewayclass'],
+    queryKey: ['gatewayclass', controllerId ?? ''],
     queryFn: () => clusterResourceApi.listAll<K8sResource>('gatewayclass'),
   })
 
   const deleteMutation = useMutation({
     mutationFn: (name: string) => clusterResourceApi.delete('gatewayclass', name),
-    onSuccess: () => { message.success(t('msg.deleteOk')); queryClient.invalidateQueries({ queryKey: ['gatewayclass'] }) },
+    onSuccess: () => { message.success(t('msg.deleteOk')); queryClient.invalidateQueries({ queryKey: ['gatewayclass', controllerId ?? ''] }) },
   })
 
   const items = data?.data || []

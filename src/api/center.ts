@@ -23,16 +23,20 @@ export interface HashCalcConfig {
   modulo: number
 }
 
+export interface ResourceRef {
+  kind: string
+  name: string
+}
+
 export interface ControllerRouteRef {
   controllerId: string
-  resources: string[]
+  resources: ResourceRef[]
 }
 
 export interface CenterRegionRouteKey {
   serviceGroup: string
   cluster: string
   namespace: string
-  kind: string
   controllers: ControllerRouteRef[]
 }
 
@@ -82,8 +86,8 @@ export const centerApi = {
     const { data } = await apiClient.get(`center/region-routes${qs ? `?${qs}` : ''}`)
     return data
   },
-  getRegionRouteDetail: async (serviceGroup: string, cluster: string, namespace: string, kind: string): Promise<{ success: boolean; data?: CenterRegionRouteDetail[] }> => {
-    const { data } = await apiClient.get(`center/region-routes/${serviceGroup}/${cluster}/${namespace}/${kind}`)
+  getRegionRouteDetail: async (serviceGroup: string, cluster: string, namespace: string): Promise<{ success: boolean; data?: CenterRegionRouteDetail[] }> => {
+    const { data } = await apiClient.get(`center/region-routes/${serviceGroup}/${cluster}/${namespace}`)
     return data
   },
 }

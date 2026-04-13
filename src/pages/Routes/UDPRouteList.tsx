@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { Table, Button, Space, Input, Tag, Modal, message } from 'antd'
 import { PlusOutlined, ReloadOutlined, EyeOutlined, EditOutlined, DeleteOutlined } from '@ant-design/icons'
+import { useParams } from 'react-router-dom'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { resourceApi } from '@/api/resources'
 import type { K8sResource } from '@/api/types'
@@ -17,9 +18,10 @@ const UDPRouteList = () => {
   const [editorMode, setEditorMode] = useState<'create' | 'edit' | 'view'>('create')
   const [selectedResource, setSelectedResource] = useState<K8sResource | null>(null)
   const queryClient = useQueryClient()
+  const { controllerId } = useParams<{ controllerId?: string }>()
 
   const { data, isLoading, refetch } = useQuery({
-    queryKey: ['udproute'],
+    queryKey: ['udproute', controllerId ?? ''],
     queryFn: () => resourceApi.listAll<K8sResource>('udproute'),
   })
 
@@ -28,7 +30,7 @@ const UDPRouteList = () => {
       resourceApi.delete('udproute', namespace, name),
     onSuccess: () => {
       message.success(t('msg.deleteOk'))
-      queryClient.invalidateQueries({ queryKey: ['udproute'] })
+      queryClient.invalidateQueries({ queryKey: ['udproute', controllerId ?? ''] })
     },
   })
 
@@ -38,7 +40,7 @@ const UDPRouteList = () => {
     onSuccess: () => {
       message.success(t('msg.batchDeleteOk', { n: selectedRowKeys.length }))
       setSelectedRowKeys([])
-      queryClient.invalidateQueries({ queryKey: ['udproute'] })
+      queryClient.invalidateQueries({ queryKey: ['udproute', controllerId ?? ''] })
     },
   })
 

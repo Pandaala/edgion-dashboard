@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { Table, Button, Space, Input, Tag, Modal, message } from 'antd'
 import { PlusOutlined, ReloadOutlined, EyeOutlined, EditOutlined, DeleteOutlined } from '@ant-design/icons'
+import { useParams } from 'react-router-dom'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { resourceApi } from '@/api/resources'
 import type { K8sResource } from '@/api/types'
@@ -18,9 +19,10 @@ const GRPCRouteList = () => {
   const [editorMode, setEditorMode] = useState<'create' | 'edit' | 'view'>('create')
   const [selectedResource, setSelectedResource] = useState<GRPCRoute | null>(null)
   const queryClient = useQueryClient()
+  const { controllerId } = useParams<{ controllerId?: string }>()
 
   const { data, isLoading, refetch } = useQuery({
-    queryKey: ['grpcroute'],
+    queryKey: ['grpcroute', controllerId ?? ''],
     queryFn: () => resourceApi.listAll<K8sResource>('grpcroute'),
   })
 
@@ -29,7 +31,7 @@ const GRPCRouteList = () => {
       resourceApi.delete('grpcroute', namespace, name),
     onSuccess: () => {
       message.success(t('msg.deleteOk'))
-      queryClient.invalidateQueries({ queryKey: ['grpcroute'] })
+      queryClient.invalidateQueries({ queryKey: ['grpcroute', controllerId ?? ''] })
     },
   })
 
@@ -39,7 +41,7 @@ const GRPCRouteList = () => {
     onSuccess: () => {
       message.success(t('msg.batchDeleteOk', { n: selectedRowKeys.length }))
       setSelectedRowKeys([])
-      queryClient.invalidateQueries({ queryKey: ['grpcroute'] })
+      queryClient.invalidateQueries({ queryKey: ['grpcroute', controllerId ?? ''] })
     },
   })
 

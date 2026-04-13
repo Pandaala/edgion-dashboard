@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { Table, Button, Space, Input, Tag, Modal, message } from 'antd'
 import { PlusOutlined, ReloadOutlined, EyeOutlined, EditOutlined, DeleteOutlined } from '@ant-design/icons'
+import { useParams } from 'react-router-dom'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { resourceApi } from '@/api/resources'
 import type { K8sResource } from '@/api/types'
@@ -17,10 +18,11 @@ const HTTPRouteList = () => {
   const [editorMode, setEditorMode] = useState<'create' | 'edit' | 'view'>('create')
   const [selectedResource, setSelectedResource] = useState<K8sResource | null>(null)
   const queryClient = useQueryClient()
+  const { controllerId } = useParams<{ controllerId?: string }>()
 
   // Fetch HTTPRoutes
   const { data, isLoading, refetch } = useQuery({
-    queryKey: ['httproutes'],
+    queryKey: ['httproutes', controllerId ?? ''],
     queryFn: () => resourceApi.listAll<K8sResource>('httproute'),
   })
 
@@ -30,7 +32,7 @@ const HTTPRouteList = () => {
       resourceApi.delete('httproute', namespace, name),
     onSuccess: () => {
       message.success(t('msg.deleteOk'))
-      queryClient.invalidateQueries({ queryKey: ['httproutes'] })
+      queryClient.invalidateQueries({ queryKey: ['httproutes', controllerId ?? ''] })
     },
   })
 
@@ -41,7 +43,7 @@ const HTTPRouteList = () => {
     onSuccess: () => {
       message.success(t('msg.batchDeleteOk', { n: selectedRowKeys.length }))
       setSelectedRowKeys([])
-      queryClient.invalidateQueries({ queryKey: ['httproutes'] })
+      queryClient.invalidateQueries({ queryKey: ['httproutes', controllerId ?? ''] })
     },
   })
 

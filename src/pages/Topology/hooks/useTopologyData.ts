@@ -1,4 +1,5 @@
 import { useMemo, useCallback } from 'react'
+import { useParams } from 'react-router-dom'
 import { useQueries } from '@tanstack/react-query'
 import { resourceApi } from '@/api/resources'
 import type { K8sResource } from '@/types/gateway-api/common'
@@ -157,16 +158,18 @@ export function buildTopologyGraph(
 const QUERY_OPTIONS = { staleTime: 30000, retry: 1 } as const
 
 export function useTopologyData(namespaceFilter: string | null): TopologyData {
+  const { controllerId } = useParams<{ controllerId?: string }>()
+  const cid = controllerId ?? ''
   const results = useQueries({
     queries: [
-      { queryKey: ['topology', 'gateway'],       queryFn: () => resourceApi.listAll<K8sResource>('gateway').then((r) => r.data ?? []),       ...QUERY_OPTIONS },
-      { queryKey: ['topology', 'httproute'],     queryFn: () => resourceApi.listAll<K8sResource>('httproute').then((r) => r.data ?? []),     ...QUERY_OPTIONS },
-      { queryKey: ['topology', 'grpcroute'],     queryFn: () => resourceApi.listAll<K8sResource>('grpcroute').then((r) => r.data ?? []),     ...QUERY_OPTIONS },
-      { queryKey: ['topology', 'tcproute'],      queryFn: () => resourceApi.listAll<K8sResource>('tcproute').then((r) => r.data ?? []),      ...QUERY_OPTIONS },
-      { queryKey: ['topology', 'udproute'],      queryFn: () => resourceApi.listAll<K8sResource>('udproute').then((r) => r.data ?? []),      ...QUERY_OPTIONS },
-      { queryKey: ['topology', 'tlsroute'],      queryFn: () => resourceApi.listAll<K8sResource>('tlsroute').then((r) => r.data ?? []),      ...QUERY_OPTIONS },
-      { queryKey: ['topology', 'service'],       queryFn: () => resourceApi.listAll<K8sResource>('service').then((r) => r.data ?? []),       ...QUERY_OPTIONS },
-      { queryKey: ['topology', 'edgionplugins'], queryFn: () => resourceApi.listAll<K8sResource>('edgionplugins').then((r) => r.data ?? []), ...QUERY_OPTIONS },
+      { queryKey: ['topology', 'gateway',       cid], queryFn: () => resourceApi.listAll<K8sResource>('gateway').then((r) => r.data ?? []),       ...QUERY_OPTIONS },
+      { queryKey: ['topology', 'httproute',     cid], queryFn: () => resourceApi.listAll<K8sResource>('httproute').then((r) => r.data ?? []),     ...QUERY_OPTIONS },
+      { queryKey: ['topology', 'grpcroute',     cid], queryFn: () => resourceApi.listAll<K8sResource>('grpcroute').then((r) => r.data ?? []),     ...QUERY_OPTIONS },
+      { queryKey: ['topology', 'tcproute',      cid], queryFn: () => resourceApi.listAll<K8sResource>('tcproute').then((r) => r.data ?? []),      ...QUERY_OPTIONS },
+      { queryKey: ['topology', 'udproute',      cid], queryFn: () => resourceApi.listAll<K8sResource>('udproute').then((r) => r.data ?? []),      ...QUERY_OPTIONS },
+      { queryKey: ['topology', 'tlsroute',      cid], queryFn: () => resourceApi.listAll<K8sResource>('tlsroute').then((r) => r.data ?? []),      ...QUERY_OPTIONS },
+      { queryKey: ['topology', 'service',       cid], queryFn: () => resourceApi.listAll<K8sResource>('service').then((r) => r.data ?? []),       ...QUERY_OPTIONS },
+      { queryKey: ['topology', 'edgionplugins', cid], queryFn: () => resourceApi.listAll<K8sResource>('edgionplugins').then((r) => r.data ?? []), ...QUERY_OPTIONS },
     ],
   })
 
