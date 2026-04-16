@@ -484,6 +484,10 @@ const en = {
   'center.regionRoute.consistent': 'Consistent',
   'center.regionRoute.inconsistent': 'Inconsistent',
   'center.regionRoute.consistencyDetail': 'Consistency Detail',
+  'center.regionRoute.syncHint': 'Sync from:',
+  'center.regionRoute.syncToAll': 'Sync to All',
+  'center.regionRoute.syncOk': 'Config synced to all controllers',
+  'center.regionRoute.syncFail': 'Sync failed: {err}',
 
   'center.clusterRoute.name': 'Name(Cluster)',
   'center.clusterRoute.subtitle': '{n} cluster region route(s)',

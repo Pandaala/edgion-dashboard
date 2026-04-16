@@ -120,4 +120,22 @@ export const regionRouteApi = {
     const { data } = await apiClient.get('center/service-region-routes/consistency')
     return data
   },
+
+  clusterRegionRouteSync: async (
+    sourceControllerId: string, namespace: string, name: string,
+  ): Promise<{ success: boolean; data?: { modified: number; failed: number } }> => {
+    const { data } = await apiClient.post('center/cluster-region-routes/sync', {
+      sourceControllerId, namespace, name,
+    })
+    return data
+  },
+
+  serviceRegionRouteSync: async (
+    sourceControllerId: string, namespace: string, name: string,
+  ): Promise<{ success: boolean; data?: { modified: number; failed: number } }> => {
+    const { data } = await apiClient.post('center/service-region-routes/sync', {
+      sourceControllerId, namespace, name,
+    })
+    return data
+  },
 }

@@ -39,8 +39,7 @@ function RegionsCell({ item }: { item: CenterServiceRegionRoute }) {
 
 function ConsistencyTag({ result }: { result?: ConsistencyResult }) {
   const t = useT()
-  if (!result) return <Text type="secondary">—</Text>
-  if (result.consistent) return <Tag color="green">{t('center.regionRoute.consistent')}</Tag>
+  if (!result || result.consistent) return null
 
   const content = (
     <div style={{ maxWidth: 400 }}>
@@ -59,9 +58,7 @@ function ConsistencyTag({ result }: { result?: ConsistencyResult }) {
 
   return (
     <Popover title={t('center.regionRoute.consistencyDetail')} content={content} trigger="click">
-      <Tag color="red" style={{ cursor: 'pointer' }}>
-        {t('center.regionRoute.inconsistent')}
-      </Tag>
+      <span style={{ fontSize: 18, cursor: 'pointer' }}>⚠️</span>
     </Popover>
   )
 }
@@ -151,37 +148,42 @@ function FailoverPanel({
 // RowActions
 // ---------------------------------------------------------------------------
 
-function RowActions({ item }: { item: CenterServiceRegionRoute }) {
+function RowActions({ item, consistencyResult }: { item: CenterServiceRegionRoute; consistencyResult?: ConsistencyResult }) {
   const t = useT()
   const [open, setOpen] = useState(false)
   const entries = Object.values(item.controllers)
   const regions = entries[0]?.regions ?? []
 
   return (
-    <Popover
-      open={open}
-      onOpenChange={setOpen}
-      trigger="click"
-      title={t('center.regionRoute.failoverPanel')}
-      content={
-        <div style={{ minWidth: 380, maxWidth: 500 }}>
-          {regions.length === 0 ? (
-            <Empty description={t('center.regionRoute.noData')} imageStyle={{ height: 40 }} />
-          ) : (
-            <FailoverPanel
-              regions={regions}
-              namespace={item.namespace}
-              name={item.name}
-              onDone={() => setOpen(false)}
-            />
-          )}
-        </div>
-      }
-    >
-      <Button size="small" type="primary">
-        {t('center.regionRoute.failoverBtn')}
-      </Button>
-    </Popover>
+    <Space size={8}>
+      {consistencyResult && !consistencyResult.consistent && (
+        <ConsistencyTag result={consistencyResult} />
+      )}
+      <Popover
+        open={open}
+        onOpenChange={setOpen}
+        trigger="click"
+        title={t('center.regionRoute.failoverPanel')}
+        content={
+          <div style={{ minWidth: 380, maxWidth: 500 }}>
+            {regions.length === 0 ? (
+              <Empty description={t('center.regionRoute.noData')} imageStyle={{ height: 40 }} />
+            ) : (
+              <FailoverPanel
+                regions={regions}
+                namespace={item.namespace}
+                name={item.name}
+                onDone={() => setOpen(false)}
+              />
+            )}
+          </div>
+        }
+      >
+        <Button size="small" type="primary">
+          {t('center.regionRoute.failoverBtn')}
+        </Button>
+      </Popover>
+    </Space>
   )
 }
 
@@ -311,21 +313,16 @@ export default function ServiceRegionRouteList() {
 
   const columns = useMemo(() => [
     {
-      title: t('center.regionRoute.pmName'),
+      title: 'Service(Namespace/Name)',
       key: 'name',
       render: (_: unknown, r: CenterServiceRegionRoute) => <Text strong>{r.namespace}/{r.name}</Text>,
     },
     {
-      title: 'Cluster Ref',
+      title: 'Cluster(Namespace/Name)',
       key: 'clusterRef',
       render: (_: unknown, r: CenterServiceRegionRoute) => (
         r.clusterRef ? <Text>{r.clusterRef.namespace}/{r.clusterRef.name}</Text> : <Text type="secondary">—</Text>
       ),
-    },
-    {
-      title: t('center.regionRoute.controllers'),
-      key: 'controllers',
-      render: (_: unknown, r: CenterServiceRegionRoute) => <Tag color="blue">{Object.keys(r.controllers).length}</Tag>,
     },
     {
       title: t('center.regionRoute.regions'),
@@ -333,16 +330,11 @@ export default function ServiceRegionRouteList() {
       render: (_: unknown, r: CenterServiceRegionRoute) => <RegionsCell item={r} />,
     },
     {
-      title: t('center.regionRoute.consistent'),
-      key: 'consistency',
-      render: (_: unknown, r: CenterServiceRegionRoute) => (
-        <ConsistencyTag result={consistencyMap.get(`${r.namespace}/${r.name}`)} />
-      ),
-    },
-    {
       title: t('center.regionRoute.failoverBtn'),
       key: 'actions',
-      render: (_: unknown, r: CenterServiceRegionRoute) => <RowActions item={r} />,
+      render: (_: unknown, r: CenterServiceRegionRoute) => (
+        <RowActions item={r} consistencyResult={consistencyMap.get(`${r.namespace}/${r.name}`)} />
+      ),
     },
   ], [t, consistencyMap])
 

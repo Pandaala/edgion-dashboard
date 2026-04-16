@@ -484,6 +484,10 @@ const zh = {
   'center.regionRoute.consistent': '一致',
   'center.regionRoute.inconsistent': '不一致',
   'center.regionRoute.consistencyDetail': '一致性详情',
+  'center.regionRoute.syncHint': '同步自:',
+  'center.regionRoute.syncToAll': '同步到所有',
+  'center.regionRoute.syncOk': '配置已同步到所有集群',
+  'center.regionRoute.syncFail': '同步失败：{err}',
 
   'center.clusterRoute.name': 'Name(Cluster)',
   'center.clusterRoute.subtitle': '共 {n} 个集群区域路由',

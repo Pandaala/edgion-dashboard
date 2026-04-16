@@ -201,6 +201,40 @@ function RowActions({ item, consistencyResult }: { item: CenterClusterRegionRout
 // ExpandedDetail
 // ---------------------------------------------------------------------------
 
+function SyncPanel({ item }: { item: CenterClusterRegionRoute }) {
+  const t = useT()
+  const queryClient = useQueryClient()
+  const controllerIds = Object.keys(item.controllers)
+  const [source, setSource] = useState(controllerIds[0] ?? '')
+
+  const syncMutation = useMutation({
+    mutationFn: async () => {
+      await regionRouteApi.clusterRegionRouteSync(source, item.namespace, item.name)
+      await new Promise((r) => setTimeout(r, 2000))
+    },
+    onSuccess: () => {
+      message.success(t('center.regionRoute.syncOk'))
+      queryClient.invalidateQueries({ queryKey: ['center-cluster-region-routes'] })
+      queryClient.invalidateQueries({ queryKey: ['center-cluster-consistency'] })
+    },
+    onError: (e: any) => {
+      message.error(t('center.regionRoute.syncFail', { err: e.message }))
+    },
+  })
+
+  return (
+    <Space size={8} style={{ marginTop: 8 }}>
+      <Text type="secondary" style={{ fontSize: 12 }}>{t('center.regionRoute.syncHint')}</Text>
+      <Select size="small" value={source} onChange={setSource} style={{ width: 220 }}
+        options={controllerIds.map((id) => ({ value: id, label: id }))}
+      />
+      <Button size="small" type="primary" loading={syncMutation.isPending} onClick={() => syncMutation.mutate()}>
+        {t('center.regionRoute.syncToAll')}
+      </Button>
+    </Space>
+  )
+}
+
 function ExpandedDetail({
   item,
   consistencyResult,
@@ -234,6 +268,7 @@ function ExpandedDetail({
                   ))}
                 </div>
               ))}
+              <SyncPanel item={item} />
             </div>
           }
         />
