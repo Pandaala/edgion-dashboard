@@ -33,6 +33,7 @@ description: Root navigation for the Edgion Controller knowledge base. Read this
 | **插件资源** — EdgionPlugins/EdgionStreamPlugins/PluginMetaData | [03-resources/04-plugins.md](03-resources/04-plugins.md) |
 | **系统配置** — EdgionGatewayConfig/LinkSys/EdgionAcme | [03-resources/05-system.md](03-resources/05-system.md) |
 | **测试指南** — 如何启动后端测试环境 | [04-testing/SKILL.md](04-testing/SKILL.md) |
+| **Center 联邦管理** — RegionRoute 页面设计、冲突检测、Failover 控制 | [04-center/01-region-route-page.md](04-center/01-region-route-page.md) |
 
 ## 目录总览
 
@@ -42,6 +43,7 @@ description: Root navigation for the Edgion Controller knowledge base. Read this
 | 02 | [patterns/](02-patterns/SKILL.md) | 开发模式：列表页、编辑器 Modal、类型定义、YAML 工具函数 |
 | 03 | [resources/](03-resources/SKILL.md) | 资源指南：每种 K8s/Edgion 资源的 Schema、字段映射、开发要点 |
 | 04 | [testing/](04-testing/SKILL.md) | 测试：后端启动、测试数据加载、开发验证流程 |
+| 05 | [04-center/](04-center/01-region-route-page.md) | Center 联邦：RegionRoute 页面设计、冲突检测、Failover/Sync 控制、Admin 页面 |
 
 ## 开发生命周期速查
 

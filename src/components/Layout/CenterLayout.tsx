@@ -6,6 +6,7 @@ import {
   GlobalOutlined,
   LogoutOutlined,
   ReloadOutlined,
+  SettingOutlined,
   ShareAltOutlined,
 } from '@ant-design/icons'
 import { useT, useLanguage } from '@/i18n'
@@ -29,9 +30,24 @@ export default function CenterLayout() {
       label: t('center.nav.controllers'),
     },
     {
-      key: '/region-routes',
+      key: 'region-route-group',
       icon: <ShareAltOutlined />,
       label: t('center.nav.regionRoutes'),
+      children: [
+        {
+          key: '/region-routes/cluster',
+          label: t('center.nav.region'),
+        },
+        {
+          key: '/region-routes/service',
+          label: t('center.nav.servicePm'),
+        },
+      ],
+    },
+    {
+      key: '/admin',
+      icon: <SettingOutlined />,
+      label: t('center.nav.admin'),
     },
   ]
 
@@ -65,9 +81,10 @@ export default function CenterLayout() {
         <Menu
           theme="dark"
           selectedKeys={[location.pathname]}
+          defaultOpenKeys={['region-route-group']}
           mode="inline"
           items={menuItems}
-          onClick={({ key }) => navigate(key)}
+          onClick={({ key }) => key.startsWith('/') && navigate(key)}
         />
       </Sider>
 
