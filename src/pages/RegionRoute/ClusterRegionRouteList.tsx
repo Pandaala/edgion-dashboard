@@ -62,9 +62,7 @@ function ConsistencyTag({ result }: { result?: ConsistencyResult }) {
 
   return (
     <Popover title={t('center.regionRoute.consistencyDetail')} content={content} trigger="click">
-      <Tag color="red" style={{ cursor: 'pointer' }}>
-        {t('center.regionRoute.inconsistent')}
-      </Tag>
+      <WarningOutlined style={{ color: '#faad14', fontSize: 18, cursor: 'pointer' }} />
     </Popover>
   )
 }
