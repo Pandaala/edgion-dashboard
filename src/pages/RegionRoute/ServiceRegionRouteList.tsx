@@ -313,12 +313,12 @@ export default function ServiceRegionRouteList() {
 
   const columns = useMemo(() => [
     {
-      title: 'Service(Namespace/Name)',
+      title: <>Service <span style={{ fontSize: 11, color: '#999', fontWeight: 'normal' }}>(Namespace/Name)</span></>,
       key: 'name',
       render: (_: unknown, r: CenterServiceRegionRoute) => <Text strong>{r.namespace}/{r.name}</Text>,
     },
     {
-      title: 'Cluster(Namespace/Name)',
+      title: <>Cluster <span style={{ fontSize: 11, color: '#999', fontWeight: 'normal' }}>(Namespace/Name)</span></>,
       key: 'clusterRef',
       render: (_: unknown, r: CenterServiceRegionRoute) => (
         r.clusterRef ? <Text>{r.clusterRef.namespace}/{r.clusterRef.name}</Text> : <Text type="secondary">—</Text>

@@ -373,7 +373,7 @@ export default function ClusterRegionRouteList() {
 
   const columns = useMemo(() => [
     {
-      title: 'Cluster(Namespace/Name)',
+      title: <>Cluster <span style={{ fontSize: 11, color: '#999', fontWeight: 'normal' }}>(Namespace/Name)</span></>,
       key: 'name',
       render: (_: unknown, r: CenterClusterRegionRoute) => <Text strong>{r.namespace}/{r.name}</Text>,
     },
