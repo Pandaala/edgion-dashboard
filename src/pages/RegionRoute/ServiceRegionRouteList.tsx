@@ -155,10 +155,7 @@ function RowActions({ item, consistencyResult }: { item: CenterServiceRegionRout
   const regions = entries[0]?.regions ?? []
 
   return (
-    <Space size={8}>
-      {consistencyResult && !consistencyResult.consistent && (
-        <ConsistencyTag result={consistencyResult} />
-      )}
+    <span style={{ display: 'inline-flex', alignItems: 'center', gap: 6 }}>
       <Popover
         open={open}
         onOpenChange={setOpen}
@@ -183,7 +180,10 @@ function RowActions({ item, consistencyResult }: { item: CenterServiceRegionRout
           {t('center.regionRoute.failoverBtn')}
         </Button>
       </Popover>
-    </Space>
+      {consistencyResult && !consistencyResult.consistent && (
+        <ConsistencyTag result={consistencyResult} />
+      )}
+    </span>
   )
 }
 
