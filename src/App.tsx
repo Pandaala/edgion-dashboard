@@ -11,7 +11,12 @@ import LoginPage from './pages/Login/LoginPage'
 import Dashboard from './pages/Dashboard'
 import UserDashboard from './pages/Dashboard/UserDashboard'
 import CenterDashboard from './pages/Center/CenterDashboard'
-import RegionRoutePage from './pages/Center/RegionRoutePage'
+import CenterAdminPage from './pages/Center/CenterAdminPage'
+// RegionRoute
+import ClusterRegionRouteList from './pages/RegionRoute/ClusterRegionRouteList'
+import ServiceRegionRouteList from './pages/RegionRoute/ServiceRegionRouteList'
+import ControllerClusterRegionRouteList from './pages/RegionRoute/ControllerClusterRegionRouteList'
+import ControllerServiceRegionRouteList from './pages/RegionRoute/ControllerServiceRegionRouteList'
 // Routes
 import HTTPRouteList from './pages/Routes/HTTPRouteList'
 import GRPCRouteList from './pages/Routes/GRPCRouteList'
@@ -86,7 +91,9 @@ function App() {
         <Route path="/login" element={<LoginPage />} />
         <Route path="/" element={<RequireAuth><CenterLayout /></RequireAuth>}>
           <Route index element={<CenterDashboard />} />
-          <Route path="region-routes" element={<RegionRoutePage />} />
+          <Route path="region-routes/cluster" element={<ClusterRegionRouteList />} />
+          <Route path="region-routes/service" element={<ServiceRegionRouteList />} />
+          <Route path="admin" element={<CenterAdminPage />} />
         </Route>
         <Route path="/controller/:controllerId" element={<RequireAuth><ControllerProxy /></RequireAuth>}>
           <Route index element={<Dashboard />} />
@@ -111,6 +118,8 @@ function App() {
           <Route path="system/config" element={<EdgionGatewayConfigPage />} />
           <Route path="system/linksys" element={<LinkSysList />} />
           <Route path="system/acme" element={<EdgionAcmeList />} />
+          <Route path="region-routes/cluster" element={<ControllerClusterRegionRouteList />} />
+          <Route path="region-routes/service" element={<ControllerServiceRegionRouteList />} />
         </Route>
       </Routes>
     )
@@ -141,6 +150,8 @@ function App() {
         <Route path="system/config" element={<EdgionGatewayConfigPage />} />
         <Route path="system/linksys" element={<LinkSysList />} />
         <Route path="system/acme" element={<EdgionAcmeList />} />
+        <Route path="region-routes/cluster" element={<ControllerClusterRegionRouteList />} />
+        <Route path="region-routes/service" element={<ControllerServiceRegionRouteList />} />
       </Route>
     </Routes>
   )

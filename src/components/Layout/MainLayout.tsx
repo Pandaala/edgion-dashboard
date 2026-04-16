@@ -126,6 +126,15 @@ const MainLayout = () => {
           icon: <LockOutlined />,
           label: t('system.acme'),
         },
+        {
+          key: 'region-routes',
+          icon: <ShareAltOutlined />,
+          label: t('nav.regionRoutes'),
+          children: [
+            { key: '/region-routes/cluster', label: t('nav.regionRouteCluster') },
+            { key: '/region-routes/service', label: t('nav.regionRouteService') },
+          ],
+        },
       ],
     },
   ]
@@ -166,6 +175,7 @@ const MainLayout = () => {
     if (effectivePath.startsWith('/security')) return ['security']
     if (effectivePath.startsWith('/plugins')) return ['plugins']
     if (effectivePath.startsWith('/system')) return ['system']
+    if (effectivePath.startsWith('/region-routes')) return ['region-routes']
     return []
   }
 
