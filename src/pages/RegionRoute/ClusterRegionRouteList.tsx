@@ -106,14 +106,14 @@ function FailoverPanel({
           regionRouteApi.clusterRegionRouteFailover(namespace, name, region.name, pending[region.name] ?? ''),
         ),
       )
+      // Wait for backend gRPC sync before refreshing
+      await new Promise((r) => setTimeout(r, 2000))
     },
     onSuccess: () => {
       message.success(t('center.regionRoute.failoverUpdateOk'))
+      queryClient.invalidateQueries({ queryKey: ['center-cluster-region-routes'] })
+      queryClient.invalidateQueries({ queryKey: ['center-cluster-consistency'] })
       onDone?.()
-      setTimeout(() => {
-        queryClient.invalidateQueries({ queryKey: ['center-cluster-region-routes'] })
-        queryClient.invalidateQueries({ queryKey: ['center-cluster-consistency'] })
-      }, 2000)
     },
     onError: (e: any) => {
       message.error(t('center.regionRoute.failoverUpdateFail', { err: e.message }))

@@ -100,14 +100,13 @@ function FailoverPanel({
           regionRouteApi.serviceRegionRouteFailover(namespace, name, region.name, pending[region.name] ?? ''),
         ),
       )
+      await new Promise((r) => setTimeout(r, 2000))
     },
     onSuccess: () => {
       message.success(t('center.regionRoute.failoverUpdateOk'))
+      queryClient.invalidateQueries({ queryKey: ['center-service-region-routes'] })
+      queryClient.invalidateQueries({ queryKey: ['center-service-consistency'] })
       onDone?.()
-      setTimeout(() => {
-        queryClient.invalidateQueries({ queryKey: ['center-service-region-routes'] })
-        queryClient.invalidateQueries({ queryKey: ['center-service-consistency'] })
-      }, 2000)
     },
     onError: (e: any) => {
       message.error(t('center.regionRoute.failoverUpdateFail', { err: e.message }))
