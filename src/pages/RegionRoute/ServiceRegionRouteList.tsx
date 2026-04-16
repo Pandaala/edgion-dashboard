@@ -320,7 +320,7 @@ export default function ServiceRegionRouteList() {
       title: 'Cluster Ref',
       key: 'clusterRef',
       render: (_: unknown, r: CenterServiceRegionRoute) => (
-        <Text>{r.clusterRef.namespace}/{r.clusterRef.name}</Text>
+        r.clusterRef ? <Text>{r.clusterRef.namespace}/{r.clusterRef.name}</Text> : <Text type="secondary">—</Text>
       ),
     },
     {
