@@ -160,18 +160,22 @@ function FailoverPanel({
 // RowActions
 // ---------------------------------------------------------------------------
 
-function RowActions({ item }: { item: CenterClusterRegionRoute }) {
+function RowActions({ item, consistencyResult }: { item: CenterClusterRegionRoute; consistencyResult?: ConsistencyResult }) {
   const t = useT()
   const [open, setOpen] = useState(false)
   const entries = Object.values(item.controllers)
   const regions = entries[0]?.regions ?? []
 
   return (
-    <Popover
-      open={open}
-      onOpenChange={setOpen}
-      trigger="click"
-      title={t('center.regionRoute.failoverPanel')}
+    <Space size={8}>
+      {consistencyResult && !consistencyResult.consistent && (
+        <ConsistencyTag result={consistencyResult} />
+      )}
+      <Popover
+        open={open}
+        onOpenChange={setOpen}
+        trigger="click"
+        title={t('center.regionRoute.failoverPanel')}
       content={
         <div style={{ minWidth: 380, maxWidth: 500 }}>
           {regions.length === 0 ? (
@@ -191,6 +195,7 @@ function RowActions({ item }: { item: CenterClusterRegionRoute }) {
         {t('center.regionRoute.failoverBtn')}
       </Button>
     </Popover>
+    </Space>
   )
 }
 
@@ -335,14 +340,9 @@ export default function ClusterRegionRouteList() {
 
   const columns = useMemo(() => [
     {
-      title: t('center.clusterRoute.name'),
+      title: 'Cluster(Namespace/Name)',
       key: 'name',
       render: (_: unknown, r: CenterClusterRegionRoute) => <Text strong>{r.namespace}/{r.name}</Text>,
-    },
-    {
-      title: t('center.regionRoute.controllers'),
-      key: 'controllers',
-      render: (_: unknown, r: CenterClusterRegionRoute) => <Tag color="blue">{Object.keys(r.controllers).length}</Tag>,
     },
     {
       title: t('center.regionRoute.regions'),
@@ -350,16 +350,11 @@ export default function ClusterRegionRouteList() {
       render: (_: unknown, r: CenterClusterRegionRoute) => <RegionsCell item={r} />,
     },
     {
-      title: t('center.regionRoute.consistent'),
-      key: 'consistency',
-      render: (_: unknown, r: CenterClusterRegionRoute) => (
-        <ConsistencyTag result={consistencyMap.get(`${r.namespace}/${r.name}`)} />
-      ),
-    },
-    {
       title: t('center.regionRoute.failoverBtn'),
       key: 'actions',
-      render: (_: unknown, r: CenterClusterRegionRoute) => <RowActions item={r} />,
+      render: (_: unknown, r: CenterClusterRegionRoute) => (
+        <RowActions item={r} consistencyResult={consistencyMap.get(`${r.namespace}/${r.name}`)} />
+      ),
     },
   ], [t, consistencyMap])
 
