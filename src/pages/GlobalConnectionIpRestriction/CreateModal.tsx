@@ -20,7 +20,7 @@ activeProfile: default
 description: "new PM"
 profiles:
   default:
-    defaultAction: Deny
+    defaultAction: deny
     allow:
       - name: office
         cidrs: ["192.168.1.0/24"]
