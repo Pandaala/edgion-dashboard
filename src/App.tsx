@@ -42,6 +42,8 @@ import EdgionGatewayConfigPage from './pages/System/EdgionGatewayConfigPage'
 import LinkSysList from './pages/System/LinkSysList'
 import EdgionAcmeList from './pages/System/EdgionAcmeList'
 import TopologyPage from './pages/Topology/TopologyPage'
+import GlobalConnectionIpRestrictionList from './pages/GlobalConnectionIpRestriction/List'
+import GlobalConnectionIpRestrictionDetail from './pages/GlobalConnectionIpRestriction/Detail'
 import './App.css'
 
 function RequireAuth({ children }: { children: React.ReactNode }) {
@@ -93,6 +95,14 @@ function App() {
           <Route index element={<CenterDashboard />} />
           <Route path="region-routes/cluster" element={<ClusterRegionRouteList />} />
           <Route path="region-routes/service" element={<ServiceRegionRouteList />} />
+          <Route
+            path="global-connection-ip-restrictions"
+            element={<GlobalConnectionIpRestrictionList />}
+          />
+          <Route
+            path="global-connection-ip-restrictions/:namespace/:name/:controllerId"
+            element={<GlobalConnectionIpRestrictionDetail />}
+          />
           <Route path="admin" element={<CenterAdminPage />} />
         </Route>
         <Route path="/controller/:controllerId" element={<RequireAuth><ControllerProxy /></RequireAuth>}>

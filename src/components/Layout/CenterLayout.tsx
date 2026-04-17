@@ -6,6 +6,7 @@ import {
   GlobalOutlined,
   LogoutOutlined,
   ReloadOutlined,
+  SafetyOutlined,
   SettingOutlined,
   ShareAltOutlined,
 } from '@ant-design/icons'
@@ -43,6 +44,11 @@ export default function CenterLayout() {
           label: t('center.nav.servicePm'),
         },
       ],
+    },
+    {
+      key: '/global-connection-ip-restrictions',
+      icon: <SafetyOutlined />,
+      label: 'Global IP Restrictions',
     },
     {
       key: '/admin',
