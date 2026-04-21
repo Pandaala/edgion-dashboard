@@ -4,15 +4,13 @@
  */
 
 import React from 'react';
-import { Card, Form, Select, Button, Space, Typography } from 'antd';
+import { Card, Form, Select, Button } from 'antd';
 import { PlusOutlined } from '@ant-design/icons';
 import PathMatchField from '../form-fields/PathMatchField';
 import HeaderMatchField from '../form-fields/HeaderMatchField';
 import QueryParamMatchField from '../form-fields/QueryParamMatchField';
 import { HTTP_METHODS } from '@/constants/gateway-api';
 import type { HTTPRouteMatch } from '@/types/gateway-api';
-
-const { Text } = Typography;
 
 interface MatchesEditorProps {
   value?: HTTPRouteMatch[];
