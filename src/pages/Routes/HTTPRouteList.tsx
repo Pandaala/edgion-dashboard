@@ -5,6 +5,7 @@ import { useParams } from 'react-router-dom'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { resourceApi } from '@/api/resources'
 import type { K8sResource } from '@/api/types'
+import type { HTTPRoute } from '@/types/gateway-api'
 import HTTPRouteEditor from '@/components/ResourceEditor/HTTPRoute/HTTPRouteEditor'
 import { useT } from '@/i18n'
 
@@ -16,7 +17,7 @@ const HTTPRouteList = () => {
   const [selectedRowKeys, setSelectedRowKeys] = useState<React.Key[]>([])
   const [editorVisible, setEditorVisible] = useState(false)
   const [editorMode, setEditorMode] = useState<'create' | 'edit' | 'view'>('create')
-  const [selectedResource, setSelectedResource] = useState<K8sResource | null>(null)
+  const [selectedResource, setSelectedResource] = useState<HTTPRoute | null>(null)
   const queryClient = useQueryClient()
   const { controllerId } = useParams<{ controllerId?: string }>()
 
@@ -95,13 +96,13 @@ const HTTPRouteList = () => {
 
   const handleView = (record: K8sResource) => {
     setEditorMode('view')
-    setSelectedResource(record)
+    setSelectedResource(record as unknown as HTTPRoute)
     setEditorVisible(true)
   }
 
   const handleEdit = (record: K8sResource) => {
     setEditorMode('edit')
-    setSelectedResource(record)
+    setSelectedResource(record as unknown as HTTPRoute)
     setEditorVisible(true)
   }
 
