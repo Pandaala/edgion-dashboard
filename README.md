@@ -1,4 +1,4 @@
-# Edgion Dashboard
+# Edgion Controller
 
 Edgion Controller 的 Web 管理界面，基于 React + TypeScript + Ant Design 构建。
 
@@ -96,3 +96,7 @@ await resourceApi.create('httproute', 'default', yamlContent)
 3. **端口配置**：
    - 前端开发：5173
    - 后端 API：5800
+
+## License
+
+This project is licensed under the [Apache License, Version 2.0](./LICENSE).
