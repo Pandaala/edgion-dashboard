@@ -4,7 +4,7 @@
  */
 
 import React from 'react';
-import { Form, Select, Input, Space, Button } from 'antd';
+import { Select, Input, Space, Button } from 'antd';
 import { MinusCircleOutlined } from '@ant-design/icons';
 import { HEADER_MATCH_TYPES, DEFAULT_VALUES } from '@/constants/gateway-api';
 import type { HTTPHeaderMatch } from '@/types/gateway-api';

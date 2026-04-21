@@ -65,7 +65,7 @@ const MetadataSection: React.FC<MetadataSectionProps> = ({
 
       {/* Labels */}
       <Form.Item label="Labels（可选）">
-        {Object.entries(value.labels || {}).map(([labelKey, labelValue], index) => (
+        {Object.entries(value.labels || {}).map(([labelKey, labelValue]) => (
           <Space key={`label-${labelKey}`} style={{ display: 'flex', marginBottom: 8 }} align="baseline">
             <Input
               defaultValue={labelKey}
@@ -128,7 +128,7 @@ const MetadataSection: React.FC<MetadataSectionProps> = ({
 
       {/* Annotations */}
       <Form.Item label="Annotations（可选）">
-        {Object.entries(value.annotations || {}).map(([annotationKey, annotationValue], index) => (
+        {Object.entries(value.annotations || {}).map(([annotationKey, annotationValue]) => (
           <Space key={`annotation-${annotationKey}`} style={{ display: 'flex', marginBottom: 8 }} align="baseline">
             <Input
               defaultValue={annotationKey}

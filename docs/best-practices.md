@@ -1,4 +1,4 @@
-# Edgion Dashboard 最佳实践与开发规范
+# Edgion Controller 最佳实践与开发规范
 
 > 版本: v1.0  
 > 日期: 2024-12-25  

@@ -85,8 +85,8 @@ export const weightSchema = z
 export const k8sObjectMetaSchema = z.object({
   name: dns1123SubdomainSchema,
   namespace: dns1123SubdomainSchema.optional(),
-  labels: z.record(z.string()).optional(),
-  annotations: z.record(z.string()).optional(),
+  labels: z.record(z.string(), z.string()).optional(),
+  annotations: z.record(z.string(), z.string()).optional(),
   creationTimestamp: z.string().optional(),
   resourceVersion: z.string().optional(),
   uid: z.string().optional(),
