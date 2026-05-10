@@ -10,6 +10,7 @@ import {
   type ServiceRegionRouteEntry,
 } from '@/api/regionRoute'
 import { useT } from '@/i18n'
+import PageHeader from '@/components/PageHeader'
 
 const { Text } = Typography
 
@@ -59,7 +60,7 @@ function FailoverPanel({
   })
 
   return (
-    <div style={{ background: '#fafafa', border: '1px solid #f0f0f0', borderRadius: 6, padding: '12px 16px' }}>
+    <div style={{ background: 'var(--ec-color-bg-subtle)', border: '1px solid var(--ec-color-border)', borderRadius: 6, padding: '12px 16px' }}>
       <Space direction="vertical" size={8} style={{ width: '100%' }}>
         {regions.map((region) => (
           <Space key={region.name} size={8} style={{ flexWrap: 'nowrap' }}>
@@ -221,12 +222,11 @@ export default function ControllerServiceRegionRouteList() {
 
   return (
     <div>
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
-        <Text style={{ color: '#888', fontSize: 13 }}>
-          {t('center.regionRoute.subtitle', { n: filteredItems.length })}
-        </Text>
-        <Button icon={<ReloadOutlined />} onClick={() => refetch()}>{t('btn.refresh')}</Button>
-      </div>
+      <PageHeader
+        title="ServiceRegionRoute"
+        subtitle={t('page.subtitle.regionRouteService')}
+        actions={<Button icon={<ReloadOutlined />} onClick={() => refetch()}>{t('btn.refresh')}</Button>}
+      />
       <AutoComplete
         placeholder={t('center.regionRoute.pmName')}
         value={filter}

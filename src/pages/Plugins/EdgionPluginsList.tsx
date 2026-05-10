@@ -13,6 +13,7 @@ import { resourceApi } from '@/api/resources'
 import type { K8sResource } from '@/api/types'
 import EdgionPluginsEditor from '@/components/ResourceEditor/EdgionPlugins/EdgionPluginsEditor'
 import { countPluginsByStage } from '@/utils/edgionplugins'
+import PageHeader from '@/components/PageHeader'
 import { useT } from '@/i18n'
 
 const { Search } = Input
@@ -139,7 +140,7 @@ const EdgionPluginsList = () => {
             <Badge
               count={total}
               showZero
-              style={{ backgroundColor: total > 0 ? '#1677ff' : '#d9d9d9' }}
+              style={{ backgroundColor: total > 0 ? '#1677ff' : 'var(--ec-color-border)' }}
             />
           </Tooltip>
         )
@@ -210,22 +211,28 @@ const EdgionPluginsList = () => {
 
   return (
     <div>
-      <div style={{ marginBottom: 16, display: 'flex', justifyContent: 'space-between' }}>
-        <Space>
-          <Search
-            placeholder={t('ph.searchNameNs')}
-            allowClear
-            style={{ width: 300 }}
-            value={searchText}
-            onChange={(e) => setSearchText(e.target.value)}
-          />
-          <Button icon={<ReloadOutlined />} onClick={() => refetch()}>
-            {t('btn.refresh')}
-          </Button>
-        </Space>
-        <Button type="primary" icon={<PlusOutlined />} onClick={handleCreate}>
-          {t('btn.create')}
-        </Button>
+      <PageHeader
+        title="EdgionPlugins"
+        subtitle={t('page.subtitle.plugins')}
+        actions={
+          <>
+            <Button icon={<ReloadOutlined />} onClick={() => refetch()}>
+              {t('btn.refresh')}
+            </Button>
+            <Button type="primary" icon={<PlusOutlined />} onClick={handleCreate}>
+              {t('btn.create')}
+            </Button>
+          </>
+        }
+      />
+      <div style={{ marginBottom: 16 }}>
+        <Search
+          placeholder={t('ph.searchNameNs')}
+          allowClear
+          style={{ width: 300 }}
+          value={searchText}
+          onChange={(e) => setSearchText(e.target.value)}
+        />
       </div>
 
       {selectedRowKeys.length > 0 && (

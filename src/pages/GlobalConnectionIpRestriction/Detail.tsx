@@ -1,10 +1,11 @@
 import { useState, useEffect, useMemo } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
-import { Button, Space, Spin, message, Card, Typography } from 'antd'
+import { Button, Spin, message, Card, Typography } from 'antd'
 import { ArrowLeftOutlined, EditOutlined, SaveOutlined, CloseOutlined } from '@ant-design/icons'
 import * as yaml from 'js-yaml'
 import YamlEditor from '@/components/YamlEditor'
+import PageHeader from '@/components/PageHeader'
 import {
   globalConnectionIpRestrictionApi,
   type GlobalConnectionIpRestrictionData,
@@ -97,39 +98,37 @@ export default function GlobalConnectionIpRestrictionDetail() {
 
   return (
     <div>
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
-        <Space>
-          <Button icon={<ArrowLeftOutlined />} onClick={() => navigate('/global-connection-ip-restrictions')}>
-            Back
-          </Button>
-          <Text strong style={{ fontSize: 16 }}>
-            {namespace}/{name}
-          </Text>
-          <Text type="secondary">on {controllerId}</Text>
-        </Space>
-        <Space>
-          {editing ? (
-            <>
-              <Button icon={<CloseOutlined />} onClick={() => setEditing(false)}>
-                Cancel
-              </Button>
-              <Button
-                type="primary"
-                icon={<SaveOutlined />}
-                disabled={!yamlValid}
-                loading={updateMutation.isPending}
-                onClick={handleSave}
-              >
-                Save
-              </Button>
-            </>
-          ) : (
-            <Button icon={<EditOutlined />} onClick={() => setEditing(true)}>
-              Edit
+      <PageHeader
+        title={`${namespace}/${name}`}
+        subtitle={`on ${controllerId}`}
+        actions={
+          <>
+            <Button icon={<ArrowLeftOutlined />} onClick={() => navigate('/global-connection-ip-restrictions')}>
+              Back
             </Button>
-          )}
-        </Space>
-      </div>
+            {editing ? (
+              <>
+                <Button icon={<CloseOutlined />} onClick={() => setEditing(false)}>
+                  Cancel
+                </Button>
+                <Button
+                  type="primary"
+                  icon={<SaveOutlined />}
+                  disabled={!yamlValid}
+                  loading={updateMutation.isPending}
+                  onClick={handleSave}
+                >
+                  Save
+                </Button>
+              </>
+            ) : (
+              <Button icon={<EditOutlined />} onClick={() => setEditing(true)}>
+                Edit
+              </Button>
+            )}
+          </>
+        }
+      />
       <YamlEditor
         value={yamlContent}
         onChange={setYamlContent}

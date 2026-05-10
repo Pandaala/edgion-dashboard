@@ -7,6 +7,7 @@ import { resourceApi } from '@/api/resources'
 import type { K8sResource } from '@/api/types'
 import GRPCRouteEditor from '@/components/ResourceEditor/GRPCRoute/GRPCRouteEditor'
 import type { GRPCRoute } from '@/types/gateway-api/grpcroute'
+import PageHeader from '@/components/PageHeader'
 import { useT } from '@/i18n'
 
 const { Search } = Input
@@ -130,13 +131,19 @@ const GRPCRouteList = () => {
 
   return (
     <div>
-      <div style={{ marginBottom: 16, display: 'flex', justifyContent: 'space-between' }}>
-        <Space>
-          <Search placeholder={t('ph.searchNameNs')} value={searchText} onChange={(e) => setSearchText(e.target.value)}
-            style={{ width: 240 }} allowClear />
-          <Button icon={<ReloadOutlined />} onClick={() => refetch()}>{t('btn.refresh')}</Button>
-        </Space>
-        <Button type="primary" icon={<PlusOutlined />} onClick={() => openEditor('create')}>{t('btn.create')}</Button>
+      <PageHeader
+        title="GRPCRoute"
+        subtitle={t('page.subtitle.grpcRoute')}
+        actions={
+          <>
+            <Button icon={<ReloadOutlined />} onClick={() => refetch()}>{t('btn.refresh')}</Button>
+            <Button type="primary" icon={<PlusOutlined />} onClick={() => openEditor('create')}>{t('btn.create')}</Button>
+          </>
+        }
+      />
+      <div style={{ marginBottom: 16 }}>
+        <Search placeholder={t('ph.searchNameNs')} value={searchText} onChange={(e) => setSearchText(e.target.value)}
+          style={{ width: 240 }} allowClear />
       </div>
 
       {selectedRowKeys.length > 0 && (

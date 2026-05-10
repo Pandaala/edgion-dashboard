@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react'
 import { Routes, Route, Navigate } from 'react-router-dom'
 import { Spin } from 'antd'
-import MainLayout from './components/Layout/MainLayout'
+import { AppShell } from './components/shell/AppShell'
 import CenterLayout from './components/Layout/CenterLayout'
 import ControllerProxy from './components/Layout/ControllerProxy'
 import { isLoggedIn } from './utils/auth'
@@ -138,7 +138,7 @@ function App() {
   return (
     <Routes>
       <Route path="/login" element={<LoginPage />} />
-      <Route path="/" element={<RequireAuth><MainLayout /></RequireAuth>}>
+      <Route path="/" element={<RequireAuth><AppShell /></RequireAuth>}>
         <Route index element={<Dashboard />} />
         <Route path="user" element={<UserDashboard />} />
         <Route path="topology" element={<TopologyPage />} />

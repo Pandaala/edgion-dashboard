@@ -7,6 +7,7 @@ import { resourceApi } from '@/api/resources'
 import type { K8sResource } from '@/api/types'
 import type { HTTPRoute } from '@/types/gateway-api'
 import HTTPRouteEditor from '@/components/ResourceEditor/HTTPRoute/HTTPRouteEditor'
+import PageHeader from '@/components/PageHeader'
 import { useT } from '@/i18n'
 
 const { Search } = Input
@@ -155,22 +156,28 @@ const HTTPRouteList = () => {
 
   return (
     <div>
-      <div style={{ marginBottom: 16, display: 'flex', justifyContent: 'space-between' }}>
-        <Space>
-          <Search
-            placeholder={t('ph.searchNameNs')}
-            allowClear
-            style={{ width: 300 }}
-            value={searchText}
-            onChange={(e) => setSearchText(e.target.value)}
-          />
-          <Button icon={<ReloadOutlined />} onClick={() => refetch()}>
-            {t('btn.refresh')}
-          </Button>
-        </Space>
-        <Button type="primary" icon={<PlusOutlined />} onClick={handleCreate}>
-          {t('btn.create')}
-        </Button>
+      <PageHeader
+        title="HTTPRoute"
+        subtitle={t('page.subtitle.httpRoute')}
+        actions={
+          <>
+            <Button icon={<ReloadOutlined />} onClick={() => refetch()}>
+              {t('btn.refresh')}
+            </Button>
+            <Button type="primary" icon={<PlusOutlined />} onClick={handleCreate}>
+              {t('btn.create')}
+            </Button>
+          </>
+        }
+      />
+      <div style={{ marginBottom: 16 }}>
+        <Search
+          placeholder={t('ph.searchNameNs')}
+          allowClear
+          style={{ width: 300 }}
+          value={searchText}
+          onChange={(e) => setSearchText(e.target.value)}
+        />
       </div>
 
       {selectedRowKeys.length > 0 && (

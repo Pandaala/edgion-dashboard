@@ -11,6 +11,7 @@ import {
   type ControllerPmEntry,
 } from '@/api/globalConnectionIpRestriction'
 import CreateModal from './CreateModal'
+import PageHeader from '@/components/PageHeader'
 
 const { Text } = Typography
 
@@ -210,17 +211,17 @@ export default function GlobalConnectionIpRestrictionList() {
 
   return (
     <div>
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
-        <Text style={{ color: '#888', fontSize: 13 }}>
-          GlobalConnectionIpRestriction · {flatRows.length} row(s) (Controller × PM)
-        </Text>
-        <Space>
-          <Button icon={<ReloadOutlined />} onClick={() => refetch()}>Refresh</Button>
-          <Button type="primary" icon={<PlusOutlined />} onClick={() => setCreateOpen(true)}>
-            New
-          </Button>
-        </Space>
-      </div>
+      <PageHeader
+        title="GlobalConnectionIpRestriction"
+        actions={
+          <>
+            <Button icon={<ReloadOutlined />} onClick={() => refetch()}>Refresh</Button>
+            <Button type="primary" icon={<PlusOutlined />} onClick={() => setCreateOpen(true)}>
+              New
+            </Button>
+          </>
+        }
+      />
       {isLoading ? (
         <Spin size="large" style={{ display: 'flex', justifyContent: 'center', minHeight: 300 }} />
       ) : flatRows.length === 0 ? (

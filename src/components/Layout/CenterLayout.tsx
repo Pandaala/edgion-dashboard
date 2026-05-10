@@ -95,7 +95,7 @@ export default function CenterLayout() {
       </Sider>
 
       <Layout>
-        <Header style={{ padding: '0 24px', background: '#fff', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+        <Header style={{ padding: '0 24px', background: 'var(--ec-color-bg-surface)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
           <span style={{ fontWeight: 600, fontSize: 16 }}>Edgion Center</span>
           <Space>
             <Button icon={<LogoutOutlined />} onClick={handleLogout}>
@@ -110,7 +110,7 @@ export default function CenterLayout() {
           </Space>
         </Header>
 
-        <Content style={{ margin: 24, background: '#fff', padding: 24, minHeight: 280 }}>
+        <Content style={{ margin: 24, background: 'var(--ec-color-bg-base)', padding: 24, minHeight: 280 }}>
           <Outlet />
         </Content>
       </Layout>

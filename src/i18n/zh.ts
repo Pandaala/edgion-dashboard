@@ -551,6 +551,61 @@ const zh = {
   'topology.ports': '端口',
   'topology.selector': 'Selector',
   'field.hostnames': 'Hostnames',
+
+  // Theme
+  'theme.light': '浅色',
+  'theme.dark': '深色',
+  'theme.system': '跟随系统',
+
+  // Sidebar sections
+  'nav.section.user': '用户',
+  'nav.section.ops': '运维',
+
+  // Sidebar groups
+  'nav.group.routes': '路由',
+  'nav.group.services': '服务',
+  'nav.group.security': '证书',
+  'nav.group.plugins': '插件',
+  'nav.group.infrastructure': '基础设施',
+  'nav.group.regionRoutes': '区域路由',
+
+  // Page subtitles
+  'page.subtitle.httpRoute': '管理网关的 HTTP 路由规则',
+  'page.subtitle.grpcRoute': '管理 gRPC 路由规则',
+  'page.subtitle.tcpRoute': '管理 TCP 路由规则',
+  'page.subtitle.udpRoute': '管理 UDP 路由规则',
+  'page.subtitle.tlsRoute': '管理 TLS 透传路由规则',
+  'page.subtitle.gateway': '绑定到 GatewayClass 的监听器配置',
+  'page.subtitle.gatewayClass': '定义网关实现的模板',
+  'page.subtitle.service': '路由后端的服务',
+  'page.subtitle.endpoint': '服务背后的 Pod 端点',
+  'page.subtitle.endpointSlice': '分片的服务端点集合',
+  'page.subtitle.referenceGrant': '跨命名空间引用授权',
+  'page.subtitle.tls': 'TLS 证书与密钥',
+  'page.subtitle.backendTls': '网关与后端之间的 TLS 策略',
+  'page.subtitle.plugins': '应用于 HTTP 流量的插件',
+  'page.subtitle.streamPlugins': '应用于四层流量的插件',
+  'page.subtitle.pluginMetadata': '插件元数据定义',
+  'page.subtitle.gatewayConfig': '集群级 Edgion 网关配置',
+  'page.subtitle.linkSys': '关联的外部系统',
+  'page.subtitle.acme': 'ACME 证书签发',
+  'page.subtitle.regionRouteCluster': '集群级区域路由规则',
+  'page.subtitle.regionRouteService': '服务级区域路由规则',
+  'page.subtitle.topology': '网关、路由与服务的可视化拓扑',
+  'page.subtitle.userDashboard': '路由与流量资源概览',
+  'page.subtitle.opsDashboard': 'Controller、网关与证书健康状况',
+
+  // Dashboard stat labels
+  'dashboard.stat.activeRoutes': '活跃路由',
+  'dashboard.stat.hostnames': '主机名',
+  'dashboard.stat.backends': '后端',
+  'dashboard.stat.gateways': '网关',
+  'dashboard.stat.controllerHealth': 'Controller 健康',
+  'dashboard.stat.recentReloads': '近期重载',
+  'dashboard.stat.acmeExpiry': '即将过期的 ACME 证书',
+  'dashboard.recent.routes': '最近的路由',
+  'dashboard.recent.gateways': '最近的网关',
+  'dashboard.empty': '暂无数据',
 }
 
 export default zh

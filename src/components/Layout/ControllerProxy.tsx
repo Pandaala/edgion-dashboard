@@ -1,7 +1,7 @@
 import { useParams } from 'react-router-dom'
 import { useLayoutEffect } from 'react'
 import { setActiveControllerId } from '@/utils/proxy'
-import MainLayout from './MainLayout'
+import { AppShell } from '../shell/AppShell'
 
 export default function ControllerProxy() {
   const { controllerId } = useParams<{ controllerId: string }>()
@@ -23,5 +23,5 @@ export default function ControllerProxy() {
     }
   }, [realId])
 
-  return <MainLayout />
+  return <AppShell />
 }

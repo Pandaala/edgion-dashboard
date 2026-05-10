@@ -3,6 +3,7 @@ import Editor, { OnMount } from '@monaco-editor/react'
 import { Alert } from 'antd'
 import * as yaml from 'js-yaml'
 import type { editor } from 'monaco-editor'
+import { useTheme } from '@/theme'
 
 export interface YamlEditorProps {
   value?: string
@@ -11,7 +12,6 @@ export interface YamlEditorProps {
   onValidate?: (isValid: boolean, error?: string) => void
   readOnly?: boolean
   height?: string | number
-  theme?: 'light' | 'vs-dark'
   language?: 'yaml' | 'json'
 }
 
@@ -22,9 +22,9 @@ const YamlEditor = ({
   onValidate,
   readOnly = false,
   height = '500px',
-  theme = 'light',
   language = 'yaml',
 }: YamlEditorProps) => {
+  const { resolvedMode } = useTheme()
   const editorRef = useRef<editor.IStandaloneCodeEditor | null>(null)
   const [error, setError] = useState<string>('')
 
@@ -45,7 +45,7 @@ const YamlEditor = ({
       }
       return { isValid: true }
     } catch (e: any) {
-      const errorMsg = e.message || '解析错误 / Parse error'
+      const errorMsg = e.message || 'Parse error'
       return { isValid: false, error: errorMsg }
     }
   }
@@ -77,23 +77,24 @@ const YamlEditor = ({
         onValidate(validation.isValid, validation.error)
       }
     }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [value])
 
   return (
-    <div style={{ border: '1px solid #d9d9d9', borderRadius: '4px', overflow: 'hidden' }}>
+    <div style={{ border: '1px solid var(--ec-color-border)', borderRadius: 'var(--ec-radius-sm)', overflow: 'hidden' }}>
       {error && (
         <Alert
-          message="语法错误 / Syntax Error"
+          message="Syntax Error"
           description={error}
           type="error"
           showIcon
-          style={{ margin: '8px', borderRadius: '4px' }}
+          style={{ margin: '8px', borderRadius: 'var(--ec-radius-sm)' }}
         />
       )}
       <Editor
         height={height}
         language={language}
-        theme={theme}
+        theme={resolvedMode === 'dark' ? 'vs-dark' : 'light'}
         value={value}
         defaultValue={defaultValue}
         onChange={handleEditorChange}

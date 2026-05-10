@@ -12,6 +12,7 @@ import {
   type ConsistencyResult,
 } from '@/api/regionRoute'
 import { useT } from '@/i18n'
+import PageHeader from '@/components/PageHeader'
 
 const { Text } = Typography
 
@@ -121,7 +122,7 @@ function FailoverPanel({
   })
 
   return (
-    <div style={{ background: '#fafafa', border: '1px solid #f0f0f0', borderRadius: 6, padding: '12px 16px' }}>
+    <div style={{ background: 'var(--ec-color-bg-subtle)', border: '1px solid var(--ec-color-border)', borderRadius: 6, padding: '12px 16px' }}>
       <Space direction="vertical" size={8} style={{ width: '100%' }}>
         {regions.map((region) => (
           <Space key={region.name} size={8} style={{ flexWrap: 'nowrap' }}>
@@ -373,7 +374,7 @@ export default function ClusterRegionRouteList() {
 
   const columns = useMemo(() => [
     {
-      title: <>Cluster <span style={{ fontSize: 11, color: '#999', fontWeight: 'normal' }}>(Namespace/Name)</span></>,
+      title: <>Cluster <span style={{ fontSize: 11, color: 'var(--ec-color-text-subtle)', fontWeight: 'normal' }}>(Namespace/Name)</span></>,
       key: 'name',
       render: (_: unknown, r: CenterClusterRegionRoute) => <Text strong>{r.namespace}/{r.name}</Text>,
     },
@@ -393,12 +394,11 @@ export default function ClusterRegionRouteList() {
 
   return (
     <div>
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
-        <Text style={{ color: '#888', fontSize: 13 }}>
-          {t('center.clusterRoute.subtitle', { n: filteredItems.length })}
-        </Text>
-        <Button icon={<ReloadOutlined />} onClick={() => refetch()}>{t('btn.refresh')}</Button>
-      </div>
+      <PageHeader
+        title="ClusterRegionRoute"
+        subtitle={t('page.subtitle.regionRouteCluster')}
+        actions={<Button icon={<ReloadOutlined />} onClick={() => refetch()}>{t('btn.refresh')}</Button>}
+      />
       <AutoComplete
         placeholder={t('center.clusterRoute.name')}
         value={filter}

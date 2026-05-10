@@ -551,6 +551,61 @@ const en = {
   'topology.ports': 'Ports',
   'topology.selector': 'Selector',
   'field.hostnames': 'Hostnames',
+
+  // Theme
+  'theme.light': 'Light',
+  'theme.dark': 'Dark',
+  'theme.system': 'System',
+
+  // Sidebar sections (top-level)
+  'nav.section.user': 'USER',
+  'nav.section.ops': 'OPS',
+
+  // Sidebar groups (sub-section labels)
+  'nav.group.routes': 'ROUTES',
+  'nav.group.services': 'SERVICES',
+  'nav.group.security': 'SECURITY',
+  'nav.group.plugins': 'PLUGINS',
+  'nav.group.infrastructure': 'INFRASTRUCTURE',
+  'nav.group.regionRoutes': 'REGION ROUTES',
+
+  // Page subtitles for list pages (used by PageHeader)
+  'page.subtitle.httpRoute': 'Manage HTTP routing rules across your gateways',
+  'page.subtitle.grpcRoute': 'Manage gRPC routing rules',
+  'page.subtitle.tcpRoute': 'Manage TCP routing rules',
+  'page.subtitle.udpRoute': 'Manage UDP routing rules',
+  'page.subtitle.tlsRoute': 'Manage TLS pass-through routing rules',
+  'page.subtitle.gateway': 'Listener configurations bound to a GatewayClass',
+  'page.subtitle.gatewayClass': 'Templates that define gateway implementations',
+  'page.subtitle.service': 'Backend services discovered by routes',
+  'page.subtitle.endpoint': 'Per-pod endpoints backing a service',
+  'page.subtitle.endpointSlice': 'Sharded endpoint sets for service discovery',
+  'page.subtitle.referenceGrant': 'Cross-namespace reference permissions',
+  'page.subtitle.tls': 'TLS certificates and keys',
+  'page.subtitle.backendTls': 'TLS policy applied between gateway and backend',
+  'page.subtitle.plugins': 'Plugins applied to HTTP traffic',
+  'page.subtitle.streamPlugins': 'Plugins applied to L4 stream traffic',
+  'page.subtitle.pluginMetadata': 'Plugin metadata definitions',
+  'page.subtitle.gatewayConfig': 'Cluster-wide Edgion gateway configuration',
+  'page.subtitle.linkSys': 'Linked external systems',
+  'page.subtitle.acme': 'ACME certificate issuance',
+  'page.subtitle.regionRouteCluster': 'Cluster-scope region routing rules',
+  'page.subtitle.regionRouteService': 'Service-scope region routing rules',
+  'page.subtitle.topology': 'Visual topology of gateways, routes, and services',
+  'page.subtitle.userDashboard': 'Overview of routing and traffic resources',
+  'page.subtitle.opsDashboard': 'Controller, gateway, and certificate health',
+
+  // Dashboard stat labels
+  'dashboard.stat.activeRoutes': 'Active routes',
+  'dashboard.stat.hostnames': 'Hostnames',
+  'dashboard.stat.backends': 'Backends',
+  'dashboard.stat.gateways': 'Gateways',
+  'dashboard.stat.controllerHealth': 'Controller health',
+  'dashboard.stat.recentReloads': 'Recent reloads',
+  'dashboard.stat.acmeExpiry': 'ACME expiring soon',
+  'dashboard.recent.routes': 'Recent routes',
+  'dashboard.recent.gateways': 'Recent gateways',
+  'dashboard.empty': 'No data yet',
 }
 
 export default en

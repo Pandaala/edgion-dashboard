@@ -1,156 +1,284 @@
 import { useNavigate, useParams } from 'react-router-dom'
-import { Row, Col, Card, Statistic, Badge, Button, Space } from 'antd'
+import { Button } from 'antd'
 import {
   ApiOutlined,
-  SafetyOutlined,
+  GlobalOutlined,
   DatabaseOutlined,
+  SafetyOutlined,
   ReloadOutlined,
 } from '@ant-design/icons'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
-import { systemApi, apiClient } from '@/api/client'
-import { getActiveControllerId } from '@/utils/proxy'
+import { resourceApi } from '@/api/resources'
+import { systemApi } from '@/api/client'
+import type { K8sResource } from '@/api/types'
+import PageHeader from '@/components/PageHeader'
+import { StatCard } from '@/components/widgets/StatCard'
+import { ListCard } from '@/components/widgets/ListCard'
+import { StatusDot } from '@/components/widgets/StatusDot'
 import { useT } from '@/i18n'
+import { getActiveControllerId } from '@/utils/proxy'
 
-function useResourceCount(kind: string) {
-  const { controllerId } = useParams<{ controllerId?: string }>()
-  return useQuery({
-    queryKey: ['count', kind, controllerId ?? ''],
-    queryFn: async () => {
-      try {
-        const { data } = await apiClient.get(`/namespaced/${kind}`, { _silent: true } as any)
-        return data.count ?? data.data?.length ?? 0
-      } catch {
-        return 0
-      }
-    },
-    staleTime: 30 * 1000,
-    retry: false,
-  })
-}
+// Route kinds that count toward the "active routes" stat
+const ROUTE_KINDS = ['httproute', 'grpcroute', 'tcproute', 'udproute', 'tlsroute'] as const
 
-const StatCard = ({
-  title, kind, color, icon, path,
-}: {
-  title: string; kind: string; color: string; icon: React.ReactNode; path: string;
-}) => {
-  const navigate = useNavigate()
-  const { data: count = 0, isLoading } = useResourceCount(kind)
-
-  return (
-    <Card
-      hoverable
-      onClick={() => {
-        const cid = getActiveControllerId()
-        const prefix = cid ? `/controller/${cid.replace(/\//g, '~')}` : ''
-        navigate(`${prefix}${path}`)
-      }}
-      bodyStyle={{ padding: '16px 20px' }}
-    >
-      <Statistic
-        title={title}
-        value={isLoading ? '-' : count}
-        prefix={icon}
-        valueStyle={{ color, fontSize: 28 }}
-        loading={isLoading}
-      />
-    </Card>
-  )
+interface RouteResource extends K8sResource {
+  spec?: {
+    hostnames?: string[]
+    rules?: Array<{
+      backendRefs?: Array<{ name: string; namespace?: string }>
+    }>
+  }
 }
 
 const UserDashboard = () => {
   const t = useT()
-  const queryClient = useQueryClient()
   const navigate = useNavigate()
+  const queryClient = useQueryClient()
   const { controllerId } = useParams<{ controllerId?: string }>()
 
+  // Health check (preserved from original — shown in PageHeader actions)
   const { data: healthData } = useQuery({
     queryKey: ['health', controllerId ?? ''],
     queryFn: systemApi.health,
     staleTime: 15 * 1000,
     retry: false,
   })
-
   const isHealthy = healthData?.data === 'OK' || healthData?.success === true
+
+  // Fetch HTTPRoutes for the route-derived stats (hostnames, backends, recent list).
+  // The original file showed per-kind counts via a lightweight count query; here we
+  // fetch HTTPRoutes in full so we can derive hostnames and backend refs, then add
+  // the remaining route kinds as count-only queries to build the total.
+  const { data: httpRoutesResp } = useQuery({
+    queryKey: ['httproutes-dashboard', controllerId ?? ''],
+    queryFn: () => resourceApi.listAll<RouteResource>('httproute'),
+    staleTime: 30 * 1000,
+  })
+  const httpRoutes = httpRoutesResp?.data ?? []
+
+  // Per-kind counts for the other route types (grpc/tcp/udp/tls)
+  const grpcQuery  = useQuery({ queryKey: ['count', 'grpcroute', controllerId ?? ''],  queryFn: () => resourceApi.listAll<K8sResource>('grpcroute').then(r => r.count ?? r.data?.length ?? 0),  staleTime: 30000 })
+  const tcpQuery   = useQuery({ queryKey: ['count', 'tcproute',  controllerId ?? ''],  queryFn: () => resourceApi.listAll<K8sResource>('tcproute').then(r => r.count ?? r.data?.length ?? 0),   staleTime: 30000 })
+  const udpQuery   = useQuery({ queryKey: ['count', 'udproute',  controllerId ?? ''],  queryFn: () => resourceApi.listAll<K8sResource>('udproute').then(r => r.count ?? r.data?.length ?? 0),   staleTime: 30000 })
+  const tlsQuery   = useQuery({ queryKey: ['count', 'tlsroute',  controllerId ?? ''],  queryFn: () => resourceApi.listAll<K8sResource>('tlsroute').then(r => r.count ?? r.data?.length ?? 0),   staleTime: 30000 })
+
+  // Total active routes = all route kinds combined
+  const totalRoutes =
+    httpRoutes.length +
+    (grpcQuery.data ?? 0) +
+    (tcpQuery.data  ?? 0) +
+    (udpQuery.data  ?? 0) +
+    (tlsQuery.data  ?? 0)
+
+  // Derive unique hostnames and backend refs from HTTPRoutes
+  const hostnames = new Set<string>()
+  const backends  = new Set<string>()
+  httpRoutes.forEach((r) => {
+    r.spec?.hostnames?.forEach((h) => hostnames.add(h))
+    r.spec?.rules?.forEach((rule) =>
+      rule.backendRefs?.forEach((b) =>
+        backends.add(`${b.namespace ?? r.metadata.namespace ?? ''}/${b.name}`)
+      )
+    )
+  })
+
+  // Recent routes: top 6 HTTPRoutes sorted by creationTimestamp descending
+  const recentRows = [...httpRoutes]
+    .sort((a, b) =>
+      (b.metadata.creationTimestamp ?? '').localeCompare(a.metadata.creationTimestamp ?? '')
+    )
+    .slice(0, 6)
+    .map((r) => {
+      const hostname  = r.spec?.hostnames?.[0] ?? '—'
+      const backendName = r.spec?.rules?.[0]?.backendRefs?.[0]?.name ?? '—'
+      return {
+        key: `${r.metadata.namespace ?? ''}/${r.metadata.name}`,
+        tone: 'success' as const,
+        primary: r.metadata.name,
+        secondary: `${hostname} → ${backendName}`,
+        trailing: r.metadata.namespace ?? '—',
+        onClick: () => {
+          const cid = getActiveControllerId()
+          const prefix = cid ? `/controller/${cid.replace(/\//g, '~')}` : ''
+          navigate(`${prefix}/routes/http`)
+        },
+      }
+    })
 
   const handleRefreshAll = () => {
     queryClient.invalidateQueries()
   }
 
-  const routeCards = [
-    { title: 'HTTPRoute', kind: 'httproute', path: '/routes/http', color: '#3f8600' },
-    { title: 'GRPCRoute', kind: 'grpcroute', path: '/routes/grpc', color: '#13c2c2' },
-    { title: 'TCPRoute',  kind: 'tcproute',  path: '/routes/tcp',  color: '#1890ff' },
-    { title: 'UDPRoute',  kind: 'udproute',  path: '/routes/udp',  color: '#722ed1' },
-    { title: 'TLSRoute',  kind: 'tlsroute',  path: '/routes/tls',  color: '#fa8c16' },
-  ]
+  // Quick-navigation helper
+  const goTo = (path: string) => {
+    const cid = getActiveControllerId()
+    const prefix = cid ? `/controller/${cid.replace(/\//g, '~')}` : ''
+    navigate(`${prefix}${path}`)
+  }
 
-  const serviceSecurityCards = [
-    { title: 'Service',          kind: 'service',          path: '/services/list',           color: '#52c41a', icon: <DatabaseOutlined /> },
-    { title: 'EndpointSlice',    kind: 'endpointslice',    path: '/services/endpointslices', color: '#597ef7', icon: <DatabaseOutlined /> },
-    { title: 'EdgionTls',        kind: 'edgiontls',        path: '/security/tls',            color: '#eb2f96', icon: <SafetyOutlined /> },
-    { title: 'BackendTLSPolicy', kind: 'backendtlspolicy', path: '/security/backendtls',     color: '#fa541c', icon: <SafetyOutlined /> },
+  // Quick links (preserved from original, adapted to new visual language)
+  const quickLinks: Array<{ label: string; path: string; tone: 'success' | 'warning' | 'danger' | 'muted' | 'brand' }> = [
+    { label: 'HTTPRoute',        path: '/routes/http',          tone: 'success' },
+    { label: 'GRPCRoute',        path: '/routes/grpc',          tone: 'brand'   },
+    { label: 'Services',         path: '/services/list',        tone: 'success' },
+    { label: 'EdgionTls',        path: '/security/tls',         tone: 'warning' },
+    { label: 'BackendTLS Policy',path: '/security/backendtls',  tone: 'danger'  },
   ]
 
   return (
     <div>
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 24 }}>
-        <div>
-          <h2 style={{ margin: 0 }}>User Dashboard</h2>
-          <span style={{ color: '#888', fontSize: 13 }}>Routes · Services · Certificates</span>
-        </div>
-        <Space>
-          <Badge status={isHealthy ? 'success' : 'error'} text={isHealthy ? t('status.healthy') : t('status.unhealthy')} />
-          <Button icon={<ReloadOutlined />} onClick={handleRefreshAll}>{t('dash.refreshAll')}</Button>
-        </Space>
+      <PageHeader
+        title={t('nav.dashboard')}
+        subtitle={t('page.subtitle.userDashboard')}
+        actions={
+          <>
+            <StatusDot tone={isHealthy ? 'success' : 'danger'} />
+            <Button icon={<ReloadOutlined />} onClick={handleRefreshAll}>
+              {t('dash.refreshAll')}
+            </Button>
+          </>
+        }
+      />
+
+      {/* Stat cards — activeRoutes, hostnames, backends */}
+      <div
+        style={{
+          display: 'grid',
+          gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))',
+          gap: 16,
+          marginBottom: 24,
+        }}
+      >
+        <StatCard
+          label={t('dashboard.stat.activeRoutes')}
+          value={totalRoutes}
+          icon={<ApiOutlined />}
+        />
+        <StatCard
+          label={t('dashboard.stat.hostnames')}
+          value={hostnames.size}
+          icon={<GlobalOutlined />}
+        />
+        <StatCard
+          label={t('dashboard.stat.backends')}
+          value={backends.size}
+          icon={<DatabaseOutlined />}
+        />
       </div>
 
-      {/* Routes */}
-      <div style={{ marginBottom: 8, fontSize: 12, color: '#888', fontWeight: 600, letterSpacing: '0.05em' }}>
-        {t('nav.routes').toUpperCase()}
-      </div>
-      <Row gutter={[16, 16]}>
-        {routeCards.map((r) => (
-          <Col key={r.kind} xs={24} sm={12} lg={Math.floor(24 / routeCards.length) as any}>
-            <StatCard title={r.title} kind={r.kind} color={r.color} icon={<ApiOutlined />} path={r.path} />
-          </Col>
-        ))}
-      </Row>
+      {/* Main content grid: recent routes + quick links */}
+      <div
+        style={{
+          display: 'grid',
+          gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))',
+          gap: 16,
+        }}
+      >
+        {/* Recent HTTPRoutes list */}
+        <ListCard
+          title={t('dashboard.recent.routes')}
+          rows={recentRows}
+          emptyText={t('dashboard.empty')}
+        />
 
-      {/* Services & Security */}
-      <div style={{ marginTop: 20, marginBottom: 8, fontSize: 12, color: '#888', fontWeight: 600, letterSpacing: '0.05em' }}>
-        {t('nav.services').toUpperCase()} &amp; {t('nav.security').toUpperCase()}
-      </div>
-      <Row gutter={[16, 16]}>
-        {serviceSecurityCards.map((r) => (
-          <Col key={r.kind} xs={24} sm={12} lg={6}>
-            <StatCard title={r.title} kind={r.kind} color={r.color} icon={r.icon} path={r.path} />
-          </Col>
-        ))}
-      </Row>
-
-      {/* Quick Links */}
-      <Row gutter={[16, 16]} style={{ marginTop: 24 }}>
-        <Col xs={24} lg={8}>
-          <Card title={t('section.quickLinks')} size="small">
-            {[
-              { label: t('dash.createHttpRoute'), path: '/routes/http', color: '#3f8600' },
-              { label: 'Create GRPCRoute', path: '/routes/grpc', color: '#13c2c2' },
-              { label: 'Manage Services', path: '/services/list', color: '#52c41a' },
-              { label: t('dash.configureTls'), path: '/security/tls', color: '#eb2f96' },
-              { label: 'BackendTLS Policy', path: '/security/backendtls', color: '#fa541c' },
-            ].map((link) => (
-              <Button key={link.path} type="link" onClick={() => {
-                const cid = getActiveControllerId()
-                const prefix = cid ? `/controller/${cid.replace(/\//g, '~')}` : ''
-                navigate(`${prefix}${link.path}`)
+        {/* Quick links — preserved from original dashboard, restyled */}
+        <div
+          style={{
+            background: 'var(--ec-color-bg-surface)',
+            border: '1px solid var(--ec-color-border)',
+            borderRadius: 'var(--ec-radius-md)',
+            boxShadow: 'var(--ec-shadow-sm)',
+            overflow: 'hidden',
+          }}
+        >
+          <div
+            style={{
+              padding: '12px 16px',
+              fontSize: 'var(--ec-size-md)',
+              fontWeight: 600,
+              color: 'var(--ec-color-text)',
+              borderBottom: '1px solid var(--ec-color-border)',
+            }}
+          >
+            {t('section.quickLinks')}
+          </div>
+          {quickLinks.map((link) => (
+            <div
+              key={link.path}
+              onClick={() => goTo(link.path)}
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: 12,
+                padding: '12px 16px',
+                borderTop: '1px solid var(--ec-color-border)',
+                cursor: 'pointer',
               }}
-                style={{ display: 'block', textAlign: 'left', padding: '4px 0', color: link.color }}>
-                → {link.label}
-              </Button>
-            ))}
-          </Card>
-        </Col>
-      </Row>
+            >
+              <StatusDot tone={link.tone} />
+              <span
+                style={{
+                  fontSize: 'var(--ec-size-base)',
+                  color: 'var(--ec-color-text)',
+                }}
+              >
+                {link.label}
+              </span>
+              <SafetyOutlined
+                style={{
+                  marginLeft: 'auto',
+                  color: 'var(--ec-color-text-muted)',
+                  fontSize: 12,
+                  display: ['service', 'services'].some(s => link.path.includes(s)) ? 'none' : undefined,
+                }}
+              />
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* Route-kind breakdown row (original showed per-kind counts — kept as a secondary stat row) */}
+      <div
+        style={{
+          display: 'grid',
+          gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))',
+          gap: 12,
+          marginTop: 16,
+        }}
+      >
+        {ROUTE_KINDS.map((kind) => {
+          const label = kind.replace('route', 'Route').replace(/^./, (c) => c.toUpperCase())
+          const value =
+            kind === 'httproute' ? httpRoutes.length
+            : kind === 'grpcroute' ? (grpcQuery.data ?? 0)
+            : kind === 'tcproute'  ? (tcpQuery.data  ?? 0)
+            : kind === 'udproute'  ? (udpQuery.data  ?? 0)
+            : (tlsQuery.data  ?? 0)
+          return (
+            <div
+              key={kind}
+              onClick={() => goTo(`/routes/${kind.replace('route', '')}`)}
+              style={{
+                background: 'var(--ec-color-bg-subtle)',
+                border: '1px solid var(--ec-color-border)',
+                borderRadius: 'var(--ec-radius-sm)',
+                padding: '10px 14px',
+                cursor: 'pointer',
+                display: 'flex',
+                justifyContent: 'space-between',
+                alignItems: 'center',
+              }}
+            >
+              <span style={{ fontSize: 'var(--ec-size-sm)', color: 'var(--ec-color-text-muted)' }}>
+                {label}
+              </span>
+              <span style={{ fontSize: 'var(--ec-size-md)', fontWeight: 600, color: 'var(--ec-color-text)' }}>
+                {value}
+              </span>
+            </div>
+          )
+        })}
+      </div>
     </div>
   )
 }

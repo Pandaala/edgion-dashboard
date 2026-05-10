@@ -11,6 +11,7 @@ import {
   type ConsistencyResult,
 } from '@/api/regionRoute'
 import { useT } from '@/i18n'
+import PageHeader from '@/components/PageHeader'
 
 const { Text } = Typography
 
@@ -111,7 +112,7 @@ function FailoverPanel({
   })
 
   return (
-    <div style={{ background: '#fafafa', border: '1px solid #f0f0f0', borderRadius: 6, padding: '12px 16px' }}>
+    <div style={{ background: 'var(--ec-color-bg-subtle)', border: '1px solid var(--ec-color-border)', borderRadius: 6, padding: '12px 16px' }}>
       <Space direction="vertical" size={8} style={{ width: '100%' }}>
         {regions.map((region) => (
           <Space key={region.name} size={8} style={{ flexWrap: 'nowrap' }}>
@@ -313,12 +314,12 @@ export default function ServiceRegionRouteList() {
 
   const columns = useMemo(() => [
     {
-      title: <>Service <span style={{ fontSize: 11, color: '#999', fontWeight: 'normal' }}>(Namespace/Name)</span></>,
+      title: <>Service <span style={{ fontSize: 11, color: 'var(--ec-color-text-subtle)', fontWeight: 'normal' }}>(Namespace/Name)</span></>,
       key: 'name',
       render: (_: unknown, r: CenterServiceRegionRoute) => <Text strong>{r.namespace}/{r.name}</Text>,
     },
     {
-      title: <>Cluster <span style={{ fontSize: 11, color: '#999', fontWeight: 'normal' }}>(Namespace/Name)</span></>,
+      title: <>Cluster <span style={{ fontSize: 11, color: 'var(--ec-color-text-subtle)', fontWeight: 'normal' }}>(Namespace/Name)</span></>,
       key: 'clusterRef',
       render: (_: unknown, r: CenterServiceRegionRoute) => (
         r.clusterRef ? <Text>{r.clusterRef.namespace}/{r.clusterRef.name}</Text> : <Text type="secondary">—</Text>
@@ -340,12 +341,11 @@ export default function ServiceRegionRouteList() {
 
   return (
     <div>
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
-        <Text style={{ color: '#888', fontSize: 13 }}>
-          {t('center.regionRoute.subtitle', { n: filteredItems.length })}
-        </Text>
-        <Button icon={<ReloadOutlined />} onClick={() => refetch()}>{t('btn.refresh')}</Button>
-      </div>
+      <PageHeader
+        title="ServiceRegionRoute"
+        subtitle={t('page.subtitle.regionRouteService')}
+        actions={<Button icon={<ReloadOutlined />} onClick={() => refetch()}>{t('btn.refresh')}</Button>}
+      />
       <AutoComplete
         placeholder={t('center.regionRoute.pmName')}
         value={filter}

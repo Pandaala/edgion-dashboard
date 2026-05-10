@@ -1,11 +1,12 @@
 import { useState, useCallback } from 'react'
-import { Select, Button, Space, Spin, Alert, Empty } from 'antd'
+import { Select, Button, Spin, Alert, Empty } from 'antd'
 import { ReloadOutlined } from '@ant-design/icons'
 import { useT } from '@/i18n'
 import TopologyCanvas from './components/TopologyCanvas'
 import TopologyLegend from './components/TopologyLegend'
 import TopologyDetailDrawer from './components/TopologyDetailDrawer'
 import { useTopologyData } from './hooks/useTopologyData'
+import PageHeader from '@/components/PageHeader'
 
 export default function TopologyPage() {
   const t = useT()
@@ -22,27 +23,27 @@ export default function TopologyPage() {
 
   return (
     <div style={{ height: 'calc(100vh - 140px)', display: 'flex', flexDirection: 'column' }}>
-      {/* Toolbar */}
-      <div style={{ marginBottom: 12, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-        <Space>
-          <span style={{ fontWeight: 600, fontSize: 16 }}>{t('topology.title')}</span>
-          <Select
-            allowClear
-            placeholder={t('topology.allNamespaces')}
-            style={{ width: 200 }}
-            value={namespaceFilter}
-            onChange={(val) => setNamespaceFilter(val ?? null)}
-            options={namespaces.map((ns) => ({ label: ns, value: ns }))}
-          />
-        </Space>
-        <Space>
-          <TopologyLegend />
-          <Button icon={<ReloadOutlined />} onClick={() => refetch()}>{t('btn.refresh')}</Button>
-        </Space>
-      </div>
+      <PageHeader
+        title="Topology"
+        subtitle={t('page.subtitle.topology')}
+        actions={
+          <>
+            <Select
+              allowClear
+              placeholder={t('topology.allNamespaces')}
+              style={{ width: 200 }}
+              value={namespaceFilter}
+              onChange={(val) => setNamespaceFilter(val ?? null)}
+              options={namespaces.map((ns) => ({ label: ns, value: ns }))}
+            />
+            <TopologyLegend />
+            <Button icon={<ReloadOutlined />} onClick={() => refetch()}>{t('btn.refresh')}</Button>
+          </>
+        }
+      />
 
       {/* Canvas */}
-      <div style={{ flex: 1, border: '1px solid #f0f0f0', borderRadius: 8, overflow: 'auto', background: '#fafafa' }}>
+      <div style={{ flex: 1, border: '1px solid var(--ec-color-border)', borderRadius: 8, overflow: 'auto', background: 'var(--ec-color-bg-subtle)' }}>
         {isLoading ? (
           <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100%' }}>
             <Spin size="large" tip={t('topology.loading')} />

@@ -86,7 +86,7 @@ const SecretList = () => {
       },
     },
     { title: t('col.keys'), key: 'keys',
-      render: (_: any, r: K8sResource) => <span style={{ color: '#888', fontSize: 12 }}>{getDataKeys(r)}</span> },
+      render: (_: any, r: K8sResource) => <span style={{ color: 'var(--ec-color-text-muted)', fontSize: 12 }}>{getDataKeys(r)}</span> },
     {
       title: t('col.actions'), key: 'actions', width: 160,
       render: (_: any, record: K8sResource) => (

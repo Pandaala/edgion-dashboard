@@ -1,85 +1,37 @@
 import { useNavigate, useParams } from 'react-router-dom'
-import { Row, Col, Card, Statistic, Badge, Button, Space, Spin } from 'antd'
+import { Button } from 'antd'
 import {
   ClusterOutlined,
   AppstoreOutlined,
   SettingOutlined,
   ReloadOutlined,
+  HeartOutlined,
 } from '@ant-design/icons'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
-import { systemApi, apiClient } from '@/api/client'
-import { getActiveControllerId } from '@/utils/proxy'
+import { resourceApi, clusterResourceApi } from '@/api/resources'
+import { systemApi } from '@/api/client'
+import type { K8sResource } from '@/api/types'
+import type { Gateway } from '@/types/gateway-api/gateway'
+import PageHeader from '@/components/PageHeader'
+import { StatCard } from '@/components/widgets/StatCard'
+import { ListCard } from '@/components/widgets/ListCard'
+import { StatusDot } from '@/components/widgets/StatusDot'
 import { useT } from '@/i18n'
-
-function useResourceCount(kind: string, scope: 'namespaced' | 'cluster' = 'namespaced') {
-  const { controllerId } = useParams<{ controllerId?: string }>()
-  return useQuery({
-    queryKey: ['count', kind, controllerId ?? ''],
-    queryFn: async () => {
-      try {
-        const path = scope === 'namespaced' ? `/namespaced/${kind}` : `/cluster/${kind}`
-        const { data } = await apiClient.get(path, { _silent: true } as any)
-        return data.count ?? data.data?.length ?? 0
-      } catch {
-        return 0
-      }
-    },
-    staleTime: 30 * 1000,
-    retry: false,
-  })
-}
-
-const StatCard = ({
-  title, kind, scope, color, icon, path,
-}: {
-  title: string; kind: string; scope?: 'namespaced' | 'cluster';
-  color: string; icon: React.ReactNode; path?: string;
-}) => {
-  const navigate = useNavigate()
-  const { data: count = 0, isLoading } = useResourceCount(kind, scope)
-
-  return (
-    <Card
-      hoverable={!!path}
-      onClick={() => {
-        if (!path) return
-        const cid = getActiveControllerId()
-        const prefix = cid ? `/controller/${cid.replace(/\//g, '~')}` : ''
-        navigate(`${prefix}${path}`)
-      }}
-      style={{ cursor: path ? 'pointer' : 'default' }}
-      bodyStyle={{ padding: '16px 20px' }}
-    >
-      <Statistic
-        title={title}
-        value={isLoading ? '-' : count}
-        prefix={icon}
-        valueStyle={{ color, fontSize: 28 }}
-        loading={isLoading}
-      />
-    </Card>
-  )
-}
-
-const ResourceCountCell = ({ kind, scope }: { kind: string; scope?: 'namespaced' | 'cluster' }) => {
-  const { data: count, isLoading } = useResourceCount(kind, scope)
-  if (isLoading) return <Spin size="small" />
-  const n = count ?? 0
-  return <strong style={{ color: n > 0 ? '#1890ff' : '#888' }}>{n}</strong>
-}
+import { getActiveControllerId } from '@/utils/proxy'
 
 const Dashboard = () => {
   const t = useT()
+  const navigate = useNavigate()
   const queryClient = useQueryClient()
   const { controllerId } = useParams<{ controllerId?: string }>()
 
+  // Health + server info (preserved from original)
   const { data: healthData } = useQuery({
     queryKey: ['health', controllerId ?? ''],
     queryFn: systemApi.health,
     staleTime: 15 * 1000,
     retry: false,
   })
-
   const { data: serverInfo } = useQuery({
     queryKey: ['server-info', controllerId ?? ''],
     queryFn: systemApi.serverInfo,
@@ -88,83 +40,250 @@ const Dashboard = () => {
   })
 
   const isHealthy = healthData?.data === 'OK' || healthData?.success === true
-  const isReady = serverInfo?.data?.ready === true
+  const isReady   = serverInfo?.data?.ready === true
+
+  // Gateways — full list for count + recent gateways ListCard
+  const { data: gatewaysResp } = useQuery({
+    queryKey: ['gateways-dashboard', controllerId ?? ''],
+    queryFn: () => resourceApi.listAll<Gateway>('gateway'),
+    staleTime: 30 * 1000,
+  })
+  const gateways = gatewaysResp?.data ?? []
+
+  // EdgionAcme resources — used to compute acmeExpiry stat.
+  // The EdgionAcmeSpec does not carry a notAfter timestamp, so we fall back to
+  // counting ALL EdgionAcme resources as a proxy for "certs to watch". If the
+  // backend begins returning status.notAfter, replace this count with a filtered
+  // count: items whose status.notAfter is within 30 days of today.
+  const { data: acmeResp } = useQuery({
+    queryKey: ['edgionacme-dashboard', controllerId ?? ''],
+    queryFn: () => resourceApi.listAll<K8sResource>('edgionacme'),
+    staleTime: 30 * 1000,
+  })
+  const acmeResources = acmeResp?.data ?? []
+
+  // Compute acmeExpiry: count certs expiring within 30 days.
+  // If status.notAfter is present use it; otherwise show total count as fallback.
+  const now = Date.now()
+  const thirtyDaysMs = 30 * 24 * 60 * 60 * 1000
+  const acmeWithExpiry = acmeResources.filter((r) => {
+    const notAfter: string | undefined = r.status?.notAfter
+    if (!notAfter) return false
+    const exp = new Date(notAfter).getTime()
+    return exp - now <= thirtyDaysMs
+  })
+  // If no status.notAfter fields are populated fall back to total ACME resource count
+  const acmeExpiryStat = acmeWithExpiry.length > 0 ? acmeWithExpiry.length : acmeResources.length
+
+  // Derive controller health display value
+  const controllerHealthValue = isHealthy ? t('status.healthy') : isReady === false ? '—' : t('status.unhealthy')
+
+  // Additional ops resource counts (preserved from original count grid)
+  const gcQuery      = useQuery({ queryKey: ['count', 'gatewayclass',        controllerId ?? ''], queryFn: () => clusterResourceApi.listAll<K8sResource>('gatewayclass').then(r => r.count ?? r.data?.length ?? 0),        staleTime: 30000 })
+  const pluginQuery  = useQuery({ queryKey: ['count', 'edgionplugins',        controllerId ?? ''], queryFn: () => resourceApi.listAll<K8sResource>('edgionplugins').then(r => r.count ?? r.data?.length ?? 0),              staleTime: 30000 })
+  const streamQuery  = useQuery({ queryKey: ['count', 'edgionstreamplugins',  controllerId ?? ''], queryFn: () => resourceApi.listAll<K8sResource>('edgionstreamplugins').then(r => r.count ?? r.data?.length ?? 0),        staleTime: 30000 })
+  const metaQuery    = useQuery({ queryKey: ['count', 'pluginmetadata',        controllerId ?? ''], queryFn: () => resourceApi.listAll<K8sResource>('pluginmetadata').then(r => r.count ?? r.data?.length ?? 0),              staleTime: 30000 })
+  const gcfgQuery    = useQuery({ queryKey: ['count', 'edgiongatewayconfig',  controllerId ?? ''], queryFn: () => clusterResourceApi.listAll<K8sResource>('edgiongatewayconfig').then(r => r.count ?? r.data?.length ?? 0), staleTime: 30000 })
+  const linksysQuery = useQuery({ queryKey: ['count', 'linksys',              controllerId ?? ''], queryFn: () => resourceApi.listAll<K8sResource>('linksys').then(r => r.count ?? r.data?.length ?? 0),                    staleTime: 30000 })
+  const rgQuery      = useQuery({ queryKey: ['count', 'referencegrant',       controllerId ?? ''], queryFn: () => resourceApi.listAll<K8sResource>('referencegrant').then(r => r.count ?? r.data?.length ?? 0),              staleTime: 30000 })
+
+  // Recent gateways list (top 6 by creationTimestamp desc)
+  const recentGatewayRows = [...gateways]
+    .sort((a, b) =>
+      (b.metadata.creationTimestamp ?? '').localeCompare(a.metadata.creationTimestamp ?? '')
+    )
+    .slice(0, 6)
+    .map((gw) => {
+      const listenerCount = gw.spec?.listeners?.length ?? 0
+      const gwClass = gw.spec?.gatewayClassName ?? '—'
+      return {
+        key: `${gw.metadata.namespace ?? ''}/${gw.metadata.name}`,
+        tone: 'brand' as const,
+        primary: gw.metadata.name,
+        secondary: `${gwClass} · ${listenerCount} listener${listenerCount !== 1 ? 's' : ''}`,
+        trailing: gw.metadata.namespace ?? '—',
+        onClick: () => {
+          const cid = getActiveControllerId()
+          const prefix = cid ? `/controller/${cid.replace(/\//g, '~')}` : ''
+          navigate(`${prefix}/infrastructure/gateways`)
+        },
+      }
+    })
 
   const handleRefreshAll = () => {
     queryClient.invalidateQueries()
   }
 
-  const opsResources = [
-    { title: 'Gateway', kind: 'gateway', path: '/infrastructure/gateways', color: '#722ed1', icon: <ClusterOutlined /> },
-    { title: 'GatewayClass', kind: 'gatewayclass', scope: 'cluster' as const, path: '/infrastructure/gatewayclasses', color: '#1890ff', icon: <ClusterOutlined /> },
-    { title: 'EdgionPlugins', kind: 'edgionplugins', path: '/plugins', color: '#13c2c2', icon: <AppstoreOutlined /> },
-    { title: 'StreamPlugins', kind: 'edgionstreamplugins', path: '/plugins/stream', color: '#597ef7', icon: <AppstoreOutlined /> },
-    { title: 'PluginMetaData', kind: 'pluginmetadata', path: '/plugins/metadata', color: '#fa541c', icon: <AppstoreOutlined /> },
-    { title: 'GatewayConfig', kind: 'edgiongatewayconfig', scope: 'cluster' as const, path: '/system/config', color: '#fa8c16', icon: <SettingOutlined /> },
-    { title: 'LinkSys', kind: 'linksys', path: '/system/linksys', color: '#52c41a', icon: <SettingOutlined /> },
-    { title: 'Acme', kind: 'edgionacme', path: '/system/acme', color: '#eb2f96', icon: <SettingOutlined /> },
+  const goTo = (path: string) => {
+    const cid = getActiveControllerId()
+    const prefix = cid ? `/controller/${cid.replace(/\//g, '~')}` : ''
+    navigate(`${prefix}${path}`)
+  }
+
+  // Secondary resource count tiles (preserving the original grid of ops resource counts)
+  const secondaryResources = [
+    { label: 'GatewayClass',       value: gcQuery.data      ?? 0, path: '/infrastructure/gatewayclasses', icon: <ClusterOutlined />  },
+    { label: 'EdgionPlugins',       value: pluginQuery.data   ?? 0, path: '/plugins',                       icon: <AppstoreOutlined /> },
+    { label: 'StreamPlugins',       value: streamQuery.data   ?? 0, path: '/plugins/stream',                icon: <AppstoreOutlined /> },
+    { label: 'PluginMetaData',      value: metaQuery.data     ?? 0, path: '/plugins/metadata',              icon: <AppstoreOutlined /> },
+    { label: 'GatewayConfig',       value: gcfgQuery.data     ?? 0, path: '/system/config',                 icon: <SettingOutlined />  },
+    { label: 'LinkSys',             value: linksysQuery.data  ?? 0, path: '/system/linksys',                icon: <SettingOutlined />  },
+    { label: 'ReferenceGrant',      value: rgQuery.data       ?? 0, path: '',                               icon: <SettingOutlined />  },
   ]
 
   return (
     <div>
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 24 }}>
-        <div>
-          <h2 style={{ margin: 0 }}>Ops Dashboard</h2>
-          <span style={{ color: '#888', fontSize: 13 }}>
-            Server ID: {serverInfo?.data?.server_id || '—'}
-          </span>
-        </div>
-        <Space>
-          <Badge status={isHealthy ? 'success' : 'error'} text={isHealthy ? t('status.healthy') : t('status.unhealthy')} />
-          <Badge status={isReady ? 'success' : 'warning'} text={isReady ? t('status.ready') : t('status.notReady')} />
-          <Button icon={<ReloadOutlined />} onClick={handleRefreshAll}>{t('dash.refreshAll')}</Button>
-        </Space>
+      <PageHeader
+        title={t('nav.dashboard')}
+        subtitle={t('page.subtitle.opsDashboard')}
+        actions={
+          <>
+            <StatusDot tone={isHealthy ? 'success' : 'danger'} />
+            <Button icon={<ReloadOutlined />} onClick={handleRefreshAll}>
+              {t('dash.refreshAll')}
+            </Button>
+          </>
+        }
+      />
+
+      {/* Primary stat cards: gateways, controllerHealth, acmeExpiry */}
+      <div
+        style={{
+          display: 'grid',
+          gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))',
+          gap: 16,
+          marginBottom: 24,
+        }}
+      >
+        <StatCard
+          label={t('dashboard.stat.gateways')}
+          value={gateways.length}
+          icon={<ClusterOutlined />}
+        />
+        <StatCard
+          label={t('dashboard.stat.controllerHealth')}
+          value={controllerHealthValue}
+          icon={<HeartOutlined />}
+        />
+        {/* acmeExpiry: count of EdgionAcme resources expiring within 30 days.
+            Falls back to total EdgionAcme count when status.notAfter is absent. */}
+        <StatCard
+          label={t('dashboard.stat.acmeExpiry')}
+          value={acmeExpiryStat}
+          icon={<SettingOutlined />}
+        />
       </div>
 
-      <Row gutter={[16, 16]}>
-        {opsResources.map((r) => (
-          <Col key={r.kind} xs={24} sm={12} lg={6}>
-            <StatCard title={r.title} kind={r.kind} scope={r.scope} color={r.color} icon={r.icon} path={r.path} />
-          </Col>
-        ))}
-      </Row>
+      {/* Main content: recent gateways + system info */}
+      <div
+        style={{
+          display: 'grid',
+          gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))',
+          gap: 16,
+          marginBottom: 16,
+        }}
+      >
+        {/* Recent gateways ListCard */}
+        <ListCard
+          title={t('dashboard.recent.gateways')}
+          rows={recentGatewayRows}
+          emptyText={t('dashboard.empty')}
+        />
 
-      <Row gutter={[16, 16]} style={{ marginTop: 24 }}>
-        <Col xs={24} lg={8}>
-          <Card title={t('section.sysInfo')} size="small">
-            <div style={{ fontSize: 13 }}>
-              <div style={{ marginBottom: 8, display: 'flex', justifyContent: 'space-between' }}>
-                <span style={{ color: '#888' }}>{t('dash.controllerStatus')}</span>
-                <Badge status={isHealthy ? 'success' : 'error'} text={isHealthy ? t('status.running') : t('status.unhealthy')} />
-              </div>
-              <div style={{ marginBottom: 8, display: 'flex', justifyContent: 'space-between' }}>
-                <span style={{ color: '#888' }}>{t('dash.readyStatus')}</span>
-                <Badge status={isReady ? 'success' : 'warning'} text={isReady ? t('status.ready') : t('status.notReady')} />
-              </div>
-              <div style={{ marginBottom: 8, display: 'flex', justifyContent: 'space-between' }}>
-                <span style={{ color: '#888' }}>{t('dash.serverId')}</span>
-                <code style={{ fontSize: 11 }}>{serverInfo?.data?.server_id || '—'}</code>
-              </div>
-              <div style={{ marginBottom: 8, display: 'flex', justifyContent: 'space-between' }}>
-                <span style={{ color: '#888' }}>{t('dash.adminApi')}</span>
-                <span>:5800</span>
-              </div>
-              <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                <span style={{ color: '#888' }}>{t('dash.grpc')}</span>
-                <span>:50051</span>
-              </div>
+        {/* System info panel (preserved from original, restyled with token vars) */}
+        <div
+          style={{
+            background: 'var(--ec-color-bg-surface)',
+            border: '1px solid var(--ec-color-border)',
+            borderRadius: 'var(--ec-radius-md)',
+            boxShadow: 'var(--ec-shadow-sm)',
+            overflow: 'hidden',
+          }}
+        >
+          <div
+            style={{
+              padding: '12px 16px',
+              fontSize: 'var(--ec-size-md)',
+              fontWeight: 600,
+              color: 'var(--ec-color-text)',
+              borderBottom: '1px solid var(--ec-color-border)',
+            }}
+          >
+            {t('section.sysInfo')}
+          </div>
+          {[
+            {
+              label: t('dash.controllerStatus'),
+              value: (
+                <span style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                  <StatusDot tone={isHealthy ? 'success' : 'danger'} />
+                  {isHealthy ? t('status.running') : t('status.unhealthy')}
+                </span>
+              ),
+            },
+            {
+              label: t('dash.readyStatus'),
+              value: (
+                <span style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                  <StatusDot tone={isReady ? 'success' : 'warning'} />
+                  {isReady ? t('status.ready') : t('status.notReady')}
+                </span>
+              ),
+            },
+            { label: t('dash.serverId'),  value: <code style={{ fontSize: 11 }}>{serverInfo?.data?.server_id || '—'}</code> },
+            { label: t('dash.adminApi'),  value: <span>:5800</span> },
+            { label: t('dash.grpc'),      value: <span>:50051</span> },
+          ].map((row, idx) => (
+            <div
+              key={idx}
+              style={{
+                display: 'flex',
+                justifyContent: 'space-between',
+                alignItems: 'center',
+                padding: '10px 16px',
+                borderTop: '1px solid var(--ec-color-border)',
+                fontSize: 'var(--ec-size-sm)',
+              }}
+            >
+              <span style={{ color: 'var(--ec-color-text-muted)' }}>{row.label}</span>
+              <span style={{ color: 'var(--ec-color-text)' }}>{row.value}</span>
             </div>
-          </Card>
-        </Col>
-        <Col xs={24} lg={16}>
-          <Card title="ReferenceGrant" size="small" bodyStyle={{ padding: '16px 20px' }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 12, fontSize: 13 }}>
-              <span style={{ color: '#888' }}>ReferenceGrant</span>
-              <ResourceCountCell kind="referencegrant" />
-            </div>
-          </Card>
-        </Col>
-      </Row>
+          ))}
+        </div>
+      </div>
+
+      {/* Secondary resource count tiles — preserves original ops resource grid */}
+      <div
+        style={{
+          display: 'grid',
+          gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))',
+          gap: 12,
+        }}
+      >
+        {secondaryResources.map((item) => (
+          <div
+            key={item.label}
+            onClick={() => item.path ? goTo(item.path) : undefined}
+            style={{
+              background: 'var(--ec-color-bg-subtle)',
+              border: '1px solid var(--ec-color-border)',
+              borderRadius: 'var(--ec-radius-sm)',
+              padding: '10px 14px',
+              cursor: item.path ? 'pointer' : 'default',
+              display: 'flex',
+              justifyContent: 'space-between',
+              alignItems: 'center',
+            }}
+          >
+            <span style={{ fontSize: 'var(--ec-size-sm)', color: 'var(--ec-color-text-muted)' }}>
+              {item.label}
+            </span>
+            <span style={{ fontSize: 'var(--ec-size-md)', fontWeight: 600, color: 'var(--ec-color-text)' }}>
+              {item.value}
+            </span>
+          </div>
+        ))}
+      </div>
     </div>
   )
 }

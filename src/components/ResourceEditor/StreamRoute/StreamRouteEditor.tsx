@@ -91,6 +91,7 @@ const StreamRouteEditor: React.FC<StreamRouteEditorProps> = ({
       setFormData(normalized)
       setYamlContent(meta.toYaml(normalized))
     }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [visible, mode, resource, kind])
 
   const handleTabChange = (key: string) => {

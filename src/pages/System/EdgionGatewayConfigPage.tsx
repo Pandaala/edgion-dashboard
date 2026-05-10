@@ -11,6 +11,7 @@ import { clusterResourceApi } from '@/api/resources'
 import type { K8sResource } from '@/api/types'
 import EdgionGatewayConfigEditor from '@/components/ResourceEditor/EdgionGatewayConfig/EdgionGatewayConfigEditor'
 import { useT } from '@/i18n'
+import PageHeader from '@/components/PageHeader'
 
 const EdgionGatewayConfigPage = () => {
   const t = useT()
@@ -64,10 +65,16 @@ const EdgionGatewayConfigPage = () => {
 
   return (
     <div>
-      <div style={{ marginBottom: 16, display: 'flex', justifyContent: 'space-between' }}>
-        <Button icon={<ReloadOutlined />} onClick={() => refetch()}>{t('btn.refresh')}</Button>
-        <Button type="primary" icon={<PlusOutlined />} onClick={() => openEditor('create')}>{t('btn.create')}</Button>
-      </div>
+      <PageHeader
+        title="EdgionGatewayConfig"
+        subtitle={t('page.subtitle.gatewayConfig')}
+        actions={
+          <>
+            <Button icon={<ReloadOutlined />} onClick={() => refetch()}>{t('btn.refresh')}</Button>
+            <Button type="primary" icon={<PlusOutlined />} onClick={() => openEditor('create')}>{t('btn.create')}</Button>
+          </>
+        }
+      />
       <Table rowKey={(r) => r.metadata.name} columns={columns} dataSource={items}
         loading={isLoading} pagination={{ pageSize: 20 }} size="middle" />
       <EdgionGatewayConfigEditor visible={editorVisible} mode={editorMode} resource={selectedResource}

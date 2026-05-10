@@ -6,6 +6,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { resourceApi } from '@/api/resources'
 import type { K8sResource } from '@/api/types'
 import EdgionTlsEditor from '@/components/ResourceEditor/EdgionTls/EdgionTlsEditor'
+import PageHeader from '@/components/PageHeader'
 import { useT } from '@/i18n'
 
 const { Search } = Input
@@ -109,13 +110,19 @@ const EdgionTlsList = () => {
 
   return (
     <div>
-      <div style={{ marginBottom: 16, display: 'flex', justifyContent: 'space-between' }}>
-        <Space>
-          <Search placeholder={t('ph.searchNameNs')} value={searchText} onChange={(e) => setSearchText(e.target.value)}
-            style={{ width: 240 }} allowClear />
-          <Button icon={<ReloadOutlined />} onClick={() => refetch()}>{t('btn.refresh')}</Button>
-        </Space>
-        <Button type="primary" icon={<PlusOutlined />} onClick={() => openEditor('create')}>{t('btn.create')}</Button>
+      <PageHeader
+        title="EdgionTls"
+        subtitle={t('page.subtitle.tls')}
+        actions={
+          <>
+            <Button icon={<ReloadOutlined />} onClick={() => refetch()}>{t('btn.refresh')}</Button>
+            <Button type="primary" icon={<PlusOutlined />} onClick={() => openEditor('create')}>{t('btn.create')}</Button>
+          </>
+        }
+      />
+      <div style={{ marginBottom: 16 }}>
+        <Search placeholder={t('ph.searchNameNs')} value={searchText} onChange={(e) => setSearchText(e.target.value)}
+          style={{ width: 240 }} allowClear />
       </div>
 
       {selectedRowKeys.length > 0 && (

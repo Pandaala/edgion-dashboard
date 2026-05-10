@@ -3,6 +3,7 @@ import { Table, Button, Space, Tag, Badge, Modal, Typography, message } from 'an
 import { ReloadOutlined } from '@ant-design/icons'
 import { centerApi, type AdminControllerDto } from '@/api/center'
 import { useT } from '@/i18n'
+import PageHeader from '@/components/PageHeader'
 
 const { Text } = Typography
 
@@ -131,28 +132,30 @@ export default function CenterAdminPage() {
 
   return (
     <div>
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
-        <Text strong style={{ fontSize: 16 }}>{t('center.admin.title')}</Text>
-        <Space>
-          <Button icon={<ReloadOutlined />} onClick={() => refetch()}>
-            {t('btn.refresh')}
-          </Button>
-          <Button
-            danger
-            loading={clearCacheMutation.isPending}
-            onClick={handleClearCache}
-          >
-            {t('center.admin.clearCache')}
-          </Button>
-          <Button
-            type="primary"
-            loading={syncMutation.isPending}
-            onClick={() => syncMutation.mutate()}
-          >
-            {t('center.admin.syncAll')}
-          </Button>
-        </Space>
-      </div>
+      <PageHeader
+        title={t('center.admin.title')}
+        actions={
+          <>
+            <Button icon={<ReloadOutlined />} onClick={() => refetch()}>
+              {t('btn.refresh')}
+            </Button>
+            <Button
+              danger
+              loading={clearCacheMutation.isPending}
+              onClick={handleClearCache}
+            >
+              {t('center.admin.clearCache')}
+            </Button>
+            <Button
+              type="primary"
+              loading={syncMutation.isPending}
+              onClick={() => syncMutation.mutate()}
+            >
+              {t('center.admin.syncAll')}
+            </Button>
+          </>
+        }
+      />
 
       <Table
         dataSource={controllers}

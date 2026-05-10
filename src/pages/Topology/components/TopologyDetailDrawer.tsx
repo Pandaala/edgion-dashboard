@@ -94,15 +94,15 @@ export default function TopologyDetailDrawer({ visible, data, onClose }: Props) 
             style={{
               margin: 0,
               padding: '12px 14px',
-              background: '#f6f8fa',
-              border: '1px solid #e8e8e8',
+              background: 'var(--ec-color-bg-subtle)',
+              border: '1px solid var(--ec-color-border)',
               borderRadius: 6,
               fontSize: 12,
               lineHeight: 1.6,
               overflowX: 'auto',
               whiteSpace: 'pre',
-              color: '#24292f',
-              fontFamily: '"SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace',
+              color: 'var(--ec-color-text)',
+              fontFamily: 'var(--ec-font-mono)',
             }}
           >
             {rawYaml}

@@ -6,6 +6,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { resourceApi } from '@/api/resources'
 import type { K8sResource } from '@/api/types'
 import SimpleResourceEditor from '@/components/ResourceEditor/common/SimpleResourceEditor'
+import PageHeader from '@/components/PageHeader'
 import { useT } from '@/i18n'
 
 const { Search } = Input
@@ -94,13 +95,19 @@ const ServiceList = () => {
 
   return (
     <div>
-      <div style={{ marginBottom: 16, display: 'flex', justifyContent: 'space-between' }}>
-        <Space>
-          <Search placeholder={t('ph.searchNameNs')} value={searchText} onChange={(e) => setSearchText(e.target.value)}
-            style={{ width: 240 }} allowClear />
-          <Button icon={<ReloadOutlined />} onClick={() => refetch()}>{t('btn.refresh')}</Button>
-        </Space>
-        <Button type="primary" icon={<PlusOutlined />} onClick={() => openEditor('create')}>{t('btn.create')}</Button>
+      <PageHeader
+        title="Service"
+        subtitle={t('page.subtitle.service')}
+        actions={
+          <>
+            <Button icon={<ReloadOutlined />} onClick={() => refetch()}>{t('btn.refresh')}</Button>
+            <Button type="primary" icon={<PlusOutlined />} onClick={() => openEditor('create')}>{t('btn.create')}</Button>
+          </>
+        }
+      />
+      <div style={{ marginBottom: 16 }}>
+        <Search placeholder={t('ph.searchNameNs')} value={searchText} onChange={(e) => setSearchText(e.target.value)}
+          style={{ width: 240 }} allowClear />
       </div>
       <Table rowKey={(r) => `${r.metadata.namespace}/${r.metadata.name}`} columns={columns}
         dataSource={filtered} loading={isLoading} pagination={{ pageSize: 20, showTotal: (n) => t('table.totalItems', { n }) }} size="middle" />

@@ -86,6 +86,7 @@ export default function TopologyCanvas({ nodes, edges, plugins, gateways, onNode
   const serviceNodes = nodes.filter(n => n.data.kind === 'service')
 
   // route → [serviceId]
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   const routeToSvcs = new Map<string, string[]>()
   for (const edge of edges) {
     const list = routeToSvcs.get(edge.source) ?? []
@@ -234,19 +235,19 @@ export default function TopologyCanvas({ nodes, edges, plugins, gateways, onNode
                         borderLeft: `3px solid ${gwCfg.color}`,
                         borderRadius: 5,
                         padding: '5px 8px',
-                        background: '#fff',
-                        boxShadow: '0 1px 3px rgba(0,0,0,0.05)',
+                        background: 'var(--ec-color-bg-surface)',
+                        boxShadow: 'var(--ec-shadow-sm)',
                         cursor: 'pointer',
                         transition: 'box-shadow 0.15s',
                       }}
                       onMouseEnter={e => (e.currentTarget.style.boxShadow = '0 2px 8px rgba(0,0,0,0.14)')}
                       onMouseLeave={e => (e.currentTarget.style.boxShadow = '0 1px 3px rgba(0,0,0,0.05)')}
                     >
-                      <div style={{ fontSize: 12, fontWeight: 500, color: '#262626', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                      <div style={{ fontSize: 12, fontWeight: 500, color: 'var(--ec-color-text)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                         {ref.name}
                       </div>
                       {ref.namespace && (
-                        <div style={{ fontSize: 10, color: '#aaa' }}>{ref.namespace}</div>
+                        <div style={{ fontSize: 10, color: 'var(--ec-color-text-subtle)' }}>{ref.namespace}</div>
                       )}
                       {ref.sectionName && (
                         <Tag style={{ marginTop: 3, margin: '3px 0 0', fontSize: 10, padding: '0 4px', color: '#52c41a', borderColor: '#52c41a88', background: '#f6ffed' }}>
@@ -259,7 +260,7 @@ export default function TopologyCanvas({ nodes, edges, plugins, gateways, onNode
               </div>
 
               {/* Arrow */}
-              <div style={{ paddingTop: 10, color: '#bfbfbf', flexShrink: 0, fontSize: 13, userSelect: 'none' }}>→</div>
+              <div style={{ paddingTop: 10, color: 'var(--ec-color-text-subtle)', flexShrink: 0, fontSize: 13, userSelect: 'none' }}>→</div>
 
               {/* Route card */}
               <div
@@ -273,8 +274,8 @@ export default function TopologyCanvas({ nodes, edges, plugins, gateways, onNode
                   borderRadius: 6,
                   padding: '8px 12px',
                   cursor: 'pointer',
-                  background: '#fff',
-                  boxShadow: '0 1px 4px rgba(0,0,0,0.06)',
+                  background: 'var(--ec-color-bg-surface)',
+                  boxShadow: 'var(--ec-shadow-sm)',
                   transition: 'box-shadow 0.15s',
                 }}
                 onMouseEnter={e => (e.currentTarget.style.boxShadow = '0 2px 8px rgba(0,0,0,0.14)')}
@@ -290,7 +291,7 @@ export default function TopologyCanvas({ nodes, edges, plugins, gateways, onNode
                 </div>
 
                 {node.data.namespace && (
-                  <div style={{ fontSize: 11, color: '#aaa', marginTop: 2 }}>{node.data.namespace}</div>
+                  <div style={{ fontSize: 11, color: 'var(--ec-color-text-subtle)', marginTop: 2 }}>{node.data.namespace}</div>
                 )}
 
                 {routePlugins.map(plugin => {
@@ -302,19 +303,19 @@ export default function TopologyCanvas({ nodes, edges, plugins, gateways, onNode
                         e.stopPropagation()
                         onNodeClick({ kind: 'edgionplugins', name: plugin.metadata.name, namespace: plugin.metadata.namespace, resource: plugin })
                       }}
-                      style={{ marginTop: 8, border: '1px solid #d9d9d9', borderRadius: 4, overflow: 'hidden', cursor: 'pointer' }}
+                      style={{ marginTop: 8, border: '1px solid var(--ec-color-border)', borderRadius: 4, overflow: 'hidden', cursor: 'pointer' }}
                     >
-                      <div style={{ padding: '3px 8px', background: '#f5f5f5', borderBottom: '1px solid #e8e8e8', display: 'flex', alignItems: 'center', gap: 5 }}>
-                        <span style={{ width: 6, height: 6, borderRadius: 1, background: '#8c8c8c', flexShrink: 0 }} />
-                        <span style={{ fontSize: 10, fontWeight: 600, color: '#595959' }}>EdgionPlugins</span>
-                        <span style={{ fontSize: 10, color: '#8c8c8c' }}>{plugin.metadata.name}</span>
+                      <div style={{ padding: '3px 8px', background: 'var(--ec-color-bg-subtle)', borderBottom: '1px solid var(--ec-color-border)', display: 'flex', alignItems: 'center', gap: 5 }}>
+                        <span style={{ width: 6, height: 6, borderRadius: 1, background: 'var(--ec-color-text-subtle)', flexShrink: 0 }} />
+                        <span style={{ fontSize: 10, fontWeight: 600, color: 'var(--ec-color-text-muted)' }}>EdgionPlugins</span>
+                        <span style={{ fontSize: 10, color: 'var(--ec-color-text-subtle)' }}>{plugin.metadata.name}</span>
                       </div>
-                      <div style={{ padding: '4px 8px', display: 'flex', flexDirection: 'column', gap: 3, background: '#fafafa' }}>
+                      <div style={{ padding: '4px 8px', display: 'flex', flexDirection: 'column', gap: 3, background: 'var(--ec-color-bg-subtle)' }}>
                         {pItems.map((item, i) => (
-                          <div key={`${item.name}-${i}`} style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '2px 6px', background: '#fff', border: '1px solid #f0f0f0', borderRadius: 3, fontSize: 11 }}>
+                          <div key={`${item.name}-${i}`} style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '2px 6px', background: 'var(--ec-color-bg-surface)', border: '1px solid var(--ec-color-border)', borderRadius: 3, fontSize: 11 }}>
                             <span style={{ width: 6, height: 6, borderRadius: '50%', background: PHASE_COLOR[item.phase] ?? '#8c8c8c', flexShrink: 0 }} />
-                            <span style={{ flex: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', color: '#262626' }}>{item.name}</span>
-                            <span style={{ fontSize: 9, color: '#aaa', flexShrink: 0 }}>{PHASE_LABEL[item.phase] ?? item.phase}</span>
+                            <span style={{ flex: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', color: 'var(--ec-color-text)' }}>{item.name}</span>
+                            <span style={{ fontSize: 9, color: 'var(--ec-color-text-subtle)', flexShrink: 0 }}>{PHASE_LABEL[item.phase] ?? item.phase}</span>
                           </div>
                         ))}
                       </div>
@@ -346,8 +347,8 @@ export default function TopologyCanvas({ nodes, edges, plugins, gateways, onNode
                 borderRadius: 6,
                 padding: '8px 12px',
                 cursor: 'pointer',
-                background: '#fff',
-                boxShadow: '0 1px 4px rgba(0,0,0,0.06)',
+                background: 'var(--ec-color-bg-surface)',
+                boxShadow: 'var(--ec-shadow-sm)',
                 transition: 'box-shadow 0.15s',
               }}
               onMouseEnter={e => (e.currentTarget.style.boxShadow = '0 2px 8px rgba(0,0,0,0.14)')}
@@ -364,7 +365,7 @@ export default function TopologyCanvas({ nodes, edges, plugins, gateways, onNode
                 </span>
               </div>
               {node.data.namespace && (
-                <div style={{ fontSize: 11, color: '#aaa', marginTop: 2 }}>{node.data.namespace}</div>
+                <div style={{ fontSize: 11, color: 'var(--ec-color-text-subtle)', marginTop: 2 }}>{node.data.namespace}</div>
               )}
             </div>
           )

@@ -24,6 +24,7 @@ import {
 import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { centerApi, type ControllerSummary } from '@/api/center'
 import { useT } from '@/i18n'
+import PageHeader from '@/components/PageHeader'
 
 function formatLastSync(t: (key: string, params?: Record<string, string | number>) => string, secsAgo: number | null): string {
   if (secsAgo === null) return t('center.never')
@@ -88,12 +89,12 @@ const ControllerCard = ({
     >
       <Row gutter={[8, 8]}>
         <Col span={24}>
-          <span style={{ color: '#888', fontSize: 12 }}>{t('center.cluster')}: </span>
+          <span style={{ color: 'var(--ec-color-text-muted)', fontSize: 12 }}>{t('center.cluster')}: </span>
           <Tag color="blue">{controller.cluster}</Tag>
         </Col>
         {controller.env.length > 0 && (
           <Col span={24}>
-            <span style={{ color: '#888', fontSize: 12 }}>Env: </span>
+            <span style={{ color: 'var(--ec-color-text-muted)', fontSize: 12 }}>Env: </span>
             {controller.env.map((e) => (
               <Tag key={e} color="green">{e}</Tag>
             ))}
@@ -101,7 +102,7 @@ const ControllerCard = ({
         )}
         {controller.tag.length > 0 && (
           <Col span={24}>
-            <span style={{ color: '#888', fontSize: 12 }}>Tags: </span>
+            <span style={{ color: 'var(--ec-color-text-muted)', fontSize: 12 }}>Tags: </span>
             {controller.tag.map((tg) => (
               <Tag key={tg}>{tg}</Tag>
             ))}
@@ -111,12 +112,12 @@ const ControllerCard = ({
           <Statistic
             title={t('center.resourceCount')}
             value={controller.key_count}
-            valueStyle={{ fontSize: 18, color: '#1890ff' }}
+            valueStyle={{ fontSize: 18, color: 'var(--ec-color-brand)' }}
           />
         </Col>
         <Col span={12}>
           <div style={{ paddingTop: 4 }}>
-            <div style={{ color: '#888', fontSize: 12, marginBottom: 4 }}>{t('center.lastSync')}</div>
+            <div style={{ color: 'var(--ec-color-text-muted)', fontSize: 12, marginBottom: 4 }}>{t('center.lastSync')}</div>
             <span style={{ fontSize: 13 }}>
               {formatLastSync(t, controller.last_list_secs_ago)}
             </span>
@@ -140,7 +141,6 @@ export default function CenterDashboard() {
   })
 
   const controllers = data?.data ?? []
-  const totalCount = data?.count ?? controllers.length
   const clusters = [...new Set(controllers.map((c) => c.cluster))].sort()
 
   const filteredControllers = controllers.filter((c) => {
@@ -165,21 +165,14 @@ export default function CenterDashboard() {
 
   return (
     <div>
-      <div
-        style={{
-          display: 'flex',
-          justifyContent: 'space-between',
-          alignItems: 'center',
-          marginBottom: 24,
-        }}
-      >
-        <span style={{ color: '#888', fontSize: 13 }}>
-          {t('center.subtitle', { n: totalCount })}
-        </span>
-        <Button icon={<ReloadOutlined />} onClick={handleRefresh}>
-          {t('btn.refresh')}
-        </Button>
-      </div>
+      <PageHeader
+        title={t('center.title')}
+        actions={
+          <Button icon={<ReloadOutlined />} onClick={handleRefresh}>
+            {t('btn.refresh')}
+          </Button>
+        }
+      />
 
       <Space style={{ marginBottom: 16 }} wrap>
         <Input.Search

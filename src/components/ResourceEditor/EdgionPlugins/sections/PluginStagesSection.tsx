@@ -63,9 +63,9 @@ const PluginStagesSection: React.FC<PluginStagesSectionProps> = ({ value = {} })
             key={index}
             style={{
               padding: '8px 12px',
-              background: '#fafafa',
+              background: 'var(--ec-color-bg-subtle)',
               borderRadius: 4,
-              border: '1px solid #f0f0f0',
+              border: '1px solid var(--ec-color-border)',
               display: 'flex',
               justifyContent: 'space-between',
               alignItems: 'center',
