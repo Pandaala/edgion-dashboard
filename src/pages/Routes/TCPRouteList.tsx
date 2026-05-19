@@ -114,6 +114,7 @@ const TCPRouteList = () => {
         namespace: t('col.namespace'),
         age: t('col.age'),
       },
+      items: routes,
     }),
     {
       title: t('col.backends'),

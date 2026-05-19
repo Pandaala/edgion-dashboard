@@ -93,6 +93,7 @@ const GatewayList = () => {
         namespace: t('col.namespace'),
         age: t('col.age'),
       },
+      items: gateways,
     }),
     {
       title: t('col.gatewayClass'),

@@ -88,6 +88,7 @@ const ServiceList = () => {
         namespace: t('col.namespace'),
         age: t('col.age'),
       },
+      items: services,
     }),
     { title: t('col.type'), key: 'type',
       render: (_: any, r: K8sResource) => <Tag color="blue">{r.spec?.type || 'ClusterIP'}</Tag> },

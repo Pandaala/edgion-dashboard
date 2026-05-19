@@ -1,5 +1,5 @@
 import { apiClient } from './client'
-import { getAppMode } from '@/utils/proxy'
+import { getActiveControllerId } from '@/utils/proxy'
 
 // ---------------------------------------------------------------------------
 // Types
@@ -18,10 +18,19 @@ export interface HashCalcConfig {
   modulo: number
 }
 
-/** ClusterRegionRoute Entry — per-controller data */
+/** ClusterRegionRoute Entry — per-controller data.
+ *
+ * Two wire formats arrive here:
+ *   - Center aggregation (`controllers[ctrlId]` value): uses `pmNamespace`/`pmName`.
+ *   - Controller-side endpoint (single controller view): uses `namespace`/`name`.
+ * Both are kept optional; consumers should read with fallback
+ * `r.pmNamespace ?? r.namespace`.
+ */
 export interface ClusterRegionRouteEntry {
-  pmNamespace: string
-  pmName: string
+  pmNamespace?: string
+  pmName?: string
+  namespace?: string
+  name?: string
   myRegion: string
   regions: RegionDef[]
   keyGet: unknown[]
@@ -38,13 +47,18 @@ export interface CenterClusterRegionRoute {
   controllers: Record<string, ClusterRegionRouteEntry>
 }
 
-/** ServiceRegionRoute Entry — per-controller data */
+/** ServiceRegionRoute Entry — per-controller data.
+ * See [[ClusterRegionRouteEntry]] for the dual-wire-format rationale.
+ */
 export interface ServiceRegionRouteEntry {
-  pmNamespace: string
-  pmName: string
-  clusterPmRef: { namespace: string; name: string }
+  pmNamespace?: string
+  pmName?: string
+  namespace?: string
+  name?: string
+  clusterPmRef?: { namespace: string; name: string }
+  clusterRef?: { namespace: string; name: string }
   regions: Array<{ name: string; failoverTo?: string }>
-  refPlugins: string[]
+  refPlugins: Array<string | { kind?: string; namespace?: string; name?: string }>
 }
 
 /** Center aggregated ServiceRegionRoute */
@@ -73,8 +87,14 @@ export interface ConsistencyResult {
 // Helpers
 // ---------------------------------------------------------------------------
 
+// Pick the path prefix based on viewing context, not backend mode:
+// - When a specific controller is active (apiClient routes via center proxy
+//   to that controller's admin API), the controller's own endpoints use bare
+//   paths like `cluster-region-routes`.
+// - When not in controller view (Center aggregation pages), Center's endpoints
+//   live under `center/`.
 function prefix(): string {
-  return getAppMode() === 'center' ? 'center/' : ''
+  return getActiveControllerId() ? '' : 'center/'
 }
 
 // ---------------------------------------------------------------------------

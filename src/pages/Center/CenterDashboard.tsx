@@ -24,7 +24,6 @@ import {
 import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { centerApi, type ControllerSummary } from '@/api/center'
 import { useT } from '@/i18n'
-import PageHeader from '@/components/PageHeader'
 
 function formatLastSync(t: (key: string, params?: Record<string, string | number>) => string, secsAgo: number | null | undefined): string {
   if (secsAgo === null || secsAgo === undefined) return '—'
@@ -119,7 +118,7 @@ const ControllerCard = ({
           <div style={{ paddingTop: 4 }}>
             <div style={{ color: 'var(--ec-color-text-muted)', fontSize: 12, marginBottom: 4 }}>{t('center.lastSync')}</div>
             <span style={{ fontSize: 13 }}>
-              {formatLastSync(t, controller.last_list_secs_ago)}
+              {formatLastSync(t, controller.last_seen_secs_ago ?? controller.last_list_secs_ago)}
             </span>
           </div>
         </Col>
@@ -165,15 +164,7 @@ export default function CenterDashboard() {
 
   return (
     <div>
-      <PageHeader
-        title={t('center.title')}
-        actions={
-          <Button icon={<ReloadOutlined />} onClick={handleRefresh}>
-            {t('btn.refresh')}
-          </Button>
-        }
-      />
-
+      {/* Title omitted — left sidebar already identifies this view as Center. */}
       <Space style={{ marginBottom: 16 }} wrap>
         <Input.Search
           placeholder={t('center.searchPlaceholder')}
@@ -195,6 +186,9 @@ export default function CenterDashboard() {
             ...clusters.map((c) => ({ value: c, label: c })),
           ]}
         />
+        <Button icon={<ReloadOutlined />} onClick={handleRefresh}>
+          {t('btn.refresh')}
+        </Button>
       </Space>
 
       {isLoading ? (

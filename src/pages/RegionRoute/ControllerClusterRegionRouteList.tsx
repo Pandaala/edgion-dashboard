@@ -2,9 +2,9 @@ import { useState, useMemo } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import {
   Table, Space, Tag, Typography, Spin, Empty, Button,
-  Tooltip, Select, Popover, AutoComplete, message,
+  Tooltip, Select, Popover, AutoComplete, message, Input,
 } from 'antd'
-import { ReloadOutlined } from '@ant-design/icons'
+import { ReloadOutlined, SearchOutlined } from '@ant-design/icons'
 import {
   regionRouteApi,
   type ClusterRegionRouteEntry,
@@ -117,8 +117,8 @@ function RowActions({ entry }: { entry: ClusterRegionRouteEntry }) {
           ) : (
             <FailoverPanel
               regions={entry.regions}
-              namespace={entry.pmNamespace}
-              name={entry.pmName}
+              namespace={(entry.pmNamespace ?? entry.namespace ?? '')}
+              name={(entry.pmName ?? entry.name ?? '')}
               onDone={() => setOpen(false)}
             />
           )}
@@ -194,25 +194,63 @@ export default function ControllerClusterRegionRouteList() {
   const filteredItems = useMemo(() => {
     if (!filter) return allItems
     const lf = filter.toLowerCase()
-    return allItems.filter((item) => `${item.pmNamespace}/${item.pmName}`.toLowerCase().includes(lf))
+    return allItems.filter((item) => `${(item.pmNamespace ?? item.namespace ?? '')}/${(item.pmName ?? item.name ?? '')}`.toLowerCase().includes(lf))
   }, [allItems, filter])
 
   const filterOptions = useMemo(
-    () => [...new Set(allItems.map((i) => `${i.pmNamespace}/${i.pmName}`))]
+    () => [...new Set(allItems.map((i) => `${(i.pmNamespace ?? i.namespace ?? '')}/${(i.pmName ?? i.name ?? '')}`))]
       .filter((v) => !filter || v.toLowerCase().includes(filter.toLowerCase()))
       .map((v) => ({ value: v })),
     [allItems, filter],
+  )
+
+  const filterIcon = (filtered: boolean) => (
+    <SearchOutlined style={{ color: filtered ? 'var(--ec-color-brand)' : undefined }} />
+  )
+  const searchDropdown = (placeholder: string) => ({ setSelectedKeys, selectedKeys, confirm, clearFilters }: {
+    setSelectedKeys: (keys: React.Key[]) => void
+    selectedKeys: React.Key[]
+    confirm: () => void
+    clearFilters?: () => void
+  }) => (
+    <div style={{ padding: 8 }} onKeyDown={(e) => e.stopPropagation()}>
+      <Input
+        autoFocus
+        placeholder={placeholder}
+        value={selectedKeys[0] as string | undefined}
+        onChange={(e) => setSelectedKeys(e.target.value ? [e.target.value] : [])}
+        onPressEnter={() => confirm()}
+        style={{ marginBottom: 8, display: 'block', width: 200 }}
+      />
+      <Space>
+        <Button type="primary" size="small" onClick={() => confirm()}>Search</Button>
+        <Button size="small" onClick={() => { clearFilters?.(); confirm() }}>Reset</Button>
+      </Space>
+    </div>
   )
 
   const columns = useMemo(() => [
     {
       title: t('center.clusterRoute.name'),
       key: 'name',
-      render: (_: unknown, r: ClusterRegionRouteEntry) => <Text strong>{r.pmNamespace}/{r.pmName}</Text>,
+      sorter: (a: ClusterRegionRouteEntry, b: ClusterRegionRouteEntry) => {
+        const an = `${a.pmNamespace ?? a.namespace ?? ''}/${a.pmName ?? a.name ?? ''}`
+        const bn = `${b.pmNamespace ?? b.namespace ?? ''}/${b.pmName ?? b.name ?? ''}`
+        return an.localeCompare(bn)
+      },
+      filterDropdown: searchDropdown('Search namespace/name'),
+      filterIcon,
+      onFilter: (value: React.Key | boolean, r: ClusterRegionRouteEntry) => {
+        const full = `${r.pmNamespace ?? r.namespace ?? ''}/${r.pmName ?? r.name ?? ''}`
+        return full.toLowerCase().includes(String(value).toLowerCase())
+      },
+      render: (_: unknown, r: ClusterRegionRouteEntry) => <Text strong>{(r.pmNamespace ?? r.namespace ?? '')}/{(r.pmName ?? r.name ?? '')}</Text>,
     },
     {
       title: t('center.regionRoute.myRegion'),
       key: 'myRegion',
+      filters: [...new Set(allItems.map((i) => i.myRegion).filter(Boolean))].sort().map((v) => ({ text: v, value: v })),
+      onFilter: (value: React.Key | boolean, r: ClusterRegionRouteEntry) => r.myRegion === value,
       render: (_: unknown, r: ClusterRegionRouteEntry) => <Tag color="green">{r.myRegion}</Tag>,
     },
     {
@@ -235,7 +273,7 @@ export default function ControllerClusterRegionRouteList() {
       key: 'actions',
       render: (_: unknown, r: ClusterRegionRouteEntry) => <RowActions entry={r} />,
     },
-  ], [t])
+  ], [t, allItems])
 
   return (
     <div>
@@ -260,7 +298,7 @@ export default function ControllerClusterRegionRouteList() {
         <Table
           dataSource={filteredItems}
           columns={columns}
-          rowKey={(r) => `${r.pmNamespace}/${r.pmName}`}
+          rowKey={(r) => `${(r.pmNamespace ?? r.namespace ?? '')}/${(r.pmName ?? r.name ?? '')}`}
           pagination={{ pageSize: 10, showTotal: (n) => t('table.totalItems', { n }) }}
           expandable={{
             expandedRowRender: (record) => <ExpandedDetail entry={record} />,

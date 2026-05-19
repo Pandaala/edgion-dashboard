@@ -2,9 +2,9 @@ import { useState, useMemo } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import {
   Table, Space, Tag, Typography, Spin, Empty, Button,
-  Collapse, Alert, Popover, AutoComplete, message, Select,
+  Collapse, Alert, Popover, AutoComplete, message, Select, Input,
 } from 'antd'
-import { ReloadOutlined, WarningOutlined } from '@ant-design/icons'
+import { ReloadOutlined, WarningOutlined, SearchOutlined } from '@ant-design/icons'
 import {
   regionRouteApi,
   type CenterServiceRegionRoute,
@@ -257,7 +257,10 @@ function ExpandedDetail({
                   <div>
                     <Text type="secondary" style={{ fontSize: 12 }}>Ref Plugins</Text>
                     <div style={{ marginTop: 4 }}>
-                      <Space wrap>{entry.refPlugins.map((p, i) => <Tag key={i} color="purple">{p}</Tag>)}</Space>
+                      <Space wrap>{entry.refPlugins.map((p, i) => {
+                        const label = typeof p === 'string' ? p : `${p.namespace ?? ''}/${p.name ?? ''}`
+                        return <Tag key={i} color="purple">{label}</Tag>
+                      })}</Space>
                     </div>
                   </div>
                 )}
@@ -312,15 +315,49 @@ export default function ServiceRegionRouteList() {
     [allItems, filter],
   )
 
+  const stringSearchDropdown = (placeholder: string) => ({ setSelectedKeys, selectedKeys, confirm, clearFilters }: {
+    setSelectedKeys: (keys: React.Key[]) => void
+    selectedKeys: React.Key[]
+    confirm: () => void
+    clearFilters?: () => void
+  }) => (
+    <div style={{ padding: 8 }} onKeyDown={(e) => e.stopPropagation()}>
+      <Input
+        autoFocus
+        placeholder={placeholder}
+        value={selectedKeys[0] as string | undefined}
+        onChange={(e) => setSelectedKeys(e.target.value ? [e.target.value] : [])}
+        onPressEnter={() => confirm()}
+        style={{ marginBottom: 8, display: 'block', width: 200 }}
+      />
+      <Space>
+        <Button type="primary" size="small" onClick={() => confirm()}>Search</Button>
+        <Button size="small" onClick={() => { clearFilters?.(); confirm() }}>Reset</Button>
+      </Space>
+    </div>
+  )
+
   const columns = useMemo(() => [
     {
       title: <>Service <span style={{ fontSize: 11, color: 'var(--ec-color-text-subtle)', fontWeight: 'normal' }}>(Namespace/Name)</span></>,
       key: 'name',
+      sorter: (a: CenterServiceRegionRoute, b: CenterServiceRegionRoute) =>
+        `${a.namespace}/${a.name}`.localeCompare(`${b.namespace}/${b.name}`),
+      filterDropdown: stringSearchDropdown('Search namespace/name'),
+      filterIcon: (filtered: boolean) => <SearchOutlined style={{ color: filtered ? 'var(--ec-color-brand)' : undefined }} />,
+      onFilter: (value: React.Key | boolean, r: CenterServiceRegionRoute) =>
+        `${r.namespace}/${r.name}`.toLowerCase().includes(String(value).toLowerCase()),
       render: (_: unknown, r: CenterServiceRegionRoute) => <Text strong>{r.namespace}/{r.name}</Text>,
     },
     {
       title: <>Cluster <span style={{ fontSize: 11, color: 'var(--ec-color-text-subtle)', fontWeight: 'normal' }}>(Namespace/Name)</span></>,
       key: 'clusterRef',
+      filterDropdown: stringSearchDropdown('Search cluster ref'),
+      filterIcon: (filtered: boolean) => <SearchOutlined style={{ color: filtered ? 'var(--ec-color-brand)' : undefined }} />,
+      onFilter: (value: React.Key | boolean, r: CenterServiceRegionRoute) => {
+        if (!r.clusterRef) return false
+        return `${r.clusterRef.namespace}/${r.clusterRef.name}`.toLowerCase().includes(String(value).toLowerCase())
+      },
       render: (_: unknown, r: CenterServiceRegionRoute) => (
         r.clusterRef ? <Text>{r.clusterRef.namespace}/{r.clusterRef.name}</Text> : <Text type="secondary">—</Text>
       ),

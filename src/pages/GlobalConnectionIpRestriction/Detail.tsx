@@ -15,11 +15,14 @@ import {
 const { Text } = Typography
 
 export default function GlobalConnectionIpRestrictionDetail() {
-  const { namespace, name, controllerId } = useParams<{
+  const { namespace, name, controllerId: rawControllerId } = useParams<{
     namespace: string
     name: string
     controllerId: string
   }>()
+  // List.tsx encoded '/' as '~' to fit a single URL segment; decode back so the
+  // raw form ("cluster-east/ctrl-01") matches the controllers-map keys.
+  const controllerId = rawControllerId?.replace(/~/g, '/')
   const navigate = useNavigate()
   const queryClient = useQueryClient()
   const [editing, setEditing] = useState(false)

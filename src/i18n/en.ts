@@ -174,9 +174,9 @@ const en = {
   'confirm.okText': 'Confirm Delete',
 
   // Search placeholders
-  'ph.searchNameNs': 'Search by name/namespace',
+  'ph.searchNameNs': 'Quick search...',
   'ph.searchName': 'Search by name',
-  'ph.searchNameNsService': 'Search name/namespace/service',
+  'ph.searchNameNsService': 'Quick search...',
   'ph.dataKey': 'e.g. tls.crt',
   'ph.dataValue': 'Base64 encoded value',
 

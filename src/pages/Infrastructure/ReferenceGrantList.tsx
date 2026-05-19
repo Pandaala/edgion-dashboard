@@ -71,6 +71,7 @@ const ReferenceGrantList = () => {
         namespace: t('col.namespace'),
         age: t('col.age'),
       },
+      items: grants,
     }),
     {
       title: t('col.from'), key: 'from',

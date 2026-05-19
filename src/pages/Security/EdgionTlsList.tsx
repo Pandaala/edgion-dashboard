@@ -93,6 +93,7 @@ const EdgionTlsList = () => {
         namespace: t('col.namespace'),
         age: t('col.age'),
       },
+      items: tlsList,
     }),
     {
       title: 'Hosts',

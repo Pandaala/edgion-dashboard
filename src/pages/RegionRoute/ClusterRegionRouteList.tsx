@@ -2,9 +2,9 @@ import { useState, useMemo } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import {
   Table, Space, Tag, Typography, Spin, Empty, Button,
-  Collapse, Alert, Tooltip, Select, Popover, AutoComplete, message,
+  Collapse, Alert, Tooltip, Select, Popover, AutoComplete, message, Input,
 } from 'antd'
-import { ReloadOutlined, WarningOutlined } from '@ant-design/icons'
+import { ReloadOutlined, WarningOutlined, SearchOutlined } from '@ant-design/icons'
 import {
   regionRouteApi,
   type CenterClusterRegionRoute,
@@ -376,6 +376,32 @@ export default function ClusterRegionRouteList() {
     {
       title: <>Cluster <span style={{ fontSize: 11, color: 'var(--ec-color-text-subtle)', fontWeight: 'normal' }}>(Namespace/Name)</span></>,
       key: 'name',
+      sorter: (a: CenterClusterRegionRoute, b: CenterClusterRegionRoute) =>
+        `${a.namespace}/${a.name}`.localeCompare(`${b.namespace}/${b.name}`),
+      filterDropdown: ({ setSelectedKeys, selectedKeys, confirm, clearFilters }: {
+        setSelectedKeys: (keys: React.Key[]) => void
+        selectedKeys: React.Key[]
+        confirm: () => void
+        clearFilters?: () => void
+      }) => (
+        <div style={{ padding: 8 }} onKeyDown={(e) => e.stopPropagation()}>
+          <Input
+            autoFocus
+            placeholder="Search namespace/name"
+            value={selectedKeys[0] as string | undefined}
+            onChange={(e) => setSelectedKeys(e.target.value ? [e.target.value] : [])}
+            onPressEnter={() => confirm()}
+            style={{ marginBottom: 8, display: 'block', width: 200 }}
+          />
+          <Space>
+            <Button type="primary" size="small" onClick={() => confirm()}>Search</Button>
+            <Button size="small" onClick={() => { clearFilters?.(); confirm() }}>Reset</Button>
+          </Space>
+        </div>
+      ),
+      filterIcon: (filtered: boolean) => <SearchOutlined style={{ color: filtered ? 'var(--ec-color-brand)' : undefined }} />,
+      onFilter: (value: React.Key | boolean, r: CenterClusterRegionRoute) =>
+        `${r.namespace}/${r.name}`.toLowerCase().includes(String(value).toLowerCase()),
       render: (_: unknown, r: CenterClusterRegionRoute) => <Text strong>{r.namespace}/{r.name}</Text>,
     },
     {

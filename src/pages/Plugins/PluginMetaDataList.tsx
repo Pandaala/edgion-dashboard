@@ -63,6 +63,7 @@ const PluginMetaDataList = () => {
         namespace: t('col.namespace'),
         age: t('col.age'),
       },
+      items: pluginMetas,
     }),
     { title: t('col.description'), key: 'desc', render: (_: any, r: K8sResource) => r.spec?.description || '-' },
     {

@@ -129,6 +129,7 @@ const EdgionPluginsList = () => {
         namespace: t('col.namespace'),
         age: t('col.age'),
       },
+      items: plugins,
     }),
     {
       title: t('col.totalPlugins'),

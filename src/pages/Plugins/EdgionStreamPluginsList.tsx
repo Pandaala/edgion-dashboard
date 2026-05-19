@@ -93,6 +93,7 @@ const EdgionStreamPluginsList = () => {
         namespace: t('col.namespace'),
         age: t('col.age'),
       },
+      items: streamPlugins,
     }),
     {
       title: t('col.plugins'), key: 'plugins',

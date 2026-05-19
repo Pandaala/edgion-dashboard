@@ -95,6 +95,7 @@ const EndpointSliceList = () => {
         namespace: t('col.namespace'),
         age: t('col.age'),
       },
+      items: epSlices,
     }),
     {
       title: t('col.assocService'), key: 'service',

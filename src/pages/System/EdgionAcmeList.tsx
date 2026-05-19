@@ -77,6 +77,7 @@ const EdgionAcmeList = () => {
         namespace: t('col.namespace'),
         age: t('col.age'),
       },
+      items: acmeList,
     }),
     { title: t('col.domains'), key: 'domains',
       render: (_: any, r: K8sResource) => (

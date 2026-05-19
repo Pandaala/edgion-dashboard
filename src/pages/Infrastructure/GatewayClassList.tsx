@@ -55,6 +55,7 @@ const GatewayClassList = () => {
     ...getResourceMetaColumns<K8sResource>({
       namespaced: false,
       titles: { name: t('col.name'), namespace: '', age: t('col.age') },
+      items: gatewayClasses,
     }),
     { title: t('col.controller'), key: 'controller',
       render: (_: any, r: K8sResource) => <Tag color="blue">{r.spec?.controllerName || '-'}</Tag> },

@@ -97,6 +97,7 @@ const SecretList = () => {
         namespace: t('col.namespace'),
         age: t('col.age'),
       },
+      items: secrets,
     }),
     { title: t('col.type'), key: 'type',
       render: (_: any, r: K8sResource) => {

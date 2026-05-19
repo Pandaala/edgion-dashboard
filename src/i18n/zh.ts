@@ -174,9 +174,9 @@ const zh = {
   'confirm.okText': '确认删除',
 
   // Search placeholders
-  'ph.searchNameNs': '搜索名称/命名空间',
+  'ph.searchNameNs': '快速搜索...',
   'ph.searchName': '搜索名称',
-  'ph.searchNameNsService': '搜索名称/命名空间/Service',
+  'ph.searchNameNsService': '快速搜索...',
   'ph.dataKey': '例如 tls.crt',
   'ph.dataValue': 'Base64 编码的值',
 

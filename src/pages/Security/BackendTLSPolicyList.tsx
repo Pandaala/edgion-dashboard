@@ -71,6 +71,7 @@ const BackendTLSPolicyList = () => {
         namespace: t('col.namespace'),
         age: t('col.age'),
       },
+      items: policies,
     }),
     {
       title: t('col.targetService'), key: 'target',

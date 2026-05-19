@@ -2,9 +2,9 @@ import { useState, useMemo } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import {
   Table, Space, Tag, Typography, Spin, Empty, Button,
-  Select, Popover, AutoComplete, message,
+  Select, Popover, AutoComplete, message, Input,
 } from 'antd'
-import { ReloadOutlined } from '@ant-design/icons'
+import { ReloadOutlined, SearchOutlined } from '@ant-design/icons'
 import {
   regionRouteApi,
   type ServiceRegionRouteEntry,
@@ -114,8 +114,8 @@ function RowActions({ entry }: { entry: ServiceRegionRouteEntry }) {
           ) : (
             <FailoverPanel
               regions={entry.regions}
-              namespace={entry.pmNamespace}
-              name={entry.pmName}
+              namespace={(entry.pmNamespace ?? entry.namespace ?? '')}
+              name={(entry.pmName ?? entry.name ?? '')}
               onDone={() => setOpen(false)}
             />
           )}
@@ -150,7 +150,11 @@ function ExpandedDetail({ entry }: { entry: ServiceRegionRouteEntry }) {
         <div>
           <Text type="secondary" style={{ fontSize: 12 }}>Ref Plugins</Text>
           <div style={{ marginTop: 4 }}>
-            <Space wrap>{entry.refPlugins.map((p, i) => <Tag key={i} color="purple">{p}</Tag>)}</Space>
+            <Space wrap>{entry.refPlugins.map((p, i) => {
+              // Controller-side wire returns objects ({kind, namespace, name}); Center wire returns strings.
+              const label = typeof p === 'string' ? p : `${p.namespace ?? ''}/${p.name ?? ''}`
+              return <Tag key={i} color="purple">{label}</Tag>
+            })}</Space>
           </div>
         </div>
       )}
@@ -177,27 +181,74 @@ export default function ControllerServiceRegionRouteList() {
   const filteredItems = useMemo(() => {
     if (!filter) return allItems
     const lf = filter.toLowerCase()
-    return allItems.filter((item) => `${item.pmNamespace}/${item.pmName}`.toLowerCase().includes(lf))
+    return allItems.filter((item) => `${(item.pmNamespace ?? item.namespace ?? '')}/${(item.pmName ?? item.name ?? '')}`.toLowerCase().includes(lf))
   }, [allItems, filter])
 
   const filterOptions = useMemo(
-    () => [...new Set(allItems.map((i) => `${i.pmNamespace}/${i.pmName}`))]
+    () => [...new Set(allItems.map((i) => `${(i.pmNamespace ?? i.namespace ?? '')}/${(i.pmName ?? i.name ?? '')}`))]
       .filter((v) => !filter || v.toLowerCase().includes(filter.toLowerCase()))
       .map((v) => ({ value: v })),
     [allItems, filter],
+  )
+
+  const filterIcon = (filtered: boolean) => (
+    <SearchOutlined style={{ color: filtered ? 'var(--ec-color-brand)' : undefined }} />
+  )
+  const searchDropdown = (placeholder: string) => ({ setSelectedKeys, selectedKeys, confirm, clearFilters }: {
+    setSelectedKeys: (keys: React.Key[]) => void
+    selectedKeys: React.Key[]
+    confirm: () => void
+    clearFilters?: () => void
+  }) => (
+    <div style={{ padding: 8 }} onKeyDown={(e) => e.stopPropagation()}>
+      <Input
+        autoFocus
+        placeholder={placeholder}
+        value={selectedKeys[0] as string | undefined}
+        onChange={(e) => setSelectedKeys(e.target.value ? [e.target.value] : [])}
+        onPressEnter={() => confirm()}
+        style={{ marginBottom: 8, display: 'block', width: 200 }}
+      />
+      <Space>
+        <Button type="primary" size="small" onClick={() => confirm()}>Search</Button>
+        <Button size="small" onClick={() => { clearFilters?.(); confirm() }}>Reset</Button>
+      </Space>
+    </div>
   )
 
   const columns = useMemo(() => [
     {
       title: t('center.regionRoute.pmName'),
       key: 'name',
-      render: (_: unknown, r: ServiceRegionRouteEntry) => <Text strong>{r.pmNamespace}/{r.pmName}</Text>,
+      sorter: (a: ServiceRegionRouteEntry, b: ServiceRegionRouteEntry) => {
+        const an = `${a.pmNamespace ?? a.namespace ?? ''}/${a.pmName ?? a.name ?? ''}`
+        const bn = `${b.pmNamespace ?? b.namespace ?? ''}/${b.pmName ?? b.name ?? ''}`
+        return an.localeCompare(bn)
+      },
+      filterDropdown: searchDropdown('Search namespace/name'),
+      filterIcon,
+      onFilter: (value: React.Key | boolean, r: ServiceRegionRouteEntry) => {
+        const full = `${r.pmNamespace ?? r.namespace ?? ''}/${r.pmName ?? r.name ?? ''}`
+        return full.toLowerCase().includes(String(value).toLowerCase())
+      },
+      render: (_: unknown, r: ServiceRegionRouteEntry) => <Text strong>{(r.pmNamespace ?? r.namespace ?? '')}/{(r.pmName ?? r.name ?? '')}</Text>,
     },
     {
       title: 'Cluster Ref',
       key: 'clusterRef',
+      filterDropdown: searchDropdown('Search cluster ref'),
+      filterIcon,
+      onFilter: (value: React.Key | boolean, r: ServiceRegionRouteEntry) => {
+        const ref = r.clusterPmRef ?? r.clusterRef
+        if (!ref) return false
+        return `${ref.namespace}/${ref.name}`.toLowerCase().includes(String(value).toLowerCase())
+      },
       render: (_: unknown, r: ServiceRegionRouteEntry) => (
-        <Text>{r.clusterPmRef.namespace}/{r.clusterPmRef.name}</Text>
+        (() => {
+          // Defensive: broken-ref entries from controller-side wire may omit clusterRef.
+          const ref = r.clusterPmRef ?? r.clusterRef
+          return ref ? <Text>{ref.namespace}/{ref.name}</Text> : <Text type="secondary">—</Text>
+        })()
       ),
     },
     {
@@ -243,7 +294,7 @@ export default function ControllerServiceRegionRouteList() {
         <Table
           dataSource={filteredItems}
           columns={columns}
-          rowKey={(r) => `${r.pmNamespace}/${r.pmName}`}
+          rowKey={(r) => `${(r.pmNamespace ?? r.namespace ?? '')}/${(r.pmName ?? r.name ?? '')}`}
           pagination={{ pageSize: 10, showTotal: (n) => t('table.totalItems', { n }) }}
           expandable={{
             expandedRowRender: (record) => <ExpandedDetail entry={record} />,
