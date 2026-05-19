@@ -458,6 +458,7 @@ const en = {
   'center.nav.region': 'Cluster',
   'center.nav.servicePm': 'Service',
   'center.nav.admin': 'Admin',
+  'center.nav.globalIpRestrictions': 'Global IP Restrictions',
   'center.regionRoute.subtitle': '{n} service region route(s)',
   'center.regionRoute.pmName': 'Service PM Name',
   'center.regionRoute.namespace': 'Namespace',

@@ -26,8 +26,8 @@ import { centerApi, type ControllerSummary } from '@/api/center'
 import { useT } from '@/i18n'
 import PageHeader from '@/components/PageHeader'
 
-function formatLastSync(t: (key: string, params?: Record<string, string | number>) => string, secsAgo: number | null): string {
-  if (secsAgo === null) return t('center.never')
+function formatLastSync(t: (key: string, params?: Record<string, string | number>) => string, secsAgo: number | null | undefined): string {
+  if (secsAgo === null || secsAgo === undefined) return '—'
   if (secsAgo < 60) return t('center.secsAgo', { n: secsAgo })
   if (secsAgo < 3600) return t('center.minsAgo', { n: Math.floor(secsAgo / 60) })
   return t('center.hoursAgo', { n: Math.floor(secsAgo / 3600) })
@@ -111,7 +111,7 @@ const ControllerCard = ({
         <Col span={12}>
           <Statistic
             title={t('center.resourceCount')}
-            value={controller.key_count}
+            value={controller.key_count ?? '—'}
             valueStyle={{ fontSize: 18, color: 'var(--ec-color-brand)' }}
           />
         </Col>

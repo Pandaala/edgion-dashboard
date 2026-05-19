@@ -10,7 +10,10 @@ import {
   ClusterOutlined,
   LinkOutlined,
   LockOutlined,
+  SettingOutlined,
 } from '@ant-design/icons'
+
+export type AppMode = 'center' | 'controller'
 
 export interface MenuLeaf {
   kind: 'item'
@@ -32,7 +35,7 @@ export interface MenuSection {
   children: (MenuGroup | MenuLeaf)[]
 }
 
-export const menuConfig: MenuSection[] = [
+export const controllerMenu: MenuSection[] = [
   {
     kind: 'section',
     labelKey: 'nav.section.user',
@@ -109,3 +112,32 @@ export const menuConfig: MenuSection[] = [
     ],
   },
 ]
+
+// Single flat section: Center has no User/Ops split — it manages a fleet of controllers.
+export const centerMenu: MenuSection[] = [
+  {
+    kind: 'section',
+    labelKey: 'center.title',
+    children: [
+      { kind: 'item', key: 'center-controllers', labelKey: 'center.nav.controllers',
+        path: '/', icon: <ClusterOutlined /> },
+      {
+        kind: 'group',
+        labelKey: 'center.nav.regionRoutes',
+        children: [
+          { kind: 'item', key: 'center-rr-cluster', labelKey: 'center.nav.region',
+            path: '/region-routes/cluster', icon: <ShareAltOutlined /> },
+          { kind: 'item', key: 'center-rr-service', labelKey: 'center.nav.servicePm',
+            path: '/region-routes/service', icon: <ShareAltOutlined /> },
+        ],
+      },
+      { kind: 'item', key: 'center-gipr', labelKey: 'center.nav.globalIpRestrictions',
+        path: '/global-connection-ip-restrictions', icon: <SafetyOutlined /> },
+      { kind: 'item', key: 'center-admin', labelKey: 'center.nav.admin',
+        path: '/admin', icon: <SettingOutlined /> },
+    ],
+  },
+]
+
+export const getMenuByMode = (mode: AppMode): MenuSection[] =>
+  mode === 'center' ? centerMenu : controllerMenu

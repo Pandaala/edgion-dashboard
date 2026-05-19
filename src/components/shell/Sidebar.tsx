@@ -1,15 +1,17 @@
 import { useNavigate, useLocation, useParams } from 'react-router-dom'
 import { useT } from '@/i18n'
-import { menuConfig } from './menuConfig'
+import { getMenuByMode, type AppMode } from './menuConfig'
 import { SidebarSection } from './SidebarSection'
 import { SidebarGroup } from './SidebarGroup'
 import { SidebarItem } from './SidebarItem'
 
 interface SidebarProps {
   collapsed: boolean
+  mode?: AppMode
 }
 
-export const Sidebar = ({ collapsed }: SidebarProps) => {
+export const Sidebar = ({ collapsed, mode = 'controller' }: SidebarProps) => {
+  const menuConfig = getMenuByMode(mode)
   const navigate = useNavigate()
   const location = useLocation()
   const t = useT()

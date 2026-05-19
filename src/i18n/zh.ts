@@ -458,6 +458,7 @@ const zh = {
   'center.nav.region': 'Cluster',
   'center.nav.servicePm': 'Service',
   'center.nav.admin': '管理',
+  'center.nav.globalIpRestrictions': '全局 IP 限制',
   'center.regionRoute.subtitle': '共 {n} 个服务区域路由',
   'center.regionRoute.pmName': '服务 PM 名称',
   'center.regionRoute.namespace': '命名空间',

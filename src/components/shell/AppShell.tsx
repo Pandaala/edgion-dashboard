@@ -2,12 +2,17 @@ import { useState } from 'react'
 import { Outlet } from 'react-router-dom'
 import { Sidebar } from './Sidebar'
 import { TopBar } from './TopBar'
+import type { AppMode } from './menuConfig'
 
-export const AppShell = () => {
+interface AppShellProps {
+  mode?: AppMode
+}
+
+export const AppShell = ({ mode = 'controller' }: AppShellProps) => {
   const [collapsed, setCollapsed] = useState(false)
   return (
     <div style={{ display: 'flex', minHeight: '100vh', background: 'var(--ec-color-bg-base)' }}>
-      <Sidebar collapsed={collapsed} />
+      <Sidebar collapsed={collapsed} mode={mode} />
       <div style={{ flex: 1, display: 'flex', flexDirection: 'column', minWidth: 0 }}>
         <TopBar collapsed={collapsed} onToggleCollapse={() => setCollapsed((c) => !c)} />
         <main
