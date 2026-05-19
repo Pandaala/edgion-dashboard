@@ -1,13 +1,43 @@
 import { apiClient } from './client'
-import type { ApiResponse, ListResponse, K8sResource, ResourceKind } from './types'
+import type { ApiResponse, ListResponse, K8sResource, ResourceKey, ResourceKind } from './types'
 import * as yaml from 'js-yaml'
 
 export const resourceApi = {
   /**
-   * List all resources of a kind (across all namespaces)
+   * List all resources of a kind (across all namespaces).
+   * Supports K8s-style cursor pagination via `limit` + `continue` query params.
    */
-  listAll: async <T extends K8sResource>(kind: ResourceKind): Promise<ListResponse<T>> => {
-    const { data } = await apiClient.get(`/namespaced/${kind}`)
+  listAll: async <T extends K8sResource>(
+    kind: ResourceKind,
+    options: { limit?: number; continue?: string } = {}
+  ): Promise<ListResponse<T>> => {
+    const params = new URLSearchParams()
+    if (options.limit) params.set('limit', String(options.limit))
+    if (options.continue) params.set('continue', options.continue)
+    const qs = params.toString() ? `?${params.toString()}` : ''
+    const { data } = await apiClient.get(`/namespaced/${kind}${qs}`)
+    return data
+  },
+
+  /**
+   * List metadata-only resource keys (no spec/status).
+   *
+   * Hits `/api/v1/keys/namespaced/{kind}[/{namespace}]`. Supports K8s-style
+   * pagination via `limit` + `continue`. Use when only metadata is needed —
+   * Topology and pages reading `record.spec.*` stay on `listAll` / `list`.
+   */
+  listKeys: async (
+    kind: ResourceKind,
+    options: { namespace?: string; limit?: number; continue?: string } = {}
+  ): Promise<ListResponse<ResourceKey>> => {
+    const params = new URLSearchParams()
+    if (options.limit) params.set('limit', String(options.limit))
+    if (options.continue) params.set('continue', options.continue)
+    const qs = params.toString() ? `?${params.toString()}` : ''
+    const path = options.namespace
+      ? `/keys/namespaced/${kind}/${options.namespace}${qs}`
+      : `/keys/namespaced/${kind}${qs}`
+    const { data } = await apiClient.get(path)
     return data
   },
 
@@ -92,8 +122,32 @@ export const resourceApi = {
 
 // Cluster-scoped resources API
 export const clusterResourceApi = {
-  listAll: async <T extends K8sResource>(kind: ResourceKind): Promise<ListResponse<T>> => {
-    const { data } = await apiClient.get(`/cluster/${kind}`)
+  listAll: async <T extends K8sResource>(
+    kind: ResourceKind,
+    options: { limit?: number; continue?: string } = {}
+  ): Promise<ListResponse<T>> => {
+    const params = new URLSearchParams()
+    if (options.limit) params.set('limit', String(options.limit))
+    if (options.continue) params.set('continue', options.continue)
+    const qs = params.toString() ? `?${params.toString()}` : ''
+    const { data } = await apiClient.get(`/cluster/${kind}${qs}`)
+    return data
+  },
+
+  /**
+   * List metadata-only resource keys for a cluster-scoped kind.
+   *
+   * Hits `/api/v1/keys/cluster/{kind}` with K8s-style `limit` + `continue`.
+   */
+  listKeys: async (
+    kind: ResourceKind,
+    options: { limit?: number; continue?: string } = {}
+  ): Promise<ListResponse<ResourceKey>> => {
+    const params = new URLSearchParams()
+    if (options.limit) params.set('limit', String(options.limit))
+    if (options.continue) params.set('continue', options.continue)
+    const qs = params.toString() ? `?${params.toString()}` : ''
+    const { data } = await apiClient.get(`/keys/cluster/${kind}${qs}`)
     return data
   },
 

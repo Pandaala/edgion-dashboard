@@ -2,12 +2,16 @@ import { useState } from 'react'
 import { Table, Button, Space, Input, Tag, Modal, message } from 'antd'
 import { PlusOutlined, ReloadOutlined, EyeOutlined, EditOutlined, DeleteOutlined } from '@ant-design/icons'
 import { useParams } from 'react-router-dom'
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
+import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { resourceApi } from '@/api/resources'
 import type { K8sResource } from '@/api/types'
 import EdgionTlsEditor from '@/components/ResourceEditor/EdgionTls/EdgionTlsEditor'
 import PageHeader from '@/components/PageHeader'
 import { useT } from '@/i18n'
+import { useResourceList } from '@/hooks/useResourceList'
+import { getResourceMetaColumns } from '@/components/resource/resourceMetaColumns'
+import SearchScopeHint from '@/components/resource/SearchScopeHint'
+import ResourceListError from '@/components/resource/ResourceListError'
 
 const { Search } = Input
 
@@ -21,15 +25,26 @@ const EdgionTlsList = () => {
   const queryClient = useQueryClient()
   const { controllerId } = useParams<{ controllerId?: string }>()
 
-  const { data, isLoading, refetch } = useQuery({
-    queryKey: ['edgiontls', controllerId ?? ''],
-    queryFn: () => resourceApi.listAll<K8sResource>('edgiontls'),
+  const {
+    items: tlsList,
+    isLoading,
+    error,
+    refetch,
+    fetchNextPage,
+    hasNextPage,
+    isFetchingNextPage,
+  } = useResourceList<K8sResource>('edgiontls', {
+    namespaced: true,
+    scope: controllerId ?? null,
   })
 
   const deleteMutation = useMutation({
     mutationFn: ({ namespace, name }: { namespace: string; name: string }) =>
       resourceApi.delete('edgiontls', namespace, name),
-    onSuccess: () => { message.success(t('msg.deleteOk')); queryClient.invalidateQueries({ queryKey: ['edgiontls', controllerId ?? ''] }) },
+    onSuccess: () => {
+      message.success(t('msg.deleteOk'))
+      queryClient.invalidateQueries({ queryKey: ['resource-list', 'edgiontls'] })
+    },
   })
 
   const batchDeleteMutation = useMutation({
@@ -38,12 +53,11 @@ const EdgionTlsList = () => {
     onSuccess: () => {
       message.success(t('msg.batchDeleteOk', { n: selectedRowKeys.length }))
       setSelectedRowKeys([])
-      queryClient.invalidateQueries({ queryKey: ['edgiontls', controllerId ?? ''] })
+      queryClient.invalidateQueries({ queryKey: ['resource-list', 'edgiontls'] })
     },
   })
 
-  const items = data?.data || []
-  const filtered = items.filter((r) => {
+  const filtered = tlsList.filter((r) => {
     const s = searchText.toLowerCase()
     return r.metadata.name.toLowerCase().includes(s) || r.metadata.namespace?.toLowerCase().includes(s)
   })
@@ -72,8 +86,14 @@ const EdgionTlsList = () => {
   }
 
   const columns = [
-    { title: t('col.name'), dataIndex: ['metadata', 'name'], key: 'name' },
-    { title: t('col.namespace'), dataIndex: ['metadata', 'namespace'], key: 'namespace' },
+    ...getResourceMetaColumns<K8sResource>({
+      namespaced: true,
+      titles: {
+        name: t('col.name'),
+        namespace: t('col.namespace'),
+        age: t('col.age'),
+      },
+    }),
     {
       title: 'Hosts',
       key: 'hosts',
@@ -108,6 +128,8 @@ const EdgionTlsList = () => {
     },
   ]
 
+  if (error) return <ResourceListError error={error} onRetry={refetch} />
+
   return (
     <div>
       <PageHeader
@@ -125,6 +147,10 @@ const EdgionTlsList = () => {
           style={{ width: 240 }} allowClear />
       </div>
 
+      {searchText && (
+        <SearchScopeHint loaded={tlsList.length} hasNext={hasNextPage ?? false} />
+      )}
+
       {selectedRowKeys.length > 0 && (
         <div style={{ marginBottom: 16 }}>
           <Space>
@@ -133,10 +159,22 @@ const EdgionTlsList = () => {
           </Space>
         </div>
       )}
-      <Table rowKey={(r) => `${r.metadata.namespace}/${r.metadata.name}`}
+      <Table rowKey={(r) => `${r.metadata.namespace ?? ''}/${r.metadata.name}`}
         columns={columns} dataSource={filtered} loading={isLoading}
         rowSelection={{ selectedRowKeys, onChange: setSelectedRowKeys }}
-        pagination={{ pageSize: 20, showTotal: (total) => t('table.totalItems', { n: total }) }} size="middle"
+        size="middle"
+        pagination={{
+          defaultPageSize: 20,
+          showSizeChanger: true,
+          showQuickJumper: !hasNextPage,
+          showTotal: (n) =>
+            hasNextPage ? t('table.loadedMore', { n }) : t('table.totalItems', { n }),
+          onChange: (page, pageSize) => {
+            if (page * pageSize >= tlsList.length && hasNextPage && !isFetchingNextPage) {
+              fetchNextPage()
+            }
+          },
+        }}
       />
       <EdgionTlsEditor visible={editorVisible} mode={editorMode} resource={selectedResource as any}
         onClose={() => setEditorVisible(false)} />

@@ -2,12 +2,16 @@ import { useState } from 'react'
 import { Table, Button, Space, Input, Modal, message } from 'antd'
 import { PlusOutlined, ReloadOutlined, EyeOutlined, EditOutlined, DeleteOutlined } from '@ant-design/icons'
 import { useParams } from 'react-router-dom'
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
+import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { resourceApi } from '@/api/resources'
 import type { K8sResource } from '@/api/types'
 import PluginMetaDataEditor from '@/components/ResourceEditor/PluginMetaData/PluginMetaDataEditor'
 import PageHeader from '@/components/PageHeader'
 import { useT } from '@/i18n'
+import { useResourceList } from '@/hooks/useResourceList'
+import { getResourceMetaColumns } from '@/components/resource/resourceMetaColumns'
+import SearchScopeHint from '@/components/resource/SearchScopeHint'
+import ResourceListError from '@/components/resource/ResourceListError'
 
 const { Search } = Input
 
@@ -20,19 +24,29 @@ const PluginMetaDataList = () => {
   const queryClient = useQueryClient()
   const { controllerId } = useParams<{ controllerId?: string }>()
 
-  const { data, isLoading, refetch } = useQuery({
-    queryKey: ['pluginmetadata', controllerId ?? ''],
-    queryFn: () => resourceApi.listAll<K8sResource>('pluginmetadata'),
+  const {
+    items: pluginMetas,
+    isLoading,
+    error,
+    refetch,
+    fetchNextPage,
+    hasNextPage,
+    isFetchingNextPage,
+  } = useResourceList<K8sResource>('pluginmetadata', {
+    namespaced: true,
+    scope: controllerId ?? null,
   })
 
   const deleteMutation = useMutation({
     mutationFn: ({ namespace, name }: { namespace: string; name: string }) =>
       resourceApi.delete('pluginmetadata', namespace, name),
-    onSuccess: () => { message.success(t('msg.deleteOk')); queryClient.invalidateQueries({ queryKey: ['pluginmetadata', controllerId ?? ''] }) },
+    onSuccess: () => {
+      message.success(t('msg.deleteOk'))
+      queryClient.invalidateQueries({ queryKey: ['resource-list', 'pluginmetadata'] })
+    },
   })
 
-  const items = data?.data || []
-  const filtered = items.filter((r) => {
+  const filtered = pluginMetas.filter((r) => {
     const s = searchText.toLowerCase()
     return r.metadata.name.toLowerCase().includes(s) || r.metadata.namespace?.toLowerCase().includes(s)
   })
@@ -42,8 +56,14 @@ const PluginMetaDataList = () => {
   }
 
   const columns = [
-    { title: t('col.name'), dataIndex: ['metadata', 'name'], key: 'name' },
-    { title: t('col.namespace'), dataIndex: ['metadata', 'namespace'], key: 'namespace' },
+    ...getResourceMetaColumns<K8sResource>({
+      namespaced: true,
+      titles: {
+        name: t('col.name'),
+        namespace: t('col.namespace'),
+        age: t('col.age'),
+      },
+    }),
     { title: t('col.description'), key: 'desc', render: (_: any, r: K8sResource) => r.spec?.description || '-' },
     {
       title: t('col.actions'), key: 'actions', width: 160,
@@ -64,6 +84,8 @@ const PluginMetaDataList = () => {
     },
   ]
 
+  if (error) return <ResourceListError error={error} onRetry={refetch} />
+
   return (
     <div>
       <PageHeader
@@ -80,9 +102,27 @@ const PluginMetaDataList = () => {
         <Search placeholder={t('ph.searchNameNs')} value={searchText} onChange={(e) => setSearchText(e.target.value)}
           style={{ width: 240 }} allowClear />
       </div>
-      <Table rowKey={(r) => `${r.metadata.namespace}/${r.metadata.name}`}
+
+      {searchText && (
+        <SearchScopeHint loaded={pluginMetas.length} hasNext={hasNextPage ?? false} />
+      )}
+
+      <Table rowKey={(r) => `${r.metadata.namespace ?? ''}/${r.metadata.name}`}
         columns={columns} dataSource={filtered} loading={isLoading}
-        pagination={{ pageSize: 20, showTotal: (total) => t('table.totalItems', { n: total }) }} size="middle" />
+        size="middle"
+        pagination={{
+          defaultPageSize: 20,
+          showSizeChanger: true,
+          showQuickJumper: !hasNextPage,
+          showTotal: (n) =>
+            hasNextPage ? t('table.loadedMore', { n }) : t('table.totalItems', { n }),
+          onChange: (page, pageSize) => {
+            if (page * pageSize >= pluginMetas.length && hasNextPage && !isFetchingNextPage) {
+              fetchNextPage()
+            }
+          },
+        }}
+      />
       <PluginMetaDataEditor visible={editorVisible} mode={editorMode} resource={selectedResource}
         onClose={() => setEditorVisible(false)} />
     </div>

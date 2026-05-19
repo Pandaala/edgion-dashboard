@@ -76,6 +76,7 @@ const zh = {
   'col.name': '名称',
   'col.namespace': '命名空间',
   'col.actions': '操作',
+  'col.age': '年龄',
   'col.type': '类型',
   'col.status': '状态',
   'col.description': '描述',
@@ -160,6 +161,10 @@ const zh = {
   'msg.noRename': '不允许修改资源的名称或命名空间',
   'msg.validationFailed': '验证失败: {err}',
   'msg.submitFailed': '提交失败: {err}',
+  'msg.tokenExpiredRefreshed': '列表已刷新（分页令牌过期）',
+  'msg.backendListError': '加载列表失败',
+  'msg.backendListNotSupported': '后端不支持此列表 — 请检查 Controller 版本',
+  'msg.retry': '重试',
 
   // Confirm dialogs
   'confirm.deleteTitle': '确认删除',
@@ -178,6 +183,8 @@ const zh = {
 
   // Pagination
   'table.totalItems': '共 {n} 条',
+  'table.loadedMore': '已加载 {n}+',
+  'table.searchLoadedOnly': '搜索仅在已加载的 {n} 条范围内（尚有未加载项）',
 
   // Status labels
   'status.healthy': '健康',

@@ -76,6 +76,7 @@ const en = {
   'col.name': 'Name',
   'col.namespace': 'Namespace',
   'col.actions': 'Actions',
+  'col.age': 'AGE',
   'col.type': 'Type',
   'col.status': 'Status',
   'col.description': 'Description',
@@ -160,6 +161,10 @@ const en = {
   'msg.noRename': 'Cannot modify resource name or namespace',
   'msg.validationFailed': 'Validation failed: {err}',
   'msg.submitFailed': 'Submit failed: {err}',
+  'msg.tokenExpiredRefreshed': 'List refreshed (pagination token expired)',
+  'msg.backendListError': 'Failed to load list',
+  'msg.backendListNotSupported': "Backend doesn't support this list — check controller version",
+  'msg.retry': 'Retry',
 
   // Confirm dialogs
   'confirm.deleteTitle': 'Confirm Delete',
@@ -178,6 +183,8 @@ const en = {
 
   // Pagination
   'table.totalItems': 'Total: {n}',
+  'table.loadedMore': 'Loaded {n}+',
+  'table.searchLoadedOnly': 'Search only filters loaded items ({n} loaded, more available)',
 
   // Status labels
   'status.healthy': 'Healthy',

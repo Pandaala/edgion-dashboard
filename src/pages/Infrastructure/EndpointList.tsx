@@ -2,12 +2,16 @@ import { useState } from 'react'
 import { Table, Button, Space, Input, Tag, Modal, message } from 'antd'
 import { ReloadOutlined, EyeOutlined, EditOutlined, DeleteOutlined, PlusOutlined } from '@ant-design/icons'
 import { useParams } from 'react-router-dom'
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
+import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { resourceApi } from '@/api/resources'
 import type { K8sResource } from '@/api/types'
 import SimpleResourceEditor from '@/components/ResourceEditor/common/SimpleResourceEditor'
 import PageHeader from '@/components/PageHeader'
 import { useT } from '@/i18n'
+import { useResourceList } from '@/hooks/useResourceList'
+import { getResourceMetaColumns } from '@/components/resource/resourceMetaColumns'
+import SearchScopeHint from '@/components/resource/SearchScopeHint'
+import ResourceListError from '@/components/resource/ResourceListError'
 
 const { Search } = Input
 
@@ -20,19 +24,29 @@ const EndpointList = () => {
   const [editorMode, setEditorMode] = useState<'create' | 'edit' | 'view'>('view')
   const [selectedResource, setSelectedResource] = useState<K8sResource | null>(null)
 
-  const { data, isLoading, refetch } = useQuery({
-    queryKey: ['endpoint', controllerId ?? ''],
-    queryFn: () => resourceApi.listAll<K8sResource>('endpoint'),
+  const {
+    items: endpoints,
+    isLoading,
+    error,
+    refetch,
+    fetchNextPage,
+    hasNextPage,
+    isFetchingNextPage,
+  } = useResourceList<K8sResource>('endpoint', {
+    namespaced: true,
+    scope: controllerId ?? null,
   })
 
   const deleteMutation = useMutation({
     mutationFn: ({ ns, name }: { ns: string; name: string }) =>
       resourceApi.delete('endpoint', ns, name),
-    onSuccess: () => { message.success(t('msg.deleteOk')); queryClient.invalidateQueries({ queryKey: ['endpoint', controllerId ?? ''] }) },
+    onSuccess: () => {
+      message.success(t('msg.deleteOk'))
+      queryClient.invalidateQueries({ queryKey: ['resource-list', 'endpoint'] })
+    },
   })
 
-  const items = data?.data || []
-  const filtered = items.filter((r) => {
+  const filtered = endpoints.filter((r) => {
     const s = searchText.toLowerCase()
     return r.metadata.name.toLowerCase().includes(s) || r.metadata.namespace?.toLowerCase().includes(s)
   })
@@ -52,7 +66,7 @@ const EndpointList = () => {
       message.success(t('msg.updateOk'))
     }
     setEditorVisible(false)
-    queryClient.invalidateQueries({ queryKey: ['endpoint', controllerId ?? ''] })
+    queryClient.invalidateQueries({ queryKey: ['resource-list', 'endpoint'] })
   }
 
   const handleDelete = (r: K8sResource) => {
@@ -72,8 +86,14 @@ const EndpointList = () => {
   }
 
   const columns = [
-    { title: t('col.name'), dataIndex: ['metadata', 'name'], key: 'name' },
-    { title: t('col.namespace'), dataIndex: ['metadata', 'namespace'], key: 'namespace' },
+    ...getResourceMetaColumns<K8sResource>({
+      namespaced: true,
+      titles: {
+        name: t('col.name'),
+        namespace: t('col.namespace'),
+        age: t('col.age'),
+      },
+    }),
     {
       title: t('col.address'), key: 'addresses',
       render: (_: any, r: K8sResource) => {
@@ -107,6 +127,8 @@ const EndpointList = () => {
     },
   ]
 
+  if (error) return <ResourceListError error={error} onRetry={refetch} />
+
   return (
     <div>
       <PageHeader
@@ -123,8 +145,27 @@ const EndpointList = () => {
         <Search placeholder={t('ph.searchNameNs')} value={searchText} onChange={(e) => setSearchText(e.target.value)}
           style={{ width: 240 }} allowClear />
       </div>
-      <Table rowKey={(r) => `${r.metadata.namespace}/${r.metadata.name}`} columns={columns}
-        dataSource={filtered} loading={isLoading} pagination={{ pageSize: 20, showTotal: (n) => t('table.totalItems', { n }) }} size="middle" />
+
+      {searchText && (
+        <SearchScopeHint loaded={endpoints.length} hasNext={hasNextPage ?? false} />
+      )}
+
+      <Table rowKey={(r) => `${r.metadata.namespace ?? ''}/${r.metadata.name}`} columns={columns}
+        dataSource={filtered} loading={isLoading}
+        size="middle"
+        pagination={{
+          defaultPageSize: 20,
+          showSizeChanger: true,
+          showQuickJumper: !hasNextPage,
+          showTotal: (n) =>
+            hasNextPage ? t('table.loadedMore', { n }) : t('table.totalItems', { n }),
+          onChange: (page, pageSize) => {
+            if (page * pageSize >= endpoints.length && hasNextPage && !isFetchingNextPage) {
+              fetchNextPage()
+            }
+          },
+        }}
+      />
       <SimpleResourceEditor visible={editorVisible} mode={editorMode} resource={selectedResource} title="Endpoint"
         onClose={() => setEditorVisible(false)} onSubmit={handleSubmit} />
     </div>

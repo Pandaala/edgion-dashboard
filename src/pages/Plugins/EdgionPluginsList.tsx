@@ -8,13 +8,17 @@ import {
   DeleteOutlined,
 } from '@ant-design/icons'
 import { useParams } from 'react-router-dom'
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
+import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { resourceApi } from '@/api/resources'
 import type { K8sResource } from '@/api/types'
 import EdgionPluginsEditor from '@/components/ResourceEditor/EdgionPlugins/EdgionPluginsEditor'
 import { countPluginsByStage } from '@/utils/edgionplugins'
 import PageHeader from '@/components/PageHeader'
 import { useT } from '@/i18n'
+import { useResourceList } from '@/hooks/useResourceList'
+import { getResourceMetaColumns } from '@/components/resource/resourceMetaColumns'
+import SearchScopeHint from '@/components/resource/SearchScopeHint'
+import ResourceListError from '@/components/resource/ResourceListError'
 
 const { Search } = Input
 
@@ -28,9 +32,17 @@ const EdgionPluginsList = () => {
   const queryClient = useQueryClient()
   const { controllerId } = useParams<{ controllerId?: string }>()
 
-  const { data, isLoading, refetch } = useQuery({
-    queryKey: ['edgionplugins', controllerId ?? ''],
-    queryFn: () => resourceApi.listAll<K8sResource>('edgionplugins'),
+  const {
+    items: plugins,
+    isLoading,
+    error,
+    refetch,
+    fetchNextPage,
+    hasNextPage,
+    isFetchingNextPage,
+  } = useResourceList<K8sResource>('edgionplugins', {
+    namespaced: true,
+    scope: controllerId ?? null,
   })
 
   const deleteMutation = useMutation({
@@ -38,7 +50,7 @@ const EdgionPluginsList = () => {
       resourceApi.delete('edgionplugins', namespace, name),
     onSuccess: () => {
       message.success(t('msg.deleteOk'))
-      queryClient.invalidateQueries({ queryKey: ['edgionplugins', controllerId ?? ''] })
+      queryClient.invalidateQueries({ queryKey: ['resource-list', 'edgionplugins'] })
     },
   })
 
@@ -48,13 +60,11 @@ const EdgionPluginsList = () => {
     onSuccess: () => {
       message.success(t('msg.batchDeleteOk', { n: selectedRowKeys.length }))
       setSelectedRowKeys([])
-      queryClient.invalidateQueries({ queryKey: ['edgionplugins', controllerId ?? ''] })
+      queryClient.invalidateQueries({ queryKey: ['resource-list', 'edgionplugins'] })
     },
   })
 
-  const pluginsList = data?.data || []
-
-  const filteredList = pluginsList.filter((p) => {
+  const filteredList = plugins.filter((p) => {
     const lower = searchText.toLowerCase()
     return (
       p.metadata.name.toLowerCase().includes(lower) ||
@@ -112,17 +122,14 @@ const EdgionPluginsList = () => {
   }
 
   const columns = [
-    {
-      title: t('col.name'),
-      dataIndex: ['metadata', 'name'],
-      key: 'name',
-      sorter: (a: K8sResource, b: K8sResource) => a.metadata.name.localeCompare(b.metadata.name),
-    },
-    {
-      title: t('col.namespace'),
-      dataIndex: ['metadata', 'namespace'],
-      key: 'namespace',
-    },
+    ...getResourceMetaColumns<K8sResource>({
+      namespaced: true,
+      titles: {
+        name: t('col.name'),
+        namespace: t('col.namespace'),
+        age: t('col.age'),
+      },
+    }),
     {
       title: t('col.totalPlugins'),
       key: 'pluginCount',
@@ -209,6 +216,8 @@ const EdgionPluginsList = () => {
     },
   ]
 
+  if (error) return <ResourceListError error={error} onRetry={refetch} />
+
   return (
     <div>
       <PageHeader
@@ -235,6 +244,10 @@ const EdgionPluginsList = () => {
         />
       </div>
 
+      {searchText && (
+        <SearchScopeHint loaded={plugins.length} hasNext={hasNextPage ?? false} />
+      )}
+
       {selectedRowKeys.length > 0 && (
         <div style={{ marginBottom: 16 }}>
           <Space>
@@ -254,12 +267,18 @@ const EdgionPluginsList = () => {
         columns={columns}
         dataSource={filteredList}
         loading={isLoading}
-        rowKey={(record) => `${record.metadata.namespace}/${record.metadata.name}`}
+        rowKey={(record) => `${record.metadata.namespace ?? ''}/${record.metadata.name}`}
         pagination={{
           defaultPageSize: 20,
           showSizeChanger: true,
-          showQuickJumper: true,
-          showTotal: (total) => t('table.totalItems', { n: total }),
+          showQuickJumper: !hasNextPage,
+          showTotal: (n) =>
+            hasNextPage ? t('table.loadedMore', { n }) : t('table.totalItems', { n }),
+          onChange: (page, pageSize) => {
+            if (page * pageSize >= plugins.length && hasNextPage && !isFetchingNextPage) {
+              fetchNextPage()
+            }
+          },
         }}
       />
 

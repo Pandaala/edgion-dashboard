@@ -2,12 +2,16 @@ import { useState } from 'react'
 import { Table, Button, Space, Input, Tag, Modal, message } from 'antd'
 import { PlusOutlined, ReloadOutlined, EyeOutlined, EditOutlined, DeleteOutlined } from '@ant-design/icons'
 import { useParams } from 'react-router-dom'
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
+import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { resourceApi } from '@/api/resources'
 import type { K8sResource } from '@/api/types'
 import StreamRouteEditor from '@/components/ResourceEditor/StreamRoute/StreamRouteEditor'
 import PageHeader from '@/components/PageHeader'
 import { useT } from '@/i18n'
+import { useResourceList } from '@/hooks/useResourceList'
+import { getResourceMetaColumns } from '@/components/resource/resourceMetaColumns'
+import SearchScopeHint from '@/components/resource/SearchScopeHint'
+import ResourceListError from '@/components/resource/ResourceListError'
 
 const { Search } = Input
 
@@ -21,9 +25,17 @@ const TLSRouteList = () => {
   const queryClient = useQueryClient()
   const { controllerId } = useParams<{ controllerId?: string }>()
 
-  const { data, isLoading, refetch } = useQuery({
-    queryKey: ['tlsroute', controllerId ?? ''],
-    queryFn: () => resourceApi.listAll<K8sResource>('tlsroute'),
+  const {
+    items: routes,
+    isLoading,
+    error,
+    refetch,
+    fetchNextPage,
+    hasNextPage,
+    isFetchingNextPage,
+  } = useResourceList<K8sResource>('tlsroute', {
+    namespaced: true,
+    scope: controllerId ?? null,
   })
 
   const deleteMutation = useMutation({
@@ -31,7 +43,7 @@ const TLSRouteList = () => {
       resourceApi.delete('tlsroute', namespace, name),
     onSuccess: () => {
       message.success(t('msg.deleteOk'))
-      queryClient.invalidateQueries({ queryKey: ['tlsroute', controllerId ?? ''] })
+      queryClient.invalidateQueries({ queryKey: ['resource-list', 'tlsroute'] })
     },
   })
 
@@ -41,11 +53,10 @@ const TLSRouteList = () => {
     onSuccess: () => {
       message.success(t('msg.batchDeleteOk', { n: selectedRowKeys.length }))
       setSelectedRowKeys([])
-      queryClient.invalidateQueries({ queryKey: ['tlsroute', controllerId ?? ''] })
+      queryClient.invalidateQueries({ queryKey: ['resource-list', 'tlsroute'] })
     },
   })
 
-  const routes = data?.data || []
   const filtered = routes.filter((r) => {
     const s = searchText.toLowerCase()
     return r.metadata.name.toLowerCase().includes(s) || r.metadata.namespace?.toLowerCase().includes(s)
@@ -83,8 +94,14 @@ const TLSRouteList = () => {
   }
 
   const columns = [
-    { title: t('col.name'), dataIndex: ['metadata', 'name'], key: 'name' },
-    { title: t('col.namespace'), dataIndex: ['metadata', 'namespace'], key: 'namespace' },
+    ...getResourceMetaColumns<K8sResource>({
+      namespaced: true,
+      titles: {
+        name: t('col.name'),
+        namespace: t('col.namespace'),
+        age: t('col.age'),
+      },
+    }),
     {
       title: t('col.sniHostnames'),
       key: 'hostnames',
@@ -111,6 +128,8 @@ const TLSRouteList = () => {
     },
   ]
 
+  if (error) return <ResourceListError error={error} onRetry={refetch} />
+
   return (
     <div>
       <PageHeader
@@ -128,6 +147,10 @@ const TLSRouteList = () => {
           style={{ width: 240 }} allowClear />
       </div>
 
+      {searchText && (
+        <SearchScopeHint loaded={routes.length} hasNext={hasNextPage ?? false} />
+      )}
+
       {selectedRowKeys.length > 0 && (
         <div style={{ marginBottom: 16 }}>
           <Space>
@@ -138,13 +161,24 @@ const TLSRouteList = () => {
       )}
 
       <Table
-        rowKey={(r) => `${r.metadata.namespace}/${r.metadata.name}`}
+        rowKey={(r) => `${r.metadata.namespace ?? ''}/${r.metadata.name}`}
         columns={columns}
         dataSource={filtered}
         loading={isLoading}
         rowSelection={{ selectedRowKeys, onChange: setSelectedRowKeys }}
-        pagination={{ pageSize: 20, showTotal: (total) => t('table.totalItems', { n: total }) }}
         size="middle"
+        pagination={{
+          defaultPageSize: 20,
+          showSizeChanger: true,
+          showQuickJumper: !hasNextPage,
+          showTotal: (n) =>
+            hasNextPage ? t('table.loadedMore', { n }) : t('table.totalItems', { n }),
+          onChange: (page, pageSize) => {
+            if (page * pageSize >= routes.length && hasNextPage && !isFetchingNextPage) {
+              fetchNextPage()
+            }
+          },
+        }}
       />
 
       <StreamRouteEditor

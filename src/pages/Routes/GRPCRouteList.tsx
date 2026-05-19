@@ -2,13 +2,17 @@ import { useState } from 'react'
 import { Table, Button, Space, Input, Tag, Modal, message } from 'antd'
 import { PlusOutlined, ReloadOutlined, EyeOutlined, EditOutlined, DeleteOutlined } from '@ant-design/icons'
 import { useParams } from 'react-router-dom'
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
+import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { resourceApi } from '@/api/resources'
 import type { K8sResource } from '@/api/types'
 import GRPCRouteEditor from '@/components/ResourceEditor/GRPCRoute/GRPCRouteEditor'
 import type { GRPCRoute } from '@/types/gateway-api/grpcroute'
 import PageHeader from '@/components/PageHeader'
 import { useT } from '@/i18n'
+import { useResourceList } from '@/hooks/useResourceList'
+import { getResourceMetaColumns } from '@/components/resource/resourceMetaColumns'
+import SearchScopeHint from '@/components/resource/SearchScopeHint'
+import ResourceListError from '@/components/resource/ResourceListError'
 
 const { Search } = Input
 
@@ -22,9 +26,17 @@ const GRPCRouteList = () => {
   const queryClient = useQueryClient()
   const { controllerId } = useParams<{ controllerId?: string }>()
 
-  const { data, isLoading, refetch } = useQuery({
-    queryKey: ['grpcroute', controllerId ?? ''],
-    queryFn: () => resourceApi.listAll<K8sResource>('grpcroute'),
+  const {
+    items: routes,
+    isLoading,
+    error,
+    refetch,
+    fetchNextPage,
+    hasNextPage,
+    isFetchingNextPage,
+  } = useResourceList<K8sResource>('grpcroute', {
+    namespaced: true,
+    scope: controllerId ?? null,
   })
 
   const deleteMutation = useMutation({
@@ -32,7 +44,7 @@ const GRPCRouteList = () => {
       resourceApi.delete('grpcroute', namespace, name),
     onSuccess: () => {
       message.success(t('msg.deleteOk'))
-      queryClient.invalidateQueries({ queryKey: ['grpcroute', controllerId ?? ''] })
+      queryClient.invalidateQueries({ queryKey: ['resource-list', 'grpcroute'] })
     },
   })
 
@@ -42,11 +54,10 @@ const GRPCRouteList = () => {
     onSuccess: () => {
       message.success(t('msg.batchDeleteOk', { n: selectedRowKeys.length }))
       setSelectedRowKeys([])
-      queryClient.invalidateQueries({ queryKey: ['grpcroute', controllerId ?? ''] })
+      queryClient.invalidateQueries({ queryKey: ['resource-list', 'grpcroute'] })
     },
   })
 
-  const routes = data?.data || []
   const filtered = routes.filter((r) => {
     const s = searchText.toLowerCase()
     return r.metadata.name.toLowerCase().includes(s) || r.metadata.namespace?.toLowerCase().includes(s)
@@ -89,7 +100,8 @@ const GRPCRouteList = () => {
     const rules = r.spec?.rules || []
     const methods: string[] = []
     rules.forEach((rule: any) => {
-      (rule.matches || []).forEach((match: any) => {
+      const matches: any[] = rule.matches || []
+      matches.forEach((match: any) => {
         if (match.method?.service) {
           const m = match.method.method ? `${match.method.service}/${match.method.method}` : match.method.service
           methods.push(m)
@@ -100,8 +112,14 @@ const GRPCRouteList = () => {
   }
 
   const columns = [
-    { title: t('col.name'), dataIndex: ['metadata', 'name'], key: 'name' },
-    { title: t('col.namespace'), dataIndex: ['metadata', 'namespace'], key: 'namespace' },
+    ...getResourceMetaColumns<K8sResource>({
+      namespaced: true,
+      titles: {
+        name: t('col.name'),
+        namespace: t('col.namespace'),
+        age: t('col.age'),
+      },
+    }),
     {
       title: t('col.grpcMethods'),
       key: 'methods',
@@ -129,6 +147,8 @@ const GRPCRouteList = () => {
     },
   ]
 
+  if (error) return <ResourceListError error={error} onRetry={refetch} />
+
   return (
     <div>
       <PageHeader
@@ -146,6 +166,10 @@ const GRPCRouteList = () => {
           style={{ width: 240 }} allowClear />
       </div>
 
+      {searchText && (
+        <SearchScopeHint loaded={routes.length} hasNext={hasNextPage ?? false} />
+      )}
+
       {selectedRowKeys.length > 0 && (
         <div style={{ marginBottom: 16 }}>
           <Space>
@@ -156,13 +180,24 @@ const GRPCRouteList = () => {
       )}
 
       <Table
-        rowKey={(r) => `${r.metadata.namespace}/${r.metadata.name}`}
+        rowKey={(r) => `${r.metadata.namespace ?? ''}/${r.metadata.name}`}
         columns={columns}
         dataSource={filtered}
         loading={isLoading}
         rowSelection={{ selectedRowKeys, onChange: setSelectedRowKeys }}
-        pagination={{ pageSize: 20, showTotal: (total) => t('table.totalItems', { n: total }) }}
         size="middle"
+        pagination={{
+          defaultPageSize: 20,
+          showSizeChanger: true,
+          showQuickJumper: !hasNextPage,
+          showTotal: (n) =>
+            hasNextPage ? t('table.loadedMore', { n }) : t('table.totalItems', { n }),
+          onChange: (page, pageSize) => {
+            if (page * pageSize >= routes.length && hasNextPage && !isFetchingNextPage) {
+              fetchNextPage()
+            }
+          },
+        }}
       />
 
       <GRPCRouteEditor

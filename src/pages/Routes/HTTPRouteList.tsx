@@ -2,13 +2,17 @@ import { useState } from 'react'
 import { Table, Button, Space, Input, Tag, Modal, message } from 'antd'
 import { PlusOutlined, ReloadOutlined, EyeOutlined, EditOutlined, DeleteOutlined } from '@ant-design/icons'
 import { useParams } from 'react-router-dom'
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
+import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { resourceApi } from '@/api/resources'
 import type { K8sResource } from '@/api/types'
 import type { HTTPRoute } from '@/types/gateway-api'
 import HTTPRouteEditor from '@/components/ResourceEditor/HTTPRoute/HTTPRouteEditor'
 import PageHeader from '@/components/PageHeader'
 import { useT } from '@/i18n'
+import { useResourceList } from '@/hooks/useResourceList'
+import { getResourceMetaColumns } from '@/components/resource/resourceMetaColumns'
+import SearchScopeHint from '@/components/resource/SearchScopeHint'
+import ResourceListError from '@/components/resource/ResourceListError'
 
 const { Search } = Input
 
@@ -22,10 +26,18 @@ const HTTPRouteList = () => {
   const queryClient = useQueryClient()
   const { controllerId } = useParams<{ controllerId?: string }>()
 
-  // Fetch HTTPRoutes
-  const { data, isLoading, refetch } = useQuery({
-    queryKey: ['httproutes', controllerId ?? ''],
-    queryFn: () => resourceApi.listAll<K8sResource>('httproute'),
+  // Fetch HTTPRoutes — cursor-paginated via useResourceList
+  const {
+    items: routes,
+    isLoading,
+    error,
+    refetch,
+    fetchNextPage,
+    hasNextPage,
+    isFetchingNextPage,
+  } = useResourceList<K8sResource>('httproute', {
+    namespaced: true,
+    scope: controllerId ?? null,
   })
 
   // Delete mutation
@@ -34,7 +46,7 @@ const HTTPRouteList = () => {
       resourceApi.delete('httproute', namespace, name),
     onSuccess: () => {
       message.success(t('msg.deleteOk'))
-      queryClient.invalidateQueries({ queryKey: ['httproutes', controllerId ?? ''] })
+      queryClient.invalidateQueries({ queryKey: ['resource-list', 'httproute'] })
     },
   })
 
@@ -45,11 +57,9 @@ const HTTPRouteList = () => {
     onSuccess: () => {
       message.success(t('msg.batchDeleteOk', { n: selectedRowKeys.length }))
       setSelectedRowKeys([])
-      queryClient.invalidateQueries({ queryKey: ['httproutes', controllerId ?? ''] })
+      queryClient.invalidateQueries({ queryKey: ['resource-list', 'httproute'] })
     },
   })
-
-  const routes = data?.data || []
 
   // Filter routes by search text
   const filteredRoutes = routes.filter((route) => {
@@ -113,17 +123,14 @@ const HTTPRouteList = () => {
   }
 
   const columns = [
-    {
-      title: t('col.name'),
-      dataIndex: ['metadata', 'name'],
-      key: 'name',
-      sorter: (a: K8sResource, b: K8sResource) => a.metadata.name.localeCompare(b.metadata.name),
-    },
-    {
-      title: t('col.namespace'),
-      dataIndex: ['metadata', 'namespace'],
-      key: 'namespace',
-    },
+    ...getResourceMetaColumns<K8sResource>({
+      namespaced: true,
+      titles: {
+        name: t('col.name'),
+        namespace: t('col.namespace'),
+        age: t('col.age'),
+      },
+    }),
     {
       title: t('col.status'),
       key: 'status',
@@ -154,6 +161,8 @@ const HTTPRouteList = () => {
     },
   ]
 
+  if (error) return <ResourceListError error={error} onRetry={refetch} />
+
   return (
     <div>
       <PageHeader
@@ -180,6 +189,10 @@ const HTTPRouteList = () => {
         />
       </div>
 
+      {searchText && (
+        <SearchScopeHint loaded={routes.length} hasNext={hasNextPage ?? false} />
+      )}
+
       {selectedRowKeys.length > 0 && (
         <div style={{ marginBottom: 16 }}>
           <Space>
@@ -199,12 +212,18 @@ const HTTPRouteList = () => {
         columns={columns}
         dataSource={filteredRoutes}
         loading={isLoading}
-        rowKey={(record) => `${record.metadata.namespace}/${record.metadata.name}`}
+        rowKey={(record) => `${record.metadata.namespace ?? ''}/${record.metadata.name}`}
         pagination={{
           defaultPageSize: 20,
           showSizeChanger: true,
-          showQuickJumper: true,
-          showTotal: (total) => t('table.totalItems', { n: total }),
+          showQuickJumper: !hasNextPage,
+          showTotal: (n) =>
+            hasNextPage ? t('table.loadedMore', { n }) : t('table.totalItems', { n }),
+          onChange: (page, pageSize) => {
+            if (page * pageSize >= routes.length && hasNextPage && !isFetchingNextPage) {
+              fetchNextPage()
+            }
+          },
         }}
       />
 

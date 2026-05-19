@@ -1,13 +1,16 @@
 import { useState } from 'react'
 import { Table, Button, Space, Input, Tag, Modal, message } from 'antd'
 import { PlusOutlined, ReloadOutlined, EyeOutlined, EditOutlined, DeleteOutlined } from '@ant-design/icons'
-import { useParams } from 'react-router-dom'
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
+import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { clusterResourceApi } from '@/api/resources'
 import type { K8sResource } from '@/api/types'
 import GatewayClassEditor from '@/components/ResourceEditor/GatewayClass/GatewayClassEditor'
 import PageHeader from '@/components/PageHeader'
 import { useT } from '@/i18n'
+import { useResourceList } from '@/hooks/useResourceList'
+import { getResourceMetaColumns } from '@/components/resource/resourceMetaColumns'
+import SearchScopeHint from '@/components/resource/SearchScopeHint'
+import ResourceListError from '@/components/resource/ResourceListError'
 
 const { Search } = Input
 
@@ -18,20 +21,23 @@ const GatewayClassList = () => {
   const [editorMode, setEditorMode] = useState<'create' | 'edit' | 'view'>('create')
   const [selectedResource, setSelectedResource] = useState<K8sResource | null>(null)
   const queryClient = useQueryClient()
-  const { controllerId } = useParams<{ controllerId?: string }>()
 
-  const { data, isLoading, refetch } = useQuery({
-    queryKey: ['gatewayclass', controllerId ?? ''],
-    queryFn: () => clusterResourceApi.listAll<K8sResource>('gatewayclass'),
-  })
+  const {
+    items: gatewayClasses,
+    isLoading,
+    error,
+    refetch,
+    fetchNextPage,
+    hasNextPage,
+    isFetchingNextPage,
+  } = useResourceList<K8sResource>('gatewayclass', { namespaced: false })
 
   const deleteMutation = useMutation({
     mutationFn: (name: string) => clusterResourceApi.delete('gatewayclass', name),
-    onSuccess: () => { message.success(t('msg.deleteOk')); queryClient.invalidateQueries({ queryKey: ['gatewayclass', controllerId ?? ''] }) },
+    onSuccess: () => { message.success(t('msg.deleteOk')); queryClient.invalidateQueries({ queryKey: ['resource-list', 'gatewayclass'] }) },
   })
 
-  const items = data?.data || []
-  const filtered = items.filter((r) => r.metadata.name.toLowerCase().includes(searchText.toLowerCase()))
+  const filtered = gatewayClasses.filter((r) => r.metadata.name.toLowerCase().includes(searchText.toLowerCase()))
 
   const openEditor = (mode: 'create' | 'edit' | 'view', resource?: K8sResource) => {
     setEditorMode(mode); setSelectedResource(resource || null); setEditorVisible(true)
@@ -46,7 +52,10 @@ const GatewayClassList = () => {
   }
 
   const columns = [
-    { title: t('col.name'), dataIndex: ['metadata', 'name'], key: 'name' },
+    ...getResourceMetaColumns<K8sResource>({
+      namespaced: false,
+      titles: { name: t('col.name'), namespace: '', age: t('col.age') },
+    }),
     { title: t('col.controller'), key: 'controller',
       render: (_: any, r: K8sResource) => <Tag color="blue">{r.spec?.controllerName || '-'}</Tag> },
     { title: t('col.description'), key: 'desc',
@@ -62,6 +71,8 @@ const GatewayClassList = () => {
       ),
     },
   ]
+
+  if (error) return <ResourceListError error={error} onRetry={refetch} />
 
   return (
     <div>
@@ -79,8 +90,28 @@ const GatewayClassList = () => {
         <Search placeholder={t('ph.searchName')} value={searchText} onChange={(e) => setSearchText(e.target.value)}
           style={{ width: 240 }} allowClear />
       </div>
-      <Table rowKey={(r) => r.metadata.name} columns={columns} dataSource={filtered}
-        loading={isLoading} pagination={{ pageSize: 20, showTotal: (n) => t('table.totalItems', { n }) }} size="middle" />
+      {searchText && (
+        <SearchScopeHint loaded={gatewayClasses.length} hasNext={hasNextPage ?? false} />
+      )}
+      <Table
+        rowKey={(r) => r.metadata.name}
+        columns={columns}
+        dataSource={filtered}
+        loading={isLoading}
+        size="middle"
+        pagination={{
+          defaultPageSize: 20,
+          showSizeChanger: true,
+          showQuickJumper: !hasNextPage,
+          showTotal: (n) =>
+            hasNextPage ? t('table.loadedMore', { n }) : t('table.totalItems', { n }),
+          onChange: (page, pageSize) => {
+            if (page * pageSize >= gatewayClasses.length && hasNextPage && !isFetchingNextPage) {
+              fetchNextPage()
+            }
+          },
+        }}
+      />
       <GatewayClassEditor
         visible={editorVisible}
         mode={editorMode}
