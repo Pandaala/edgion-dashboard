@@ -57,7 +57,6 @@ export const menuConfig: MenuSection[] = [
         labelKey: 'nav.group.services',
         children: [
           { kind: 'item', key: 'svc-list',     labelKey: 'infra.service',       path: '/services/list',          icon: <DatabaseOutlined /> },
-          { kind: 'item', key: 'svc-eps',      labelKey: 'infra.endpoint',      path: '/services/endpoints',     icon: <DatabaseOutlined /> },
           { kind: 'item', key: 'svc-epslices', labelKey: 'infra.endpointslice', path: '/services/endpointslices',icon: <DatabaseOutlined /> },
         ],
       },
