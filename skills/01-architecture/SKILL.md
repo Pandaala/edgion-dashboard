@@ -51,12 +51,12 @@ description: Edgion Controller 项目架构概览——目录结构、数据流�
               └──────┬──────┘
                      │
               ┌──────▼──────┐
-              │ Vite Proxy   │  dev: localhost:5173 → localhost:5800
+              │ Vite Proxy   │  dev: localhost:5173 → localhost:12101
               └──────┬──────┘
                      │
               ┌──────▼──────┐
               │ Edgion       │
-              │ Controller   │  port 5800
+              │ Controller   │  port 12101
               │ Admin API    │
               └──────────────┘
 ```

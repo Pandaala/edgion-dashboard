@@ -78,14 +78,14 @@ Edgion 是一个基于 Rust 和 Pingora 的高性能 API 网关，实现了完�
 ```
 ┌─────────────────────────────────────────────────────┐
 │                  浏览器 (Browser)                    │
-│               http://localhost:5800                  │
+│               http://localhost:12101                 │
 └────────────────────┬────────────────────────────────┘
                      │ HTTP/REST
                      │
 ┌────────────────────▼────────────────────────────────┐
 │           Edgion Controller (Rust)                   │
 │  ┌──────────────────────────────────────────────┐  │
-│  │  Axum HTTP Server (0.0.0.0:5800)            │  │
+│  │  Axum HTTP Server (0.0.0.0:12101)           │  │
 │  ├──────────────────────────────────────────────┤  │
 │  │  ┌─────────────┐  ┌──────────────────────┐  │  │
 │  │  │ Static      │  │  RESTful API         │  │  │
@@ -227,7 +227,7 @@ Edgion/src/core/api/controller/
 │  GRPCRoute│  └─────────┘ └─────────┘ └─────────┘  │
 │  TCPRoute │                                        │
 │  UDPRoute │  健康状态: ✅ Running                  │
-│  TLSRoute │  gRPC: 0.0.0.0:50051                   │
+│  TLSRoute │  gRPC: 0.0.0.0:12151                   │
 │          │  Config: Synced                         │
 │ 🔧 服务管理│                                         │
 │  Service │                                         │
@@ -445,7 +445,7 @@ spec:
 ```bash
 cd Edgion
 cargo run --bin edgion-controller
-# 监听: http://0.0.0.0:5800
+# 监听: http://0.0.0.0:12101
 ```
 
 #### 前端（Vite Dev Server）
@@ -462,7 +462,7 @@ export default defineConfig({
   server: {
     proxy: {
       '/api': {
-        target: 'http://localhost:5800',
+        target: 'http://localhost:12101',
         changeOrigin: true
       }
     }
@@ -492,7 +492,7 @@ cargo build --release --bin edgion-controller
 ./edgion-controller --config config/edgion-controller.toml
 ```
 
-访问：`http://<server-ip>:5800/` 自动加载嵌入式前端
+访问：`http://<server-ip>:12101/` 自动加载嵌入式前端
 
 ### 7.3 嵌入式部署实现
 

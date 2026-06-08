@@ -25,13 +25,12 @@ const Dashboard = () => {
   const queryClient = useQueryClient()
   const { controllerId } = useParams<{ controllerId?: string }>()
 
-  // Health + server info (preserved from original)
-  const { data: healthData } = useQuery({
-    queryKey: ['health', controllerId ?? ''],
-    queryFn: systemApi.health,
-    staleTime: 15 * 1000,
-    retry: false,
-  })
+  // Liveness + readiness are both derived from /api/v1/server-info (admin port).
+  // /health and /ready now live on the controller's dedicated probe listener (:12100),
+  // which the same-origin embedded frontend (served on the admin port :12101) cannot
+  // reach — a same-origin GET /health would 404 in production. server-info is on the
+  // admin port, so it is always reachable: a successful response means the backend is
+  // alive, and its `ready` field carries readiness.
   const { data: serverInfo } = useQuery({
     queryKey: ['server-info', controllerId ?? ''],
     queryFn: systemApi.serverInfo,
@@ -39,7 +38,7 @@ const Dashboard = () => {
     retry: false,
   })
 
-  const isHealthy = healthData?.data === 'OK' || healthData?.success === true
+  const isHealthy = serverInfo?.success === true
   const isReady   = serverInfo?.data?.ready === true
 
   // Gateways — full list for count + recent gateways ListCard
@@ -75,8 +74,11 @@ const Dashboard = () => {
   // If no status.notAfter fields are populated fall back to total ACME resource count
   const acmeExpiryStat = acmeWithExpiry.length > 0 ? acmeWithExpiry.length : acmeResources.length
 
-  // Derive controller health display value
-  const controllerHealthValue = isHealthy ? t('status.healthy') : isReady === false ? '—' : t('status.unhealthy')
+  // Derive controller health display value. isHealthy now reflects reachability of
+  // /api/v1/server-info, so a single healthy/unhealthy split matches the header dot;
+  // the old isReady-based middle branch became unreachable once both signals share
+  // the same source.
+  const controllerHealthValue = isHealthy ? t('status.healthy') : t('status.unhealthy')
 
   // Additional ops resource counts (preserved from original count grid)
   const gcQuery      = useQuery({ queryKey: ['count', 'gatewayclass',        controllerId ?? ''], queryFn: () => clusterResourceApi.listAll<K8sResource>('gatewayclass').then(r => r.count ?? r.data?.length ?? 0),        staleTime: 30000 })
@@ -231,8 +233,8 @@ const Dashboard = () => {
               ),
             },
             { label: t('dash.serverId'),  value: <code style={{ fontSize: 11 }}>{serverInfo?.data?.server_id || '—'}</code> },
-            { label: t('dash.adminApi'),  value: <span>:5800</span> },
-            { label: t('dash.grpc'),      value: <span>:50051</span> },
+            { label: t('dash.adminApi'),  value: <span>:12101</span> },
+            { label: t('dash.grpc'),      value: <span>:12151</span> },
           ].map((row, idx) => (
             <div
               key={idx}

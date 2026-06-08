@@ -20,7 +20,7 @@ npm run dev
 
 访问：http://localhost:5173
 
-**注意**：确保 Edgion Controller 已启动在 `localhost:5800`，Vite 会自动代理 API 请求。
+**注意**：确保 Edgion Controller 已启动在 `localhost:12101`，Vite 会自动代理 API 请求。
 
 ### 生产构建
 
@@ -95,7 +95,7 @@ await resourceApi.create('httproute', 'default', yamlContent)
 2. **生产环境**：前端嵌入到 Controller，同源访问
 3. **端口配置**：
    - 前端开发：5173
-   - 后端 API：5800
+   - 后端 API：12101
 
 ## License
 

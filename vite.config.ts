@@ -12,17 +12,24 @@ export default defineConfig({
   },
   server: {
     port: 5173,
-    // 代理配置 - 解决开发环境跨域问题
-    // Controller 模式: target → http://localhost:5810 (Controller Admin API)
-    // Center 模式开发: 将 target 改为 http://localhost:5810 (Center API)
-    // /api/v1/proxy/* 路径由 Center 服务处理，无需额外代理规则（前缀 /api 已覆盖）
+    // Dev proxy to work around CORS in development.
+    // After the 12xxx port unification, /health and /ready moved off the Admin
+    // port onto a dedicated probe listener, while business routes (/api) stay on
+    // the Admin port — so these must be proxied to DIFFERENT backend ports.
+    // Controller mode: /api -> 12101 (Admin), /health & /ready -> 12100 (probe)
+    // Center mode (dev): change /api -> 12201 (Admin), /health & /ready -> 12200 (probe)
+    // /api/v1/proxy/* is handled by the Center service (covered by the /api prefix).
     proxy: {
       '/api': {
-        target: 'http://localhost:5810',
+        target: 'http://localhost:12101',
         changeOrigin: true,
       },
       '/health': {
-        target: 'http://localhost:5810',
+        target: 'http://localhost:12100',
+        changeOrigin: true,
+      },
+      '/ready': {
+        target: 'http://localhost:12100',
         changeOrigin: true,
       },
     },

@@ -3,11 +3,11 @@
 ## 项目概要
 
 Edgion Controller 是 Edgion 网关的前端管理界面，基于 React 18 + TypeScript + Ant Design 5 + Vite 5。
-通过 REST API 与 Edgion Controller（端口 5800）交互，管理 Gateway API 资源和 Edgion 自定义资源。
+通过 REST API 与 Edgion Controller（端口 12101）交互，管理 Gateway API 资源和 Edgion 自定义资源。
 
 **技术栈**：React 18、TypeScript 5、Ant Design 5、Vite 5、React Router 6、React Query 5、Monaco Editor、Zod 验证、Axios。
 
-**开发服务器**：`npm run dev`（端口 5173，自动代理 `/api` 到 `localhost:5800`）。
+**开发服务器**：`npm run dev`（端口 5173，自动代理 `/api` 到 `localhost:12101`）。
 
 ## 知识体系
 
@@ -114,9 +114,9 @@ interface ListResponse<T> {
 ### Controller API 端点
 
 ```
-GET  /health                                    # 存活检查
-GET  /ready                                     # 就绪检查
-GET  /api/v1/server-info                        # 服务器信息
+GET  /health                                    # 存活检查（独立 probe 监听器 :12100，非 Admin 端口）
+GET  /ready                                     # 就绪检查（独立 probe 监听器 :12100，非 Admin 端口）
+GET  /api/v1/server-info                        # 服务器信息（Admin :12101；前端用其 ready 字段判断健康/就绪，避免依赖同源 /health）
 POST /api/v1/reload                             # 重新加载所有资源
 GET  /api/v1/namespaced/{kind}                  # 列出所有命名空间资源
 GET  /api/v1/namespaced/{kind}/{namespace}      # 列出指定命名空间资源
@@ -147,8 +147,8 @@ npm run preview          # 预览生产构建
 cd ../edgion
 ./examples/test/scripts/utils/start_all_with_conf.sh    # 启动 Controller + Gateway
 ./examples/test/scripts/utils/load_conf.sh all           # 加载全部测试数据
-# Controller Admin API: http://localhost:5800
-# Gateway Admin API: http://localhost:5900
+# Controller Admin API: http://localhost:12101
+# Gateway Admin API: http://localhost:12001
 ```
 
 ## 目录结构

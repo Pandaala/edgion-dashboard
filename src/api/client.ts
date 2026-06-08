@@ -5,7 +5,7 @@ import { getActiveControllerId } from '../utils/proxy'
 
 // Create axios instance
 export const apiClient = axios.create({
-  baseURL: '/api/v1', // 通过 Vite 代理转发到 localhost:5800
+  baseURL: '/api/v1', // forwarded to the Controller Admin API (localhost:12101) via the Vite proxy
   timeout: 30000,
   headers: {
     'Content-Type': 'application/json',

@@ -36,14 +36,16 @@ const UserDashboard = () => {
   const queryClient = useQueryClient()
   const { controllerId } = useParams<{ controllerId?: string }>()
 
-  // Health check (preserved from original — shown in PageHeader actions)
-  const { data: healthData } = useQuery({
-    queryKey: ['health', controllerId ?? ''],
-    queryFn: systemApi.health,
-    staleTime: 15 * 1000,
+  // Liveness is derived from /api/v1/server-info (admin port), not the same-origin
+  // /health: /health moved to the controller's dedicated probe listener (:12100),
+  // unreachable from the same-origin embedded frontend served on the admin port :12101.
+  const { data: serverInfo } = useQuery({
+    queryKey: ['server-info', controllerId ?? ''],
+    queryFn: systemApi.serverInfo,
+    staleTime: 30 * 1000,
     retry: false,
   })
-  const isHealthy = healthData?.data === 'OK' || healthData?.success === true
+  const isHealthy = serverInfo?.success === true
 
   // Fetch HTTPRoutes for the route-derived stats (hostnames, backends, recent list).
   // The original file showed per-kind counts via a lightweight count query; here we

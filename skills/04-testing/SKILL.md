@@ -47,11 +47,11 @@ cargo build
 
 | 服务 | 端口 | 用途 |
 |------|------|------|
-| Controller Admin API | 5800 | 前端 API 后端（Vite 代理目标） |
-| Controller gRPC | 50051 | Gateway 配置同步 |
+| Controller Admin API | 12101 | 前端 API 后端（Vite 代理目标） |
+| Controller gRPC | 12151 | Gateway 配置同步 |
 | Gateway HTTP | 10080 | 数据面 HTTP 代理 |
 | Gateway HTTPS | 10443 | 数据面 HTTPS 代理 |
-| Gateway Admin | 5900 | Gateway 管理 API |
+| Gateway Admin | 12001 | Gateway 管理 API |
 | 前端 Dev Server | 5173 | Vite 开发服务器 |
 
 ## 验证流程
@@ -60,7 +60,7 @@ cargo build
 2. **加载数据**：`load_conf.sh all`
 3. **启动前端**：`cd edgion-dashboard && npm run dev`
 4. **浏览器验证**：http://localhost:5173
-5. **验证 API**：http://localhost:5800/api/v1/namespaced/httproute（直接测试 API）
+5. **验证 API**：http://localhost:12101/api/v1/namespaced/httproute（直接测试 API）
 
 ## 测试数据目录
 
